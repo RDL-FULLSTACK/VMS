@@ -8,25 +8,41 @@ const visitors = [
   { name: "Jane Smith", checkInTime: "11:00 AM", company: "XYZ Ltd", avatar: "" },
 ];
 
-// ✅ Header Component (Fixed Layout & Style)
-const Navbar = () => (
-  <AppBar position="static" sx={{ backgroundColor: "#5F3B91", boxShadow: "none" }}>
-    <Toolbar sx={{ display: "flex", justifyContent: "space-between", padding: "10px 20px" }}>
-      <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-        Visitor Management System
-      </Typography>
-      <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
-        <Typography variant="body1">Dashboard</Typography>
-        <Typography variant="body1">Check-In</Typography>
-        <Typography variant="body1">Pre-Scheduling</Typography>
-        <Typography variant="body1">Check-Out</Typography>
-        <Typography variant="body1" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AccountCircle fontSize="small" /> Receptionist
+// ✅ Header Component (Navigation Enabled)
+const Navbar = () => {
+  const navigate = useNavigate(); // Enable navigation inside the header
+
+  return (
+    <AppBar position="static" sx={{ backgroundColor: "#5F3B91", boxShadow: "none" }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between", padding: "10px 20px" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+          Visitor Management System
         </Typography>
-      </Box>
-    </Toolbar>
-  </AppBar>
-);
+        <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
+          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/dashboard")}>
+            Dashboard
+          </Typography>
+          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/check-in")}>
+            Check-In
+          </Typography>
+          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/pre-scheduling")}>
+            Pre-Scheduling
+          </Typography>
+          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/")}>
+            Check-Out
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer", ":hover": { color: "#ccc" } }}
+            onClick={() => navigate("/receptionist")}
+          >
+            <AccountCircle fontSize="small" /> Receptionist
+          </Typography>
+        </Box>
+      </Toolbar>
+    </AppBar>
+  );
+};
 
 // ✅ Visitor Check-Out Page
 const VisitorCheckout = () => {
@@ -94,7 +110,7 @@ const VisitorCheckout = () => {
   );
 };
 
-// ✅ Success Page (With Fixed Header)
+// ✅ Success Page
 const SuccessPage = () => {
   return (
     <>
@@ -109,12 +125,23 @@ const SuccessPage = () => {
   );
 };
 
+// ✅ Placeholder Pages
+const Dashboard = () => <h2>Dashboard Page</h2>;
+const CheckIn = () => <h2>Check-In Page</h2>;
+const PreScheduling = () => <h2>Pre-Scheduling Page</h2>;
+const Receptionist = () => <h2>Receptionist Page</h2>;
+
+// ✅ Main App Component with Routes
 const Checkout = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<VisitorCheckout />} />
         <Route path="/success" element={<SuccessPage />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/check-in" element={<CheckIn />} />
+        <Route path="/pre-scheduling" element={<PreScheduling />} />
+        <Route path="/receptionist" element={<Receptionist />} />
       </Routes>
     </Router>
   );

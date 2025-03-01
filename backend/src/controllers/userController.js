@@ -1,3 +1,6 @@
+//userController.js
+
+
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -32,3 +35,4 @@ exports.loginUser = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+

@@ -1,4 +1,5 @@
-// backend/src/controllers/vehicleController.js
+//vehicleController.js
+
 const Vehicle = require("../models/Vehicle");
 
 // 🔹 Get All Vehicles
@@ -14,7 +15,15 @@ exports.getAllVehicles = async (req, res) => {
 // 🔹 Add Vehicle
 exports.addVehicle = async (req, res) => {
     try {
-        const newVehicle = new Vehicle(req.body);
+        const { vehicleNumber, vehicleType, owner } = req.body;
+
+        // Check if vehicleNumber already exists
+        const existingVehicle = await Vehicle.findOne({ vehicleNumber });
+        if (existingVehicle) {
+            return res.status(400).json({ message: "Vehicle already exists" });
+        }
+
+        const newVehicle = new Vehicle({ vehicleNumber, vehicleType, owner });
         await newVehicle.save();
         res.status(201).json({ message: "Vehicle added successfully", vehicle: newVehicle });
     } catch (error) {

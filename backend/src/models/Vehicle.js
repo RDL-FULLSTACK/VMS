@@ -1,3 +1,5 @@
+//vehicle.js
+
 const mongoose = require('mongoose');
 
 const VehicleSchema = new mongoose.Schema({

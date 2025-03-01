@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./src/config/db'); // Ensure correct path
 const authRoutes = require('./src/routes/authRoutes'); // Ensure correct path
+const vehicleRoutes = require('./src/routes/vehicleRoutes');
+const visitorRoutes = require('./src/routes/visitorRoutes'); // Added visitor routes
 
 // Initialize Express App
 const app = express();
@@ -16,6 +18,8 @@ connectDB();
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/visitors', visitorRoutes); // Added visitor API route
 
 // Server Port
 const PORT = process.env.PORT || 5000;

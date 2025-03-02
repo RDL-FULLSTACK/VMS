@@ -154,7 +154,7 @@ function Home() {
           <Typography variant="h6">Visitor Management System</Typography>
           <NavLinks>
             <Button color="inherit" onClick={() => navigate("/")}>
-              Dashboard
+             <h3> Dashboard</h3>
             </Button>
             <Button color="inherit" onClick={() => navigate("/Checkin")}>
               Check-In

@@ -23,13 +23,13 @@ const Navbar = () => {
           <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/")}>
             Dashboard
           </Typography>
-          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/check-in")}>
+          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/checkin")}>
             Check-In
           </Typography>
           <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/pre-scheduling")}>
             Pre-Scheduling
           </Typography>
-          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/")}>
+          <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/checkout")}>
             Check-Out
           </Typography>
           <Typography

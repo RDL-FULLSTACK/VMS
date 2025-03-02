@@ -31,7 +31,7 @@ import { CheckCircle } from "lucide-react";
 import { styled } from "@mui/system"; // Import styled-components for CSS-in-JS
 import { useNavigate } from "react-router-dom";
 import Checkout from "./checkout" ;
-
+import Checkin from "./checkin";
 // Styled Components for CSS
 const StyledContainer = styled(Container)({
   backgroundColor: "#fbf6f6",
@@ -156,7 +156,7 @@ function Home() {
             <Button color="inherit" onClick={() => navigate("/")}>
               Dashboard
             </Button>
-            <Button color="inherit" onClick={() => navigate("/check-in")}>
+            <Button color="inherit" onClick={() => navigate("/Checkin")}>
               Check-In
             </Button>
             <Button color="inherit" onClick={() => navigate("/pre-scheduling")}>

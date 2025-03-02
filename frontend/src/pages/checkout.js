@@ -1,8 +1,10 @@
+//checkout.hj
+
 import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Container, TextField, MenuItem, Card, CardContent, Typography, Button, Avatar, AppBar, Toolbar, Box } from "@mui/material";
 import { CheckCircle, AccountCircle } from "@mui/icons-material";
-import Home from "../pages/Home";
+import Home from "./Home";
 
 // ✅ Visitor List
 const visitors = [

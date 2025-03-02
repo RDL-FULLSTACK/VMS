@@ -30,7 +30,7 @@ import {
 import { CheckCircle } from "lucide-react";
 import { styled } from "@mui/system"; // Import styled-components for CSS-in-JS
 import { useNavigate } from "react-router-dom";
-import Checkout from "../components/checkout" ;
+import Checkout from "./checkout" ;
 
 // Styled Components for CSS
 const StyledContainer = styled(Container)({

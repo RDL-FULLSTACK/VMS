@@ -8,6 +8,8 @@ import { AdminPanelSettings } from "@mui/icons-material";
 import Admin from "./pages/admin"; // Import Admin1 properly
 import CompanyLogin from "./pages/companylogin";
 import VisitorCard from "./pages/visitorcard";
+import VehicleRegistration from "./pages/VehicleRegistration";
+import VehicleDetails from "./pages/VehicleDetails";
 
 function App() {
   return (
@@ -22,9 +24,8 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/companylogin" element={[<CompanyLogin/>]} />
         <Route path="/visitorcard" element={[<VisitorCard/>]}/>
-
-
-
+        <Route path="/vehicle-registration" element={[<VehicleRegistration/>]}/>
+        <Route path="/vehicle-details" element={[<VehicleDetails/>]}/>
       </Routes>
       </>
     

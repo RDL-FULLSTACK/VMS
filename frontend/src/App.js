@@ -12,6 +12,7 @@ import VehicleRegistration from "./pages/VehicleRegistration";
 import VehicleDetails from "./pages/VehicleDetails";
 import Login from "./pages/Login";
 import VisitorList from "./pages/VisitorList";
+import Navbar from "./components/Navbar"
 
 function App() {
   return (

@@ -6,10 +6,10 @@ import {
 import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Navbar from "../components/Navbar"; // Import Navbar component
 
 const Checkin = () => {
   const navigate = useNavigate();
-  
   const [teamMembers, setTeamMembers] = useState([]);
 
   const handleAddTeamMember = () => {
@@ -57,175 +57,180 @@ const Checkin = () => {
   };
 
   return (
-    <Box
-      sx={{
-        width: "80%",
-        margin: "auto",
-        mt: 4,
-        p: 3,
-        borderRadius: 2,
-        boxShadow: 3,
-        backgroundColor: "#f8f9fa",
-      }}
-    >
-      <ToastContainer /> {/* Toast container for displaying messages */}
-      
-      <Box display="flex" justifyContent="flex-end">
-        <Button 
-          variant="outlined" 
-          color="primary" 
-          onClick={() => handleEdit({ 
-            fullName: " ",  
-            email: " ",
-            phoneNumber: " ",
-            designation: " ",
-            visitType: " ",
-            visitorCompany: " ",
-            reasonForVisit: " ",
-            expectedDuration: " ",
-            submittedDocument: " ",
-            teamMembers: teamMembers 
-          })}
-        >
-          Edit
-        </Button>
-      </Box>
+    <>
+      {/* Navbar added here */}
+      <Navbar />
 
-      <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
-        Visitor Check-In
-      </Typography>
+      <Box
+        sx={{
+          width: "80%",
+          margin: "auto",
+          mt: 4,
+          p: 3,
+          borderRadius: 2,
+          boxShadow: 3,
+          backgroundColor: "#f8f9fa",
+        }}
+      >
+        <ToastContainer /> {/* Toast container for displaying messages */}
+        
+        <Box display="flex" justifyContent="flex-end">
+          <Button 
+            variant="outlined" 
+            color="primary" 
+            onClick={() => handleEdit({ 
+              fullName: " ",  
+              email: " ",
+              phoneNumber: " ",
+              designation: " ",
+              visitType: " ",
+              visitorCompany: " ",
+              reasonForVisit: " ",
+              expectedDuration: " ",
+              submittedDocument: " ",
+              teamMembers: teamMembers 
+            })}
+          >
+            Edit
+          </Button>
+        </Box>
 
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField fullWidth label="Full Name*" variant="outlined" margin="dense" required />
-          <TextField fullWidth label="Email*" variant="outlined" margin="dense" required />
-          <Grid container spacing={1} alignItems="center">
-            <Grid item xs={8}>
-              <TextField fullWidth label="Phone Number*" variant="outlined" margin="dense" required />
-            </Grid>
-            <Grid item xs={4}>
-              <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
-                Send OTP
-              </Button>
-            </Grid>
-          </Grid>
-          <TextField fullWidth select label="Designation*" variant="outlined" margin="dense" required>
-            <MenuItem value="Manager">Manager</MenuItem>
-            <MenuItem value="Employee">Employee</MenuItem>
-            <MenuItem value="Visitor">Visitor</MenuItem>
-          </TextField>
-          <TextField fullWidth select label="Visit Type" variant="outlined" margin="dense" required>
-            <MenuItem value="Business">Business</MenuItem>
-            <MenuItem value="Personal">Personal</MenuItem>
-          </TextField>
-          <TextField fullWidth label="Expected Duration of Visit" variant="outlined" margin="dense" required />
-          <TextField fullWidth label="Document Details" variant="outlined" margin="dense" required />
-        </Grid>
-
-        <Grid item xs={12} sm={6}>
-          <Grid container spacing={1} alignItems="center">
-            <Grid item xs={8}>
-              <TextField fullWidth label="Photo.jpg" variant="outlined" margin="dense" required />
-            </Grid>
-            <Grid item xs={4}>
-              <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
-                Upload
-              </Button>
-            </Grid>
-          </Grid>
-          <TextField fullWidth label="Reason for Visit*" variant="outlined" margin="dense" required />
-          <TextField fullWidth label="Enter OTP" variant="outlined" margin="dense" required />
-          <TextField fullWidth label="Visitor Company*" variant="outlined" margin="dense" required />
-          <TextField fullWidth label="Person to Visit" variant="outlined" margin="dense" required />
-          <TextField fullWidth select label="Submitted Document" variant="outlined" margin="dense" required>
-            <MenuItem value="ID Proof">ID Proof</MenuItem>
-            <MenuItem value="Passport">Passport</MenuItem>
-          </TextField>
-        </Grid>
-      </Grid>
-
-      <Box mt={3}>
-        <Typography variant="h6" fontWeight="bold" mb={1}>
-          Team Members
+        <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
+          Visitor Check-In
         </Typography>
 
-        <Button 
-          startIcon={<AddCircle />} 
-          variant="contained" 
-          color="primary"
-          onClick={handleAddTeamMember}
-        >
-          Add Team Member
-        </Button>
-
-        {teamMembers.map((member, index) => (
-          <Box key={index} mt={2} p={2} sx={{ border: "1px solid #ccc", borderRadius: 2 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="Full Name*"
-                  variant="outlined"
-                  value={member.name}
-                  onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
-                  required
-                />
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField fullWidth label="Full Name*" variant="outlined" margin="dense" required />
+            <TextField fullWidth label="Email*" variant="outlined" margin="dense" required />
+            <Grid container spacing={1} alignItems="center">
+              <Grid item xs={8}>
+                <TextField fullWidth label="Phone Number*" variant="outlined" margin="dense" required />
               </Grid>
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="Email*"
-                  variant="outlined"
-                  value={member.email}
-                  onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
-                  required
-                />
-              </Grid>
-              <Grid item xs={3}>
-                <TextField
-                  fullWidth
-                  label="Document Details*"
-                  variant="outlined"
-                  value={member.documentDetail}
-                  onChange={(e) => handleTeamMemberChange(index, "documentDetail", e.target.value)}
-                  required
-                />
-              </Grid>
-              <Grid item xs={2}>
-                <Button
-                  variant="contained"
-                  component="label"
-                  fullWidth
-                  startIcon={<UploadFile />}
-                >
-                  Upload
-                  <input
-                    type="file"
-                    hidden
-                    onChange={(e) => handleTeamMemberChange(index, "document", e.target.files[0])}
-                  />
+              <Grid item xs={4}>
+                <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
+                  Send OTP
                 </Button>
               </Grid>
-              <Grid item xs={1}>
-                <IconButton color="error" onClick={() => handleRemoveTeamMember(index)}>
-                  <RemoveCircle />
-                </IconButton>
+            </Grid>
+            <TextField fullWidth select label="Designation*" variant="outlined" margin="dense" required>
+              <MenuItem value="Manager">Manager</MenuItem>
+              <MenuItem value="Employee">Employee</MenuItem>
+              <MenuItem value="Visitor">Visitor</MenuItem>
+            </TextField>
+            <TextField fullWidth select label="Visit Type" variant="outlined" margin="dense" required>
+              <MenuItem value="Business">Business</MenuItem>
+              <MenuItem value="Personal">Personal</MenuItem>
+            </TextField>
+            <TextField fullWidth label="Expected Duration of Visit" variant="outlined" margin="dense" required />
+            <TextField fullWidth label="Document Details" variant="outlined" margin="dense" required />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <Grid container spacing={1} alignItems="center">
+              <Grid item xs={8}>
+                <TextField fullWidth label="Photo.jpg" variant="outlined" margin="dense" required />
+              </Grid>
+              <Grid item xs={4}>
+                <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
+                  Upload
+                </Button>
               </Grid>
             </Grid>
-          </Box>
-        ))}
-      </Box>
+            <TextField fullWidth label="Reason for Visit*" variant="outlined" margin="dense" required />
+            <TextField fullWidth label="Enter OTP" variant="outlined" margin="dense" required />
+            <TextField fullWidth label="Visitor Company*" variant="outlined" margin="dense" required />
+            <TextField fullWidth label="Person to Visit" variant="outlined" margin="dense" required />
+            <TextField fullWidth select label="Submitted Document" variant="outlined" margin="dense" required>
+              <MenuItem value="ID Proof">ID Proof</MenuItem>
+              <MenuItem value="Passport">Passport</MenuItem>
+            </TextField>
+          </Grid>
+        </Grid>
 
-      <Button 
-        variant="contained" 
-        color="primary" 
-        size="large" 
-        sx={{ mt: 3 }} 
-        onClick={handleSubmit}
-      >
-        Submit
-      </Button>
-    </Box>
+        <Box mt={3}>
+          <Typography variant="h6" fontWeight="bold" mb={1}>
+            Team Members
+          </Typography>
+
+          <Button 
+            startIcon={<AddCircle />} 
+            variant="contained" 
+            color="primary"
+            onClick={handleAddTeamMember}
+          >
+            Add Team Member
+          </Button>
+
+          {teamMembers.map((member, index) => (
+            <Box key={index} mt={2} p={2} sx={{ border: "1px solid #ccc", borderRadius: 2 }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Full Name*"
+                    variant="outlined"
+                    value={member.name}
+                    onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Email*"
+                    variant="outlined"
+                    value={member.email}
+                    onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={3}>
+                  <TextField
+                    fullWidth
+                    label="Document Details*"
+                    variant="outlined"
+                    value={member.documentDetail}
+                    onChange={(e) => handleTeamMemberChange(index, "documentDetail", e.target.value)}
+                    required
+                  />
+                </Grid>
+                <Grid item xs={2}>
+                  <Button
+                    variant="contained"
+                    component="label"
+                    fullWidth
+                    startIcon={<UploadFile />}
+                  >
+                    Upload
+                    <input
+                      type="file"
+                      hidden
+                      onChange={(e) => handleTeamMemberChange(index, "document", e.target.files[0])}
+                    />
+                  </Button>
+                </Grid>
+                <Grid item xs={1}>
+                  <IconButton color="error" onClick={() => handleRemoveTeamMember(index)}>
+                    <RemoveCircle />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Box>
+          ))}
+        </Box>
+
+        <Button 
+          variant="contained" 
+          color="primary" 
+          size="large" 
+          sx={{ mt: 3 }} 
+          onClick={handleSubmit}
+        >
+          Submit
+        </Button>
+      </Box>
+    </>
   );
 };
 

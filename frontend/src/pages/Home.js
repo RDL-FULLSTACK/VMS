@@ -150,31 +150,7 @@ function Home() {
 
   return (
     <>
-      <StyledAppBar position="static">
-        <ToolbarStyled>
-          <Typography variant="h6">Visitor Management System</Typography>
-          <NavLinks>
-            <Button color="inherit" onClick={() => navigate("/")}>
-             <h3> Dashboard</h3>
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/Checkin")}>
-              Check-In
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/pre-scheduling")}>
-              Pre-Scheduling
-            </Button>
-            <Button color="inherit" onClick={() => navigate("/checkout")}>
-              Check-Out
-            </Button>
-            <Button color="inherit" onClick={() => setOpen(true)}>
-              Receptionist
-            </Button>
-            <Button color="inherit" onClick={() =>  navigate("/admin")}>
-              Admin
-            </Button>
-          </NavLinks>
-        </ToolbarStyled>
-      </StyledAppBar>
+  
 
       <StyledContainer maxWidth="lg">
         <DashboardTitle variant="h4">Dashboard</DashboardTitle>

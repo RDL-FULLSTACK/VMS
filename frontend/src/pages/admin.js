@@ -4,7 +4,6 @@ import {
   Toolbar,
   Typography,
   Container,
-  Grid,
   Paper,
   Table,
   TableBody,
@@ -16,44 +15,31 @@ import {
   Button,
   Dialog,
   DialogTitle,
-  DialogContent,
   DialogActions,
+  useMediaQuery,
+  Box,
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
-const StyledContainer = styled(Container)({
+const StyledContainer = styled(Container)(({ theme }) => ({
   backgroundColor: "#fbf6f6",
   color: "rgb(21, 20, 20)",
   minHeight: "100vh",
   padding: "16px",
-});
+}));
 
-const StyledAppBar = styled(AppBar)({
-  backgroundColor: "#673ab7 !important",
-  width: "100%",
-});
-
-const ToolbarStyled = styled(Toolbar)({
-  display: "flex",
-  justifyContent: "space-between",
-  width: "100%",
-});
-
-const NavLinks = styled("nav")({
-  display: "flex",
-  gap: "16px",
-});
-
-const TableContainerStyled = styled(TableContainer)({
+const TableContainerStyled = styled(TableContainer)(({ theme }) => ({
   padding: "16px",
   backgroundColor: "white",
   borderRadius: "8px",
   boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.1)",
   minHeight: "350px",
   marginTop: "24px",
-});
+  overflowX: "auto",
+}));
 
 const adminData = [
   {
@@ -79,6 +65,7 @@ function Admin() {
   const [open, setOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const navigate = useNavigate();
+  const isMobile = useMediaQuery("(max-width: 600px)");
 
   const handleDelete = () => {
     setData(data.filter((item) => item.id !== deleteId));
@@ -87,30 +74,20 @@ function Admin() {
 
   return (
     <>
-      <StyledAppBar position="static">
-        <ToolbarStyled>
-          <Typography variant="h6">Admin Panel</Typography>
-          <NavLinks>
-            <Button color="inherit" onClick={() => navigate("/")}>Dashboard</Button>
-            <Button color="inherit" onClick={() => navigate("/Checkin")}>Check-In</Button>
-            <Button color="inherit" onClick={() => navigate("/pre-scheduling")}>Pre-Scheduling</Button>
-            <Button color="inherit" onClick={() => navigate("/checkout")}>Check-Out</Button>
-            <Button color="inherit" onClick={() => navigate("/admin")}>Admin</Button>
-          </NavLinks>
-        </ToolbarStyled>
-      </StyledAppBar>
-
+      <Navbar />
       <StyledContainer maxWidth="lg">
-        <Typography variant="h4" style={{ marginTop: "24px" }}>Admin Management</Typography>
+        <Typography variant={isMobile ? "h5" : "h4"} style={{ marginTop: "24px", textAlign: "center" }}>
+          Admin Management
+        </Typography>
 
         <TableContainerStyled component={Paper}>
           <Table>
             <TableHead>
               <TableRow style={{ backgroundColor: "#eee" }}>
-                <TableCell>Image</TableCell>
+                {!isMobile && <TableCell>Image</TableCell>}
                 <TableCell>First Name</TableCell>
                 <TableCell>Visiting Company</TableCell>
-                <TableCell>Phone Number</TableCell>
+                {!isMobile && <TableCell>Phone Number</TableCell>}
                 <TableCell>Email</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
@@ -118,20 +95,24 @@ function Admin() {
             <TableBody>
               {data.map((admin) => (
                 <TableRow key={admin.id}>
-                  <TableCell>
-                    <img src={admin.img} alt="profile" width={50} height={50} style={{ borderRadius: "50%" }} />
-                  </TableCell>
+                  {!isMobile && (
+                    <TableCell>
+                      <img src={admin.img} alt="profile" width={50} height={50} style={{ borderRadius: "50%" }} />
+                    </TableCell>
+                  )}
                   <TableCell>{admin.firstName}</TableCell>
                   <TableCell>{admin.company}</TableCell>
-                  <TableCell>{admin.phone}</TableCell>
+                  {!isMobile && <TableCell>{admin.phone}</TableCell>}
                   <TableCell>{admin.email}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => navigate("/admin2")}>
-                      <Edit />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => { setDeleteId(admin.id); setOpen(true); }}>
-                      <Delete />
-                    </IconButton>
+                    <Box display="flex" flexWrap="wrap" gap={1}>
+                      <IconButton color="primary" onClick={() => navigate("/admin2")}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton color="error" onClick={() => { setDeleteId(admin.id); setOpen(true); }}>
+                        <Delete />
+                      </IconButton>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}

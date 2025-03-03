@@ -13,6 +13,7 @@ import VehicleDetails from "./pages/VehicleDetails";
 import Login from "./pages/Login";
 import VisitorList from "./pages/VisitorList";
 import Navbar from "./components/Navbar"
+import Admin2 from "./pages/admin2"
 
 function App() {
   return (
@@ -20,12 +21,13 @@ function App() {
    
    
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login/>}/>
+        <Route path="/dashboard" element={<Home />} />
+        <Route path="/" element={<Login/>}/>
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkin" element={<Checkin />} />
         <Route path="/editcheckin" element={<EditCheckin />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/admin2" element={<Admin2 />} />
         <Route path="/companylogin" element={[<CompanyLogin/>]} />
         <Route path="/visitorcard" element={[<VisitorCard/>]}/>
         <Route path="/vehicle-registration" element={[<VehicleRegistration/>]}/>

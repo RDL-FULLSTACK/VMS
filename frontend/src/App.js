@@ -11,6 +11,7 @@ import VisitorCard from "./pages/visitorcard";
 import VehicleRegistration from "./pages/VehicleRegistration";
 import VehicleDetails from "./pages/VehicleDetails";
 import Login from "./pages/Login";
+import VisitorList from "./pages/VisitorList";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/visitorcard" element={[<VisitorCard/>]}/>
         <Route path="/vehicle-registration" element={[<VehicleRegistration/>]}/>
         <Route path="/vehicle-details" element={[<VehicleDetails/>]}/>
+        <Route path="/visitorlist" element={[<VisitorList/>]}/>
       </Routes>
       </>
     

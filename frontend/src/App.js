@@ -7,6 +7,7 @@ import EditCheckin from "./pages/editcheckin";
 import { AdminPanelSettings } from "@mui/icons-material";
 import Admin from "./pages/admin"; // Import Admin1 properly
 import CompanyLogin from "./pages/companylogin";
+import VisitorCard from "./pages/visitorcard";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/editcheckin" element={<EditCheckin />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/companylogin" element={[<CompanyLogin/>]} />
+        <Route path="/visitorcard" element={[<VisitorCard/>]}/>
 
 
 

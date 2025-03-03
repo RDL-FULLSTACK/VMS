@@ -10,6 +10,7 @@ import CompanyLogin from "./pages/companylogin";
 import VisitorCard from "./pages/visitorcard";
 import VehicleRegistration from "./pages/VehicleRegistration";
 import VehicleDetails from "./pages/VehicleDetails";
+import Login from "./pages/Login";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
    
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login/>}/>
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/checkin" element={<Checkin />} />
         <Route path="/editcheckin" element={<EditCheckin />} />

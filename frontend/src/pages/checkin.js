@@ -4,25 +4,24 @@ import {
   TextField, Button, Grid, Typography, MenuItem, Box, IconButton 
 } from "@mui/material";
 import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Checkin = () => {
   const navigate = useNavigate();
   
   const [teamMembers, setTeamMembers] = useState([]);
 
-  // Function to add a new team member field set
   const handleAddTeamMember = () => {
     setTeamMembers([...teamMembers, { name: "", email: "", documentDetail: "", document: null }]);
   };
 
-  // Function to remove a team member field set
   const handleRemoveTeamMember = (index) => {
     const updatedMembers = [...teamMembers];
     updatedMembers.splice(index, 1);
     setTeamMembers(updatedMembers);
   };
 
-  // Function to handle changes in team member input fields
   const handleTeamMemberChange = (index, field, value) => {
     const updatedMembers = [...teamMembers];
     updatedMembers[index][field] = value;
@@ -31,6 +30,30 @@ const Checkin = () => {
 
   const handleEdit = (data) => {
     navigate("/editcheckin", { state: data });
+  };
+
+  const handleSubmit = () => {
+    const requiredFields = document.querySelectorAll("input, select");
+    let isValid = true;
+
+    requiredFields.forEach((field) => {
+      if (field.hasAttribute("required") && !field.value.trim()) {
+        isValid = false;
+      }
+    });
+
+    if (!isValid) {
+      toast.error("Please fill in all required fields before submitting!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    toast.success("Check-in submitted successfully!", {
+      position: "top-right",
+      autoClose: 3000,
+    });
   };
 
   return (
@@ -45,6 +68,8 @@ const Checkin = () => {
         backgroundColor: "#f8f9fa",
       }}
     >
+      <ToastContainer /> {/* Toast container for displaying messages */}
+      
       <Box display="flex" justifyContent="flex-end">
         <Button 
           variant="outlined" 
@@ -72,11 +97,11 @@ const Checkin = () => {
 
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
-          <TextField fullWidth label="Full Name*" variant="outlined" margin="dense" />
-          <TextField fullWidth label="Email*" variant="outlined" margin="dense" />
+          <TextField fullWidth label="Full Name*" variant="outlined" margin="dense" required />
+          <TextField fullWidth label="Email*" variant="outlined" margin="dense" required />
           <Grid container spacing={1} alignItems="center">
             <Grid item xs={8}>
-              <TextField fullWidth label="Phone Number*" variant="outlined" margin="dense" />
+              <TextField fullWidth label="Phone Number*" variant="outlined" margin="dense" required />
             </Grid>
             <Grid item xs={4}>
               <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
@@ -84,23 +109,23 @@ const Checkin = () => {
               </Button>
             </Grid>
           </Grid>
-          <TextField fullWidth select label="Designation*" variant="outlined" margin="dense">
+          <TextField fullWidth select label="Designation*" variant="outlined" margin="dense" required>
             <MenuItem value="Manager">Manager</MenuItem>
             <MenuItem value="Employee">Employee</MenuItem>
             <MenuItem value="Visitor">Visitor</MenuItem>
           </TextField>
-          <TextField fullWidth select label="Visit Type" variant="outlined" margin="dense">
+          <TextField fullWidth select label="Visit Type" variant="outlined" margin="dense" required>
             <MenuItem value="Business">Business</MenuItem>
             <MenuItem value="Personal">Personal</MenuItem>
           </TextField>
-          <TextField fullWidth label="Expected Duration of Visit" variant="outlined" margin="dense" />
-          <TextField fullWidth label="Document Details" variant="outlined" margin="dense" />
+          <TextField fullWidth label="Expected Duration of Visit" variant="outlined" margin="dense" required />
+          <TextField fullWidth label="Document Details" variant="outlined" margin="dense" required />
         </Grid>
 
         <Grid item xs={12} sm={6}>
           <Grid container spacing={1} alignItems="center">
             <Grid item xs={8}>
-              <TextField fullWidth label="Photo.jpg" variant="outlined" margin="dense" />
+              <TextField fullWidth label="Photo.jpg" variant="outlined" margin="dense" required />
             </Grid>
             <Grid item xs={4}>
               <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
@@ -108,11 +133,11 @@ const Checkin = () => {
               </Button>
             </Grid>
           </Grid>
-          <TextField fullWidth label="Reason for Visit*" variant="outlined" margin="dense" />
-          <TextField fullWidth label="Enter OTP" variant="outlined" margin="dense" />
-          <TextField fullWidth label="Visitor Company*" variant="outlined" margin="dense" />
-          <TextField fullWidth label="Person to Visit" variant="outlined" margin="dense" />
-          <TextField fullWidth select label="Submitted Document" variant="outlined" margin="dense">
+          <TextField fullWidth label="Reason for Visit*" variant="outlined" margin="dense" required />
+          <TextField fullWidth label="Enter OTP" variant="outlined" margin="dense" required />
+          <TextField fullWidth label="Visitor Company*" variant="outlined" margin="dense" required />
+          <TextField fullWidth label="Person to Visit" variant="outlined" margin="dense" required />
+          <TextField fullWidth select label="Submitted Document" variant="outlined" margin="dense" required>
             <MenuItem value="ID Proof">ID Proof</MenuItem>
             <MenuItem value="Passport">Passport</MenuItem>
           </TextField>
@@ -143,6 +168,7 @@ const Checkin = () => {
                   variant="outlined"
                   value={member.name}
                   onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
+                  required
                 />
               </Grid>
               <Grid item xs={3}>
@@ -152,6 +178,7 @@ const Checkin = () => {
                   variant="outlined"
                   value={member.email}
                   onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
+                  required
                 />
               </Grid>
               <Grid item xs={3}>
@@ -161,6 +188,7 @@ const Checkin = () => {
                   variant="outlined"
                   value={member.documentDetail}
                   onChange={(e) => handleTeamMemberChange(index, "documentDetail", e.target.value)}
+                  required
                 />
               </Grid>
               <Grid item xs={2}>
@@ -193,7 +221,7 @@ const Checkin = () => {
         color="primary" 
         size="large" 
         sx={{ mt: 3 }} 
-        onClick={() => alert("Check-in submitted!")}
+        onClick={handleSubmit}
       >
         Submit
       </Button>

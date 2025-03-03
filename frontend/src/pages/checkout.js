@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Container, TextField, MenuItem, Card, CardContent, Typography, Button, Avatar, Box } from "@mui/material";
 import { CheckCircle, AccountCircle } from "@mui/icons-material";
+import Navbar from "../components/Navbar"; // Import Navbar
 
 const visitors = [
   { name: "John Doe", checkInTime: "10:30 AM", company: "ABC Corp", avatar: "" },
@@ -86,7 +87,6 @@ const VisitorCheckout = () => {
   );
 };
 
-
 // ✅ Success Page
 const SuccessPage = () => {
   return (
@@ -99,13 +99,16 @@ const SuccessPage = () => {
   );
 };
 
-// ✅ Main App Component (No Router Here)
+// ✅ Main App Component with Navbar
 const Checkout = () => {
   return (
-    <Routes>
-      <Route path="/" element={<VisitorCheckout />} />
-      <Route path="/success" element={<SuccessPage />} />
-    </Routes>
+    <>
+      <Navbar /> {/* Navbar added here */}
+      <Routes>
+        <Route path="/" element={<VisitorCheckout />} />
+        <Route path="/success" element={<SuccessPage />} />
+      </Routes>
+    </>
   );
 };
 

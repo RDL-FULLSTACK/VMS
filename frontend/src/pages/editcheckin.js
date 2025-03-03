@@ -1,3 +1,4 @@
+//editcheckout.js
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -53,17 +54,32 @@ const EditCheckin = () => {
     toast.info("Team Member Removed!");
   };
 
-  const handleSaveChanges = () => {
-    toast.success("Changes saved successfully!");
-    navigate("/");
-  };
-
   const handleSendOtp = () => {
-    toast.success("OTP Sent!");
+    if (!formData.phoneNumber) {
+      toast.error("Please enter a phone number first!");
+      return;
+    }
+    toast.success("OTP sent to " + formData.phoneNumber);
   };
 
-  const handleUpload = () => {
-    toast.success("File Uploaded Successfully!");
+  const handleUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      toast.success(`File ${file.name} uploaded successfully!`);
+    }
+  };
+
+  const handleSaveChanges = () => {
+    const requiredFields = ["fullName", "email", "phoneNumber", "designation", "reasonForVisit", "visitorCompany"];
+    const missingFields = requiredFields.filter(field => !formData[field]);
+    
+    if (missingFields.length > 0) {
+      toast.error("Please fill in required fields: " + missingFields.join(", "));
+      return;
+    }
+    
+    toast.success("Changes saved successfully!");
+    setTimeout(() => navigate("/"), 1500); // Delay navigation to show toast
   };
 
   return (
@@ -78,7 +94,14 @@ const EditCheckin = () => {
         backgroundColor: "#f8f9fa",
       }}
     >
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+      />
 
       <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
         Edit Visitor Check-In
@@ -104,6 +127,25 @@ const EditCheckin = () => {
               </Button>
             </Grid>
           </Grid>
+          <TextField fullWidth select label="Designation*" variant="outlined" margin="dense"
+            value={formData.designation} onChange={(e) => handleChange("designation", e.target.value)}
+          >
+            <MenuItem value="Manager">Manager</MenuItem>
+            <MenuItem value="Employee">Employee</MenuItem>
+            <MenuItem value="Visitor">Visitor</MenuItem>
+          </TextField>
+          <TextField fullWidth select label="Visit Type" variant="outlined" margin="dense"
+            value={formData.visitType} onChange={(e) => handleChange("visitType", e.target.value)}
+          >
+            <MenuItem value="Business">Business</MenuItem>
+            <MenuItem value="Personal">Personal</MenuItem>
+          </TextField>
+          <TextField fullWidth label="Expected Duration of Visit" variant="outlined" margin="dense"
+            value={formData.expectedDuration} onChange={(e) => handleChange("expectedDuration", e.target.value)}
+          />
+          <TextField fullWidth label="Document Details" variant="outlined" margin="dense"
+            value={formData.documentDetails} onChange={(e) => handleChange("documentDetails", e.target.value)}
+          />
         </Grid>
 
         <Grid item xs={12} sm={6}>
@@ -112,11 +154,30 @@ const EditCheckin = () => {
               <TextField fullWidth label={formData.photo || "Photo.jpg"} variant="outlined" margin="dense" />
             </Grid>
             <Grid item xs={4}>
-              <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }} onClick={handleUpload}>
+              <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }} component="label">
                 Upload
+                <input type="file" hidden onChange={handleUpload} />
               </Button>
             </Grid>
           </Grid>
+          <TextField fullWidth label="Reason for Visit*" variant="outlined" margin="dense"
+            value={formData.reasonForVisit} onChange={(e) => handleChange("reasonForVisit", e.target.value)}
+          />
+          <TextField fullWidth label="Enter OTP" variant="outlined" margin="dense"
+            value={formData.otp} onChange={(e) => handleChange("otp", e.target.value)}
+          />
+          <TextField fullWidth label="Visitor Company*" variant="outlined" margin="dense"
+            value={formData.visitorCompany} onChange={(e) => handleChange("visitorCompany", e.target.value)}
+          />
+          <TextField fullWidth label="Person to Visit" variant="outlined" margin="dense"
+            value={formData.personToVisit} onChange={(e) => handleChange("personToVisit", e.target.value)}
+          />
+          <TextField fullWidth select label="Submitted Document" variant="outlined" margin="dense"
+            value={formData.submittedDocument} onChange={(e) => handleChange("submittedDocument", e.target.value)}
+          >
+            <MenuItem value="ID Proof">ID Proof</MenuItem>
+            <MenuItem value="Passport">Passport</MenuItem>
+          </TextField>
         </Grid>
       </Grid>
 
@@ -150,7 +211,7 @@ const EditCheckin = () => {
               <Grid item xs={2}>
                 <Button variant="contained" component="label" fullWidth startIcon={<UploadFile />} onClick={handleUpload}>
                   Upload
-                  <input type="file" hidden />
+                  <input type="file" hidden onChange={handleUpload} />
                 </Button>
               </Grid>
               <Grid item xs={1}>

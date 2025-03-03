@@ -30,7 +30,7 @@ const Navbar = () => {
             Pre-Scheduling
           </Typography>
           <Typography variant="body1" sx={{ cursor: "pointer", ":hover": { color: "#ccc" } }} onClick={() => navigate("/checkout")}>
-            Check-Out
+            <h3>Check-Out</h3>
           </Typography>
           <Typography
             variant="body1"

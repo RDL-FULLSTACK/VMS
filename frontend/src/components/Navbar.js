@@ -18,6 +18,7 @@ const Navbar = () => {
     { label: "Pre-Scheduling", path: "/pre-scheduling" },
     { label: "Check-Out", path: "/checkout" },
     { label: "Receptionist", path: "/receptionist" },
+    { label: "Admin", path: "/admin" },
   ];
 
   return (

@@ -6,6 +6,7 @@ import Checkin from "./pages/checkin"; // Adjust path if needed
 import EditCheckin from "./pages/editcheckin";
 import { AdminPanelSettings } from "@mui/icons-material";
 import Admin from "./pages/admin"; // Import Admin1 properly
+import CompanyLogin from "./pages/companylogin";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/checkin" element={<Checkin />} />
         <Route path="/editcheckin" element={<EditCheckin />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/companylogin" element={[<CompanyLogin/>]} />
 
 
 

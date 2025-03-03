@@ -32,6 +32,7 @@ import { styled } from "@mui/system"; // Import styled-components for CSS-in-JS
 import { useNavigate } from "react-router-dom";
 import Checkout from "./checkout" ;
 import Checkin from "./checkin";
+import Admin from "./admin"
 // Styled Components for CSS
 const StyledContainer = styled(Container)({
   backgroundColor: "#fbf6f6",
@@ -154,7 +155,7 @@ function Home() {
           <Typography variant="h6">Visitor Management System</Typography>
           <NavLinks>
             <Button color="inherit" onClick={() => navigate("/")}>
-              Dashboard
+             <h3> Dashboard</h3>
             </Button>
             <Button color="inherit" onClick={() => navigate("/Checkin")}>
               Check-In
@@ -167,6 +168,9 @@ function Home() {
             </Button>
             <Button color="inherit" onClick={() => setOpen(true)}>
               Receptionist
+            </Button>
+            <Button color="inherit" onClick={() =>  navigate("/admin")}>
+              Admin
             </Button>
           </NavLinks>
         </ToolbarStyled>

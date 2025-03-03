@@ -6,11 +6,12 @@ import {
 import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "../components/Navbar"; // Import Navbar component
+import Navbar from "../components/Navbar";
 
 const Checkin = () => {
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
+  const [photo, setPhoto] = useState(null); // Added state for photo
 
   const handleAddTeamMember = () => {
     setTeamMembers([...teamMembers, { name: "", email: "", documentDetail: "", document: null }]);
@@ -58,9 +59,7 @@ const Checkin = () => {
 
   return (
     <>
-      {/* Navbar added here */}
       <Navbar />
-
       <Box
         sx={{
           width: "80%",
@@ -72,7 +71,7 @@ const Checkin = () => {
           backgroundColor: "#f8f9fa",
         }}
       >
-        <ToastContainer /> {/* Toast container for displaying messages */}
+        <ToastContainer />
         
         <Box display="flex" justifyContent="flex-end">
           <Button 
@@ -129,12 +128,27 @@ const Checkin = () => {
           <Grid item xs={12} sm={6}>
             <Grid container spacing={1} alignItems="center">
               <Grid item xs={8}>
-                <TextField fullWidth label="Photo.jpg" variant="outlined" margin="dense" required />
+                <Button
+                  variant="contained"
+                  component="label"
+                  fullWidth
+                  startIcon={<UploadFile />}
+                >
+                  Choose Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={(e) => setPhoto(e.target.files[0])}
+                  />
+                </Button>
               </Grid>
               <Grid item xs={4}>
-                <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }}>
-                  Upload
-                </Button>
+                {photo && (
+                  <Typography variant="body2" noWrap>
+                    {photo.name}
+                  </Typography>
+                )}
               </Grid>
             </Grid>
             <TextField fullWidth label="Reason for Visit*" variant="outlined" margin="dense" required />
@@ -202,9 +216,10 @@ const Checkin = () => {
                     fullWidth
                     startIcon={<UploadFile />}
                   >
-                    Upload
+                    Choose File
                     <input
                       type="file"
+                      accept="image/*"
                       hidden
                       onChange={(e) => handleTeamMemberChange(index, "document", e.target.files[0])}
                     />
@@ -216,6 +231,11 @@ const Checkin = () => {
                   </IconButton>
                 </Grid>
               </Grid>
+              {member.document && (
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  Selected: {member.document.name}
+                </Typography>
+              )}
             </Box>
           ))}
         </Box>

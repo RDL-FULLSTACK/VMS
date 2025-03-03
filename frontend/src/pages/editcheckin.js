@@ -1,4 +1,3 @@
-//editcheckout.js
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -13,6 +12,9 @@ const EditCheckin = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Add state for the photo file name
+  const [photoFileName, setPhotoFileName] = useState(location.state?.photo || "No file chosen");
+
   const [formData, setFormData] = useState(location.state || {
     fullName: "",
     email: "",
@@ -21,7 +23,7 @@ const EditCheckin = () => {
     visitType: "",
     expectedDuration: "",
     documentDetails: "",
-    photo: "",
+    photo: "", // This will now store the file or file path
     reasonForVisit: "",
     otp: "",
     visitorCompany: "",
@@ -63,6 +65,18 @@ const EditCheckin = () => {
     toast.success("OTP sent to " + formData.phoneNumber);
   };
 
+  // Modified handleUpload to handle photo uploads specifically
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFileName(file.name); // Update the displayed file name
+      setFormData({ ...formData, photo: file }); // Store the file in formData
+      toast.success(`File ${file.name} uploaded successfully!`);
+    } else {
+      setPhotoFileName("No file chosen");
+    }
+  };
+
   const handleUpload = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -85,7 +99,7 @@ const EditCheckin = () => {
 
   return (
     <>
-      <Navbar /> {/* Added Navbar here */}
+      <Navbar />
       <Box
         sx={{
           width: "80%",
@@ -152,14 +166,24 @@ const EditCheckin = () => {
           </Grid>
 
           <Grid item xs={12} sm={6}>
+            {/* Modified Photo Upload Section */}
             <Grid container spacing={1} alignItems="center">
               <Grid item xs={8}>
-                <TextField fullWidth label={formData.photo || "Photo.jpg"} variant="outlined" margin="dense" />
+                <TextField
+                  fullWidth
+                  label="Photo"
+                  variant="outlined"
+                  margin="dense"
+                  value={photoFileName}
+                  InputProps={{
+                    readOnly: true, // Makes the field read-only since the file name is set by the upload
+                  }}
+                />
               </Grid>
               <Grid item xs={4}>
                 <Button fullWidth variant="contained" color="success" sx={{ height: "100%" }} component="label">
-                  Upload
-                  <input type="file" hidden onChange={handleUpload} />
+                  Choose File
+                  <input type="file" hidden accept="image/*" onChange={handlePhotoUpload} />
                 </Button>
               </Grid>
             </Grid>

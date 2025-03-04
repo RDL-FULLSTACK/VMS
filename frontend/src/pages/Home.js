@@ -63,8 +63,13 @@ const ContentBox = styled(Paper)({
   padding: "16px",
   borderRadius: "8px",
   boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.1)",
-  minHeight: "350px",
+  minHeight: "400px",
   width: "100%",
+});
+
+const StyledTableCell = styled(TableCell)({
+  fontWeight: "bold",
+  textAlign: "center",
 });
 
 const data = [
@@ -77,9 +82,27 @@ const data = [
 ];
 
 const visitors = [
-  { name: "abc", email: "abc@gmail.com", visitorId: "123", host: "Mr. A", checkin: "11:30 am" },
-  { name: "xyz", email: "xyz@gmail.com", visitorId: "456", host: "Ms. B", checkin: "12:00 pm" },
-  { name: "pqr", email: "pqr@gmail.com", visitorId: "789", host: "Mr. C", checkin: "1:15 pm" },
+  {
+    visitorId: "123",
+    name: "abc",
+    email: "abc@gmail.com",
+    host: "Mr. A",
+    checkin: "11:30 am",
+  },
+  {
+    visitorId: "456",
+    name: "xyz",
+    email: "xyz@gmail.com",
+    host: "Ms. B",
+    checkin: "12:00 pm",
+  },
+  {
+    visitorId: "789",
+    name: "pqr",
+    email: "pqr@gmail.com",
+    host: "Mr. C",
+    checkin: "1:15 pm",
+  },
 ];
 
 function Home() {
@@ -87,83 +110,82 @@ function Home() {
 
   return (
     <>
-   <Navbar />
-    <StyledContainer maxWidth="lg">
-      <Typography variant="h4" gutterBottom>
-        Dashboard
-      </Typography>
+      <Navbar />
+      <StyledContainer maxWidth="lg">
+        <Typography variant="h4" gutterBottom>
+          Dashboard
+        </Typography>
 
-      <Grid container spacing={2} justifyContent="center">
-        {["Total Visitors", "Checked-In", "Checked-Out", "Pending", "Vehicles"].map((title, index) => (
-          <Grid item xs={6} sm={4} md={2} key={index}>
-            <StatsCard style={{ backgroundColor: "#673ab7" }}>
-              <Typography variant="body1">{title}</Typography>
-              <Typography variant="h5">{[120, 50, 70, 15, 45][index]}</Typography>
-            </StatsCard>
-          </Grid>
-        ))}
-      </Grid>
+        <Grid container spacing={2} justifyContent="center">
+          {["Total Visitors", "Checked-In", "Checked-Out", "Pending", "Vehicles"].map((title, index) => (
+            <Grid item xs={6} sm={4} md={2} key={index}>
+              <StatsCard style={{ backgroundColor: "#673ab7" }}>
+                <Typography variant="body1">{title}</Typography>
+                <Typography variant="h5">{[120, 50, 70, 15, 45][index]}</Typography>
+              </StatsCard>
+            </Grid>
+          ))}
+        </Grid>
 
-      <TableChartContainer container spacing={2}>
-        <Grid item xs={12} md={6}>
-          <ContentBox>
-            <Typography variant="h6" gutterBottom>
-              Visitors
-            </Typography>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Visitor ID</TableCell>
-                    <TableCell>Host</TableCell>
-                    <TableCell>Check-In</TableCell>
-                    <TableCell>Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {visitors.map((visitor, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{visitor.name}</TableCell>
-                      <TableCell>{visitor.email}</TableCell>
-                      <TableCell>{visitor.visitorId}</TableCell>
-                      <TableCell>{visitor.host}</TableCell>
-                      <TableCell>{visitor.checkin}</TableCell>
-                      <TableCell>
-                        <IconButton color="success">
-                          <CheckCircle />
-                        </IconButton>
-                      </TableCell>
+        <TableChartContainer container spacing={2}>
+          <Grid item xs={12} md={6}>
+            <ContentBox>
+              <Typography variant="h6" gutterBottom>
+                Visitors
+              </Typography>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <StyledTableCell>Visitor ID</StyledTableCell>
+                      <StyledTableCell>Name</StyledTableCell>
+                      <StyledTableCell>Email</StyledTableCell>
+                      <StyledTableCell>Host</StyledTableCell>
+                      <StyledTableCell>Check-In</StyledTableCell>
+                      <StyledTableCell>Check-Out</StyledTableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </ContentBox>
-        </Grid>
+                  </TableHead>
+                  <TableBody>
+                    {visitors.map((visitor, index) => (
+                      <TableRow key={index}>
+                        <TableCell align="center">{visitor.visitorId}</TableCell>
+                        <TableCell align="center">{visitor.name}</TableCell>
+                        <TableCell align="center">{visitor.email}</TableCell>
+                        <TableCell align="center">{visitor.host}</TableCell>
+                        <TableCell align="center">{visitor.checkin}</TableCell>
+                        <TableCell align="center">
+                          <IconButton color="success">
+                            <CheckCircle />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </ContentBox>
+          </Grid>
 
-        <Grid item xs={12} md={6}>
-          <ContentBox>
-            <Typography variant="h6" gutterBottom>
-              Activity Chart
-            </Typography>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={data}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="visits" stroke="#8884d8" />
-              </LineChart>
-            </ResponsiveContainer>
-          </ContentBox>
-        </Grid>
-      </TableChartContainer>
-    </StyledContainer>
+          <Grid item xs={12} md={6}>
+            <ContentBox>
+              <Typography variant="h6" gutterBottom>
+                Activity Chart
+              </Typography>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="visits" stroke="#8884d8" />
+                </LineChart>
+              </ResponsiveContainer>
+            </ContentBox>
+          </Grid>
+        </TableChartContainer>
+      </StyledContainer>
     </>
   );
-  
 }
 
 export default Home;

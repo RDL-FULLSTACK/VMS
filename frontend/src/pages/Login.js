@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { TextField, Button, Paper, Typography, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { login, forgotPassword, verifyOtp, resetPassword } from "../api/authAPI";
+import { login, forgotPassword, verifyOtp, resetPassword } from "../api/authAPI"; // Adjust path as needed
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Navbar from "../components/Navbar"; // Import Navbar
 
 const LoginForgotPassword = () => {
   const navigate = useNavigate();
@@ -11,7 +12,6 @@ const LoginForgotPassword = () => {
   const [otpValid, setOtpValid] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -25,36 +25,54 @@ const LoginForgotPassword = () => {
       toast.error("Enter username and password");
       return;
     }
-  
+
     setLoginLoading(true);
     try {
-      await login(username, password);
+      const response = await login(username, password);
       toast.success("Login Successful!");
-  
+
+      // Store token and user data in localStorage
+      localStorage.setItem("token", response.token);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      // Redirect based on role
       setTimeout(() => {
-        navigate("/");
-      }, 1000); 
-  
+        switch (response.user.role) {
+          case "admin":
+            navigate("/dashboard");
+            break;
+          case "receptionist":
+            navigate("/checkin");
+            break;
+          case "security":
+            navigate("/vehicle-details");
+            break;
+          case "host":
+            navigate("/visitorlist");
+            break;
+          default:
+            navigate("/");
+        }
+      }, 1000);
     } catch (error) {
-      toast.error("Login Failed");
+      toast.error(error.message || "Login Failed");
     }
     setLoginLoading(false);
   };
-  
 
   // Handle forgot password
   const handleForgotPasswordSubmit = async () => {
-    if (!email) {
-      toast.error("Enter your email");
+    if (!username) {
+      toast.error("Enter your username");
       return;
     }
 
     setOtpLoading(true);
     try {
-      await forgotPassword(email);
-      toast.success("OTP sent to your email.");
+      await forgotPassword(username);
+      toast.success("OTP sent to your registered contact (placeholder).");
     } catch (error) {
-      toast.error("Failed to send OTP");
+      toast.error(error.message || "Failed to send OTP");
     }
     setOtpLoading(false);
   };
@@ -68,11 +86,11 @@ const LoginForgotPassword = () => {
 
     setVerifyOtpLoading(true);
     try {
-      await verifyOtp(email, otp);
+      await verifyOtp(username, otp);
       setOtpValid(true);
       toast.success("OTP verified! Enter a new password.");
     } catch (error) {
-      toast.error("OTP verification failed");
+      toast.error(error.message || "OTP verification failed");
     }
     setVerifyOtpLoading(false);
   };
@@ -91,40 +109,28 @@ const LoginForgotPassword = () => {
 
     setLoginLoading(true);
     try {
-      await resetPassword(email, newPassword, confirmPassword);
+      await resetPassword(username, newPassword, confirmPassword);
       toast.success("Password reset successful! You can now log in.");
       setIsForgotPassword(false);
       setOtpValid(false);
+      setUsername("");
+      setPassword("");
+      setOtp("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (error) {
-      toast.error("Password reset failed");
+      toast.error(error.message || "Password reset failed");
     }
     setLoginLoading(false);
   };
 
   return (
-   
-    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      {/* Add Navbar */}
+      <Navbar />
+
       {/* Toast Container */}
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-
-      {/* Sticky Header */}
-   
-      <Box
-        sx={{
-          backgroundColor: "#5a3d91",
-          color: "white",
-          fontSize: "18px",
-          fontWeight: "bold",
-          p: 2,
-          textAlign: "left",
-          position: "sticky",
-          top: 0,
-          zIndex: 1000,
-        }}
-      >
-        
-        Visitor Management System
-      </Box>
 
       <Box
         sx={{
@@ -207,11 +213,11 @@ const LoginForgotPassword = () => {
               </Typography>
               <TextField
                 fullWidth
-                label="Company Email"
+                label="Username"
                 variant="outlined"
                 margin="dense"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
               <Button
                 fullWidth
@@ -264,14 +270,14 @@ const LoginForgotPassword = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                   <Button
-                fullWidth
-                variant="contained"
-                sx={{ backgroundColor: "#4caf50", color: "white", mt: 2, ":hover": { backgroundColor: "#388e3c" } }}
-                onClick={handleNewPasswordSubmit}
-                disabled={loginLoading}
-              >
-                {loginLoading ? "Processing..." : "SUBMIT"}
-              </Button>
+                    fullWidth
+                    variant="contained"
+                    sx={{ backgroundColor: "#4caf50", color: "white", mt: 2, ":hover": { backgroundColor: "#388e3c" } }}
+                    onClick={handleNewPasswordSubmit}
+                    disabled={loginLoading}
+                  >
+                    {loginLoading ? "Processing..." : "SUBMIT"}
+                  </Button>
                 </>
               )}
             </>

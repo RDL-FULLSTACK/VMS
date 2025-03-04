@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Container,
   Grid,
@@ -14,9 +12,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
 } from "@mui/material";
 import {
   LineChart,
@@ -36,11 +31,6 @@ const StyledContainer = styled(Container)({
   padding: "16px",
 });
 
-const StyledAppBar = styled(AppBar)({
-  backgroundColor: "#673ab7 !important",
-  width: "100%",
-});
-
 const StatsCard = styled(Paper)({
   padding: "16px",
   textAlign: "center",
@@ -53,23 +43,34 @@ const StatsCard = styled(Paper)({
   minHeight: "120px",
 });
 
-const TableChartContainer = styled(Grid)({
-  marginTop: "24px",
+const TableChartContainer = styled("div")({
   display: "flex",
-  justifyContent: "center",
+  justifyContent: "space-between",
+  gap: "16px",
+  marginTop: "24px",
+  width: "100%",
 });
 
 const ContentBox = styled(Paper)({
   padding: "16px",
   borderRadius: "8px",
   boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.1)",
+  width: "50%",
   minHeight: "400px",
-  width: "100%",
+});
+
+const ScrollableTableContainer = styled(TableContainer)({
+  maxHeight: "300px", // Fixed height for scroll
+  overflowY: "auto",
 });
 
 const StyledTableCell = styled(TableCell)({
   fontWeight: "bold",
   textAlign: "center",
+  backgroundColor: "#f5f5f5", // Background for sticky effect
+  position: "sticky",
+  top: 0,
+  zIndex: 1,
 });
 
 const data = [
@@ -82,32 +83,19 @@ const data = [
 ];
 
 const visitors = [
-  {
-    visitorId: "123",
-    name: "abc",
-    email: "abc@gmail.com",
-    host: "Mr. A",
-    checkin: "11:30 am",
-  },
-  {
-    visitorId: "456",
-    name: "xyz",
-    email: "xyz@gmail.com",
-    host: "Ms. B",
-    checkin: "12:00 pm",
-  },
-  {
-    visitorId: "789",
-    name: "pqr",
-    email: "pqr@gmail.com",
-    host: "Mr. C",
-    checkin: "1:15 pm",
-  },
+  { visitorId: "101", name: "John", email: "john@gmail.com", host: "Mr. A", checkin: "10:00 am" },
+  { visitorId: "102", name: "Emma", email: "emma@gmail.com", host: "Ms. B", checkin: "10:30 am" },
+  { visitorId: "103", name: "Liam", email: "liam@gmail.com", host: "Mr. C", checkin: "11:00 am" },
+  { visitorId: "104", name: "Olivia", email: "olivia@gmail.com", host: "Ms. D", checkin: "11:30 am" },
+  { visitorId: "105", name: "Noah", email: "noah@gmail.com", host: "Mr. E", checkin: "12:00 pm" },
+  { visitorId: "106", name: "Sophia", email: "sophia@gmail.com", host: "Ms. F", checkin: "12:30 pm" },
+  { visitorId: "107", name: "Mason", email: "mason@gmail.com", host: "Mr. G", checkin: "1:00 pm" },
+  { visitorId: "108", name: "Ava", email: "ava@gmail.com", host: "Ms. H", checkin: "1:30 pm" },
+  { visitorId: "109", name: "Elijah", email: "elijah@gmail.com", host: "Mr. I", checkin: "2:00 pm" },
+  { visitorId: "110", name: "Mia", email: "mia@gmail.com", host: "Ms. J", checkin: "2:30 pm" },
 ];
 
 function Home() {
-  const [open, setOpen] = useState(false);
-
   return (
     <>
       <Navbar />
@@ -127,61 +115,58 @@ function Home() {
           ))}
         </Grid>
 
-        <TableChartContainer container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <ContentBox>
-              <Typography variant="h6" gutterBottom>
-                Visitors
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell>Visitor ID</StyledTableCell>
-                      <StyledTableCell>Name</StyledTableCell>
-                      <StyledTableCell>Email</StyledTableCell>
-                      <StyledTableCell>Host</StyledTableCell>
-                      <StyledTableCell>Check-In</StyledTableCell>
-                      <StyledTableCell>Check-Out</StyledTableCell>
+        {/* Visitors Table & Activity Chart Side by Side */}
+        <TableChartContainer>
+          <ContentBox>
+            <Typography variant="h6" gutterBottom>
+              Visitors
+            </Typography>
+            <ScrollableTableContainer component={Paper}>
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Visitor ID</StyledTableCell>
+                    <StyledTableCell>Name</StyledTableCell>
+                    <StyledTableCell>Email</StyledTableCell>
+                    <StyledTableCell>Host</StyledTableCell>
+                    <StyledTableCell>Check-In</StyledTableCell>
+                    <StyledTableCell>Check-Out</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {visitors.map((visitor, index) => (
+                    <TableRow key={index}>
+                      <TableCell align="center">{visitor.visitorId}</TableCell>
+                      <TableCell align="center">{visitor.name}</TableCell>
+                      <TableCell align="center">{visitor.email}</TableCell>
+                      <TableCell align="center">{visitor.host}</TableCell>
+                      <TableCell align="center">{visitor.checkin}</TableCell>
+                      <TableCell align="center">
+                        <IconButton color="success">
+                          <CheckCircle />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {visitors.map((visitor, index) => (
-                      <TableRow key={index}>
-                        <TableCell align="center">{visitor.visitorId}</TableCell>
-                        <TableCell align="center">{visitor.name}</TableCell>
-                        <TableCell align="center">{visitor.email}</TableCell>
-                        <TableCell align="center">{visitor.host}</TableCell>
-                        <TableCell align="center">{visitor.checkin}</TableCell>
-                        <TableCell align="center">
-                          <IconButton color="success">
-                            <CheckCircle />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </ContentBox>
-          </Grid>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollableTableContainer>
+          </ContentBox>
 
-          <Grid item xs={12} md={6}>
-            <ContentBox>
-              <Typography variant="h6" gutterBottom>
-                Activity Chart
-              </Typography>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="visits" stroke="#8884d8" />
-                </LineChart>
-              </ResponsiveContainer>
-            </ContentBox>
-          </Grid>
+          <ContentBox>
+            <Typography variant="h6" gutterBottom>
+              Activity Chart
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="visits" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </ContentBox>
         </TableChartContainer>
       </StyledContainer>
     </>

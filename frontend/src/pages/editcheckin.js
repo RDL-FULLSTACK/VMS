@@ -28,6 +28,10 @@ const EditCheckin = () => {
     visitorCompany: location.state?.visitorCompany || "",
     personToVisit: location.state?.personToVisit || "",
     submittedDocument: location.state?.submittedDocument || "",
+    hasAssets: location.state?.hasAssets || "",
+    assetQuantity: location.state?.assetQuantity || "",
+    assetType: location.state?.assetType || "",
+    assetSerialNumber: location.state?.assetSerialNumber || "",
     teamMembers: location.state?.teamMembers || [] // Ensure this is always an array
   });
   const [errors, setErrors] = useState({});
@@ -93,6 +97,18 @@ const EditCheckin = () => {
       case "submittedDocument":
         if (!value) error = "Document type is required";
         break;
+      case "hasAssets":
+        if (!value) error = "Please select an option";
+        break;
+      case "assetQuantity":
+        if (formData.hasAssets === "yes" && !value) error = "Quantity is required";
+        break;
+      case "assetType":
+        if (formData.hasAssets === "yes" && !value) error = "Asset type is required";
+        break;
+      case "assetSerialNumber":
+        if (formData.hasAssets === "yes" && !value) error = "Serial number is required";
+        break;
       default:
         break;
     }
@@ -111,10 +127,16 @@ const EditCheckin = () => {
       case "expectedDurationHours":
       case "expectedDurationMinutes":
       case "otp":
+      case "assetQuantity":
         sanitizedValue = value.replace(/[^0-9]/g, "");
         break;
       case "email":
         sanitizedValue = value.replace(/[^A-Za-z0-9@._-]/g, "");
+        break;
+      case "hasAssets":
+      case "assetType":
+      case "assetSerialNumber":
+        sanitizedValue = value;
         break;
       default:
         break;
@@ -133,10 +155,25 @@ const EditCheckin = () => {
     const updatedMembers = [...formData.teamMembers];
     let sanitizedValue = value;
 
-    if (field === "name") {
-      sanitizedValue = value.replace(/[^A-Za-z\s]/g, "");
-    } else if (field === "email") {
-      sanitizedValue = value.replace(/[^A-Za-z0-9@._-]/g, "");
+    switch (field) {
+      case "name":
+        sanitizedValue = value.replace(/[^A-Za-z\s]/g, "");
+        break;
+      case "email":
+        sanitizedValue = value.replace(/[^A-Za-z0-9@._-]/g, "");
+        break;
+      case "assetQuantity":
+        sanitizedValue = value.replace(/[^0-9]/g, "");
+        break;
+      case "hasAssets":
+      case "assetType":
+      case "assetSerialNumber":
+      case "documentDetail":
+        sanitizedValue = value;
+        break;
+      case "document":
+        sanitizedValue = value;
+        break;
     }
 
     updatedMembers[index][field] = sanitizedValue;
@@ -146,7 +183,16 @@ const EditCheckin = () => {
   const handleAddTeamMember = () => {
     setFormData({
       ...formData,
-      teamMembers: [...formData.teamMembers, { name: "", email: "", documentDetail: "", document: null }]
+      teamMembers: [...formData.teamMembers, { 
+        name: "", 
+        email: "", 
+        documentDetail: "", 
+        document: null,
+        hasAssets: "",
+        assetQuantity: "",
+        assetType: "",
+        assetSerialNumber: ""
+      }]
     });
     toast.success("Team Member Added!");
   };
@@ -540,8 +586,136 @@ const EditCheckin = () => {
                   </IconButton>
                 </Grid>
               </Grid>
+
+              {/* Team Member Assets Section */}
+              <Box mt={2}>
+                <TextField
+                  fullWidth
+                  select
+                  label="Bringing Assets?*"
+                  variant="outlined"
+                  margin="dense"
+                  required
+                  value={member.hasAssets}
+                  onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
+                  sx={{ maxWidth: 200 }}
+                >
+                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </TextField>
+
+                {member.hasAssets === "yes" && (
+                  <Box mt={2}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          fullWidth
+                          label="Quantity*"
+                          variant="outlined"
+                          margin="dense"
+                          required
+                          value={member.assetQuantity}
+                          onChange={(e) => handleTeamMemberChange(index, "assetQuantity", e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          fullWidth
+                          label="Asset Type*"
+                          variant="outlined"
+                          margin="dense"
+                          required
+                          value={member.assetType}
+                          onChange={(e) => handleTeamMemberChange(index, "assetType", e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField
+                          fullWidth
+                          label="Serial Number*"
+                          variant="outlined"
+                          margin="dense"
+                          required
+                          value={member.assetSerialNumber}
+                          onChange={(e) => handleTeamMemberChange(index, "assetSerialNumber", e.target.value)}
+                        />
+                      </Grid>
+                    </Grid>
+                  </Box>
+                )}
+              </Box>
             </Box>
           ))}
+        </Box>
+
+        {/* Main Visitor Assets Section */}
+        <Box mt={3}>
+          <Typography variant="h6" fontWeight="bold" mb={1}>
+            Assets
+          </Typography>
+          
+          <TextField
+            fullWidth
+            select
+            label="Bringing Assets?*"
+            variant="outlined"
+            margin="dense"
+            required
+            value={formData.hasAssets}
+            onChange={(e) => handleChange("hasAssets", e.target.value)}
+            error={!!errors.hasAssets}
+            helperText={errors.hasAssets}
+            sx={{ maxWidth: 200 }}
+          >
+            <MenuItem value="yes">Yes</MenuItem>
+            <MenuItem value="no">No</MenuItem>
+          </TextField>
+
+          {formData.hasAssets === "yes" && (
+            <Box mt={2}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Quantity*"
+                    variant="outlined"
+                    margin="dense"
+                    required
+                    value={formData.assetQuantity}
+                    onChange={(e) => handleChange("assetQuantity", e.target.value)}
+                    error={!!errors.assetQuantity}
+                    helperText={errors.assetQuantity}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Asset Type*"
+                    variant="outlined"
+                    margin="dense"
+                    required
+                    value={formData.assetType}
+                    onChange={(e) => handleChange("assetType", e.target.value)}
+                    error={!!errors.assetType}
+                    helperText={errors.assetType}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    fullWidth
+                    label="Serial Number*"
+                    variant="outlined"
+                    margin="dense"
+                    required
+                    value={formData.assetSerialNumber}
+                    onChange={(e) => handleChange("assetSerialNumber", e.target.value)}
+                    error={!!errors.assetSerialNumber}
+                    helperText={errors.assetSerialNumber}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          )}
         </Box>
 
         <Button 

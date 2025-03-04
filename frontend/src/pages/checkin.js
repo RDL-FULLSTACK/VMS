@@ -204,7 +204,7 @@ const Checkin = () => {
       >
         <ToastContainer />
         
-        <Box display="flex" justifyContent="flex-end">
+        {/* <Box display="flex" justifyContent="flex-end">
           <Button 
             variant="outlined" 
             color="primary" 
@@ -212,7 +212,7 @@ const Checkin = () => {
           >
             Edit
           </Button>
-        </Box>
+        </Box> */}
 
         <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
           Visitor Check-In

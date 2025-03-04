@@ -172,6 +172,9 @@ const VisitorList = () => {
           <MenuItem component={Link} to="/editcheckin" onClick={handleMenuClose}>
             Edit Check-In
           </MenuItem>
+          <MenuItem component={Link} to="/visitorcard" onClick={handleMenuClose}>
+          Visitor Card
+          </MenuItem>
           <MenuItem onClick={handleDelete}>Delete</MenuItem>
         </Menu>
       </Box>

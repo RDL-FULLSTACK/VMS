@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import {
-  AppBar,
   Typography,
   Container,
   Grid,
@@ -60,9 +59,18 @@ const ContentBox = styled(Paper)({
   minHeight: "400px",
 });
 
+const ScrollableTableContainer = styled(TableContainer)({
+  maxHeight: "300px", // Fixed height for scroll
+  overflowY: "auto",
+});
+
 const StyledTableCell = styled(TableCell)({
   fontWeight: "bold",
   textAlign: "center",
+  backgroundColor: "#f5f5f5", // Background for sticky effect
+  position: "sticky",
+  top: 0,
+  zIndex: 1,
 });
 
 const data = [
@@ -75,27 +83,16 @@ const data = [
 ];
 
 const visitors = [
-  {
-    visitorId: "123",
-    name: "abc",
-    email: "abc@gmail.com",
-    host: "Mr. A",
-    checkin: "11:30 am",
-  },
-  {
-    visitorId: "456",
-    name: "xyz",
-    email: "xyz@gmail.com",
-    host: "Ms. B",
-    checkin: "12:00 pm",
-  },
-  {
-    visitorId: "789",
-    name: "pqr",
-    email: "pqr@gmail.com",
-    host: "Mr. C",
-    checkin: "1:15 pm",
-  },
+  { visitorId: "101", name: "John", email: "john@gmail.com", host: "Mr. A", checkin: "10:00 am" },
+  { visitorId: "102", name: "Emma", email: "emma@gmail.com", host: "Ms. B", checkin: "10:30 am" },
+  { visitorId: "103", name: "Liam", email: "liam@gmail.com", host: "Mr. C", checkin: "11:00 am" },
+  { visitorId: "104", name: "Olivia", email: "olivia@gmail.com", host: "Ms. D", checkin: "11:30 am" },
+  { visitorId: "105", name: "Noah", email: "noah@gmail.com", host: "Mr. E", checkin: "12:00 pm" },
+  { visitorId: "106", name: "Sophia", email: "sophia@gmail.com", host: "Ms. F", checkin: "12:30 pm" },
+  { visitorId: "107", name: "Mason", email: "mason@gmail.com", host: "Mr. G", checkin: "1:00 pm" },
+  { visitorId: "108", name: "Ava", email: "ava@gmail.com", host: "Ms. H", checkin: "1:30 pm" },
+  { visitorId: "109", name: "Elijah", email: "elijah@gmail.com", host: "Mr. I", checkin: "2:00 pm" },
+  { visitorId: "110", name: "Mia", email: "mia@gmail.com", host: "Ms. J", checkin: "2:30 pm" },
 ];
 
 function Home() {
@@ -124,8 +121,8 @@ function Home() {
             <Typography variant="h6" gutterBottom>
               Visitors
             </Typography>
-            <TableContainer component={Paper}>
-              <Table>
+            <ScrollableTableContainer component={Paper}>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
                     <StyledTableCell>Visitor ID</StyledTableCell>
@@ -153,7 +150,7 @@ function Home() {
                   ))}
                 </TableBody>
               </Table>
-            </TableContainer>
+            </ScrollableTableContainer>
           </ContentBox>
 
           <ContentBox>

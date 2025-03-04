@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Navbar from "../components/Navbar";
 import {
   AppBar,
-  Toolbar,
   Typography,
   Container,
   Grid,
@@ -14,9 +13,6 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
 } from "@mui/material";
 import {
   LineChart,
@@ -36,11 +32,6 @@ const StyledContainer = styled(Container)({
   padding: "16px",
 });
 
-const StyledAppBar = styled(AppBar)({
-  backgroundColor: "#673ab7 !important",
-  width: "100%",
-});
-
 const StatsCard = styled(Paper)({
   padding: "16px",
   textAlign: "center",
@@ -53,18 +44,20 @@ const StatsCard = styled(Paper)({
   minHeight: "120px",
 });
 
-const TableChartContainer = styled(Grid)({
-  marginTop: "24px",
+const TableChartContainer = styled("div")({
   display: "flex",
-  justifyContent: "center",
+  justifyContent: "space-between",
+  gap: "16px",
+  marginTop: "24px",
+  width: "100%",
 });
 
 const ContentBox = styled(Paper)({
   padding: "16px",
   borderRadius: "8px",
   boxShadow: "2px 2px 10px rgba(0, 0, 0, 0.1)",
+  width: "50%",
   minHeight: "400px",
-  width: "100%",
 });
 
 const StyledTableCell = styled(TableCell)({
@@ -106,8 +99,6 @@ const visitors = [
 ];
 
 function Home() {
-  const [open, setOpen] = useState(false);
-
   return (
     <>
       <Navbar />
@@ -127,61 +118,58 @@ function Home() {
           ))}
         </Grid>
 
-        <TableChartContainer container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <ContentBox>
-              <Typography variant="h6" gutterBottom>
-                Visitors
-              </Typography>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <StyledTableCell>Visitor ID</StyledTableCell>
-                      <StyledTableCell>Name</StyledTableCell>
-                      <StyledTableCell>Email</StyledTableCell>
-                      <StyledTableCell>Host</StyledTableCell>
-                      <StyledTableCell>Check-In</StyledTableCell>
-                      <StyledTableCell>Check-Out</StyledTableCell>
+        {/* Visitors Table & Activity Chart Side by Side */}
+        <TableChartContainer>
+          <ContentBox>
+            <Typography variant="h6" gutterBottom>
+              Visitors
+            </Typography>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <StyledTableCell>Visitor ID</StyledTableCell>
+                    <StyledTableCell>Name</StyledTableCell>
+                    <StyledTableCell>Email</StyledTableCell>
+                    <StyledTableCell>Host</StyledTableCell>
+                    <StyledTableCell>Check-In</StyledTableCell>
+                    <StyledTableCell>Check-Out</StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {visitors.map((visitor, index) => (
+                    <TableRow key={index}>
+                      <TableCell align="center">{visitor.visitorId}</TableCell>
+                      <TableCell align="center">{visitor.name}</TableCell>
+                      <TableCell align="center">{visitor.email}</TableCell>
+                      <TableCell align="center">{visitor.host}</TableCell>
+                      <TableCell align="center">{visitor.checkin}</TableCell>
+                      <TableCell align="center">
+                        <IconButton color="success">
+                          <CheckCircle />
+                        </IconButton>
+                      </TableCell>
                     </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {visitors.map((visitor, index) => (
-                      <TableRow key={index}>
-                        <TableCell align="center">{visitor.visitorId}</TableCell>
-                        <TableCell align="center">{visitor.name}</TableCell>
-                        <TableCell align="center">{visitor.email}</TableCell>
-                        <TableCell align="center">{visitor.host}</TableCell>
-                        <TableCell align="center">{visitor.checkin}</TableCell>
-                        <TableCell align="center">
-                          <IconButton color="success">
-                            <CheckCircle />
-                          </IconButton>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </ContentBox>
-          </Grid>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </ContentBox>
 
-          <Grid item xs={12} md={6}>
-            <ContentBox>
-              <Typography variant="h6" gutterBottom>
-                Activity Chart
-              </Typography>
-              <ResponsiveContainer width="100%" height={350}>
-                <LineChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="visits" stroke="#8884d8" />
-                </LineChart>
-              </ResponsiveContainer>
-            </ContentBox>
-          </Grid>
+          <ContentBox>
+            <Typography variant="h6" gutterBottom>
+              Activity Chart
+            </Typography>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Line type="monotone" dataKey="visits" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          </ContentBox>
         </TableChartContainer>
       </StyledContainer>
     </>

@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useRef } from "react";
 import { Typography, IconButton, Card, CardContent, Avatar, Grid, Container, Box } from "@mui/material";
 import { QRCodeCanvas } from "qrcode.react";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
+import html2canvas from "html2canvas";
 
 const VisitorCard = () => {
+  const visitorRef = useRef(null);
+
   const visitor = {
     name: "Sunita Rao",
     id: "ae44e28",
@@ -20,9 +23,44 @@ const VisitorCard = () => {
     company: "BMW",
   };
 
+  const downloadEPass = () => {
+    html2canvas(visitorRef.current).then((canvas) => {
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = "Visitor_E_Pass.png";
+      link.click();
+    });
+  };
+
+  const printEPass = () => {
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Visitor E-Pass</title>
+        </head>
+        <body>
+          <div>
+            <h2>VISITOR E-PASS</h2>
+            <img src="${visitor.photo}" alt="Visitor Photo" width="100" height="100" />
+            <h3>${visitor.name}</h3>
+            <p><strong>ID:</strong> ${visitor.id}</p>
+            <p><strong>Time:</strong> ${visitor.time}</p>
+            <p><strong>Host:</strong> ${visitor.host}</p>
+            <p><strong>Purpose:</strong> ${visitor.purpose}</p>
+            <p><strong>Company:</strong> ${visitor.company}</p>
+            <p><strong>Scan QR Code to Verify</strong></p>
+          </div>
+          <script>window.print();</script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <Container maxWidth="md" sx={{ textAlign: "center", mt: 12 }}>
-      <Card sx={{ maxWidth: 800, margin: "auto", p: 3, textAlign: "center", backgroundColor: "#EDE7F6", color: "#000", borderRadius: 2, boxShadow: 3 }}>
+      <Card ref={visitorRef} sx={{ maxWidth: 800, margin: "auto", p: 3, textAlign: "center", backgroundColor: "#EDE7F6", color: "#000", borderRadius: 2, boxShadow: 3 }}>
         <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold", backgroundColor: "#D1C4E9", padding: "10px", borderRadius: 1 }}>
           VISITOR E-PASS
         </Typography>
@@ -61,12 +99,12 @@ const VisitorCard = () => {
         </Typography>
         <Grid container spacing={2} justifyContent="flex-end" sx={{ mt: 2, pr: 2 }}>
           <Grid item>
-            <IconButton sx={{ color: "#5F3B91" }}>
+            <IconButton sx={{ color: "#5F3B91" }} onClick={downloadEPass}>
               <CloudDownloadIcon fontSize="large" />
             </IconButton>
           </Grid>
           <Grid item>
-            <IconButton sx={{ color: "#5F3B91" }}>
+            <IconButton sx={{ color: "#5F3B91" }} onClick={printEPass}>
               <PrintOutlinedIcon fontSize="large" />
             </IconButton>
           </Grid>

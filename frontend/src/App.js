@@ -16,6 +16,7 @@ import Navbar from "./components/Navbar"
 import Admin2 from "./pages/admin2"
 import HostDashboard from "./pages/HostDashboard";
 import UpdateStatus from "./pages/UpdateStatus"; // Import UpdateStatus
+import PreScheduling from "./pages/PreScheduling";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         <Route path="/visitorlist" element={[<VisitorList/>]}/>
         <Route path="/HostDashboard" element={<HostDashboard />} />
         <Route path="/update-status/:id" element={<UpdateStatus />} /> 
+        <Route path="/presheduling" element={<PreScheduling />} /> 
       </Routes>
       </>
     

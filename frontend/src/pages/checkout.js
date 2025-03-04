@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import { Container, TextField, MenuItem, Card, CardContent, Typography, Button, Avatar, Box } from "@mui/material";
 import { CheckCircle, AccountCircle } from "@mui/icons-material";
-import Navbar from "../components/Navbar"; // Import Navbar
+import Navbar from "../components/Navbar";
 
 const visitors = [
   { name: "John Doe", checkInTime: "10:30 AM", company: "ABC Corp", avatar: "" },
   { name: "Jane Smith", checkInTime: "11:00 AM", company: "XYZ Ltd", avatar: "" },
 ];
 
-// ✅ Visitor Check-Out Page
 const VisitorCheckout = () => {
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const navigate = useNavigate();
@@ -21,7 +20,7 @@ const VisitorCheckout = () => {
 
   const handleCheckout = () => {
     if (selectedVisitor) {
-      navigate("/success"); // Navigate to success page
+      navigate("/success");
     }
   };
 
@@ -87,23 +86,28 @@ const VisitorCheckout = () => {
   );
 };
 
-// ✅ Success Page
 const SuccessPage = () => {
   return (
-    <Container maxWidth="md" sx={{ mt: 10, display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column" }}>
-      <CheckCircle sx={{ fontSize: 120, color: "green" }} />
-      <Typography variant="h4" sx={{ mt: 2, fontWeight: "bold" }}>
-        Successful
-      </Typography>
+    <>
+    <Navbar />
+    <Container maxWidth="md" sx={{ mt: 5, display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", textAlign: "center" }}>
+      
+        <CheckCircle sx={{ fontSize: 300, color: "#4CAF50" }} />
+        <Typography variant="h4" sx={{ mt: 2, fontWeight: "bold", color: "#333" }}>
+          Successful!
+        </Typography>
+        
+    
     </Container>
+    </>
   );
 };
+export{SuccessPage};
 
-// ✅ Main App Component with Navbar
 const Checkout = () => {
   return (
     <>
-      <Navbar /> {/* Navbar added here */}
+      <Navbar />
       <Routes>
         <Route path="/" element={<VisitorCheckout />} />
         <Route path="/success" element={<SuccessPage />} />

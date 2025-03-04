@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { TextField, Button, Container, Paper, Typography, MenuItem } from "@mui/material";
+import { TextField, Button, Container, Paper, MenuItem } from "@mui/material";
 import VehicleTicket from "../components/VehicleTicket";
+import Navbar from '../components/Navbar';
 
 const VehicleRegistration = () => {
   const [vehicleNumber, setVehicleNumber] = useState("");
@@ -34,74 +35,74 @@ const VehicleRegistration = () => {
   };
 
   return (
-    <Container
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-      }}
-    >
-      {!ticketData && (
-        <Typography variant="h5" align="center" gutterBottom>
-          Generate E-Ticket
-        </Typography>
-      )}
+    <>
+      {/* Navbar Component */}
+      <Navbar />
 
-      {!ticketData ? (
-        <Paper
-          elevation={3}
-          style={{
-            padding: 20,
-            maxWidth: 400,
-            textAlign: "center",
-            borderRadius: 10,
-          }}
-        >
-          {/* Vehicle Number Input */}
-          <TextField
-            fullWidth
-            label="Vehicle Number"
-            variant="outlined"
-            value={vehicleNumber}
-            onChange={handleVehicleNumberChange}
-            onKeyPress={handleKeyPress} // Prevent invalid inputs
-            margin="normal"
-            inputProps={{ maxLength: 10 }} // Limit input length
-          />
-
-          {/* Purpose Dropdown */}
-          <TextField
-            fullWidth
-            select
-            label="Purpose of Visit"
-            variant="outlined"
-            value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
-            margin="normal"
+      <Container
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "calc(100vh - 64px)", // Adjust for Navbar height (assuming default AppBar height)
+          paddingTop: "64px", // Ensure content isn't hidden behind Navbar
+        }}
+      >
+        {!ticketData ? (
+          <Paper
+            elevation={3}
+            style={{
+              padding: 20,
+              maxWidth: 400,
+              textAlign: "center",
+              borderRadius: 10,
+            }}
           >
-            {purposes.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </TextField>
+            {/* Vehicle Number Input */}
+            <TextField
+              fullWidth
+              label="Vehicle Number"
+              variant="outlined"
+              value={vehicleNumber}
+              onChange={handleVehicleNumberChange}
+              onKeyPress={handleKeyPress} // Prevent invalid inputs
+              margin="normal"
+              inputProps={{ maxLength: 10 }} // Limit input length
+            />
 
-          <Button
-            fullWidth
-            variant="contained"
-            color="primary"
-            onClick={handleGenerateTicket}
-            style={{ marginTop: 15 }}
-          >
-            Generate E-Ticket
-          </Button>
-        </Paper>
-      ) : (
-        <VehicleTicket data={ticketData} />
-      )}
-    </Container>
+            {/* Purpose Dropdown */}
+            <TextField
+              fullWidth
+              select
+              label="Purpose of Visit"
+              variant="outlined"
+              value={purpose}
+              onChange={(e) => setPurpose(e.target.value)}
+              margin="normal"
+            >
+              {purposes.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <Button
+              fullWidth
+              variant="contained"
+              color="primary"
+              onClick={handleGenerateTicket}
+              style={{ marginTop: 15 }}
+            >
+              Generate E-Ticket
+            </Button>
+          </Paper>
+        ) : (
+          <VehicleTicket data={ticketData} />
+        )}
+      </Container>
+    </>
   );
 };
 

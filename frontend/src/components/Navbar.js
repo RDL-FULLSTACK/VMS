@@ -14,7 +14,7 @@ const Navbar = () => {
   };
 
   const navItems = [
-    { label: "Dashboard", path: "/" },
+    { label: "Dashboard", path: "/dashboard" },
     { label: "Check-In", path: "/checkin" },
     { label: "Pre-Scheduling", path: "/pre-scheduling" },
     { label: "Check-Out", path: "/checkout" },

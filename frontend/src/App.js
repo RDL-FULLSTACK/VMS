@@ -14,6 +14,8 @@ import Login from "./pages/Login";
 import VisitorList from "./pages/VisitorList";
 import Navbar from "./components/Navbar"
 import Admin2 from "./pages/admin2"
+import HostDashboard from "./pages/HostDashboard";
+import UpdateStatus from "./pages/UpdateStatus"; // Import UpdateStatus
 
 function App() {
   return (
@@ -33,6 +35,8 @@ function App() {
         <Route path="/vehicle-registration" element={[<VehicleRegistration/>]}/>
         <Route path="/vehicle-details" element={[<VehicleDetails/>]}/>
         <Route path="/visitorlist" element={[<VisitorList/>]}/>
+        <Route path="/HostDashboard" element={<HostDashboard />} />
+        <Route path="/update-status/:id" element={<UpdateStatus />} /> 
       </Routes>
       </>
     

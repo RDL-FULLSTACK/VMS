@@ -1,3 +1,5 @@
+//Navbar.js
+
 import React, { useState } from "react";
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
@@ -74,20 +76,25 @@ const Navbar = () => {
                 items={[
                   { label: "Vehicle Details", path: "/vehicle-details" },
                   { label: "Vehicle Registration", path: "/vehicle-registration" },
+                  { label: "Vehicle Checkout", path: "/vehicle-checkout/" },
+                  
+
                 ]}
                 active={isDropdownActive([
                   { path: "/vehicle-details" },
                   { path: "/vehicle-registration" },
+                  { path: "/vehicle-checkout/" },
+
                 ])}
               />
 
               {/* Admin Access Dropdown */}
               <DropdownMenu
-                label="Admin Access"
+                label="Host "
                 items={[
-                  { label: "Admin Dashboard", path: "/admin" },
-                  { label: "Admin Panel", path: "/admin2" },
-                  { label: "Company Login", path: "/companylogin" },
+                  { label: "Host Dashboard", path: "/HostDashboard" },
+                  // { label: "Host Panel", path: "/admin2" },
+                  // { label: "Admin Login", path: "/companylogin" },
                 ]}
                 active={isDropdownActive([
                   { path: "/admin" },
@@ -109,6 +116,22 @@ const Navbar = () => {
               >
                 Logout
               </Button>
+
+              <Button
+                color="inherit"
+                component={Link}
+                to="/companylogin"
+                sx={{
+                  fontWeight: location.pathname === "/" ? "bold" : "normal",
+                  opacity: location.pathname === "/" ? 1 : 0.7,
+                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.1)", opacity: 1 },
+                }}
+              >
+                Admin
+              </Button>
+
+
+
             </Box>
           )}
         </Toolbar>

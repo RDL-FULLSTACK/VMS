@@ -42,7 +42,7 @@ function App() {
         <Route path="/update-status/:id" element={<UpdateStatus />} /> 
         <Route path="/presheduling" element={<PreScheduling />} /> 
         <Route path="/success" element={<SuccessPage />} />
-        <Route path="/vehicle-checkout/*" element={<VehicleCheckoutRoutes />} />
+        <Route path="/vehicle-checkout/" element={<VehicleCheckoutRoutes />} />
       </Routes>
       </>
     

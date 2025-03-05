@@ -83,17 +83,18 @@ const data = [
 ];
 
 const visitors = [
-  { visitorId: "101", name: "John", email: "john@gmail.com", host: "Mr. A", checkin: "10:00 am" },
-  { visitorId: "102", name: "Emma", email: "emma@gmail.com", host: "Ms. B", checkin: "10:30 am" },
-  { visitorId: "103", name: "Liam", email: "liam@gmail.com", host: "Mr. C", checkin: "11:00 am" },
-  { visitorId: "104", name: "Olivia", email: "olivia@gmail.com", host: "Ms. D", checkin: "11:30 am" },
-  { visitorId: "105", name: "Noah", email: "noah@gmail.com", host: "Mr. E", checkin: "12:00 pm" },
-  { visitorId: "106", name: "Sophia", email: "sophia@gmail.com", host: "Ms. F", checkin: "12:30 pm" },
-  { visitorId: "107", name: "Mason", email: "mason@gmail.com", host: "Mr. G", checkin: "1:00 pm" },
-  { visitorId: "108", name: "Ava", email: "ava@gmail.com", host: "Ms. H", checkin: "1:30 pm" },
-  { visitorId: "109", name: "Elijah", email: "elijah@gmail.com", host: "Mr. I", checkin: "2:00 pm" },
-  { visitorId: "110", name: "Mia", email: "mia@gmail.com", host: "Ms. J", checkin: "2:30 pm" },
+  { visitorId: "101", name: "John", email: "john@gmail.com", host: "Mr. A", checkin: "10:00 am", checkout: "12:00 pm" },
+  { visitorId: "102", name: "Emma", email: "emma@gmail.com", host: "Ms. B", checkin: "10:30 am", checkout: "12:30 pm" },
+  { visitorId: "103", name: "Liam", email: "liam@gmail.com", host: "Mr. C", checkin: "11:00 am", checkout: "1:00 pm" },
+  { visitorId: "104", name: "Olivia", email: "olivia@gmail.com", host: "Ms. D", checkin: "11:30 am", checkout: "1:30 pm" },
+  { visitorId: "105", name: "Noah", email: "noah@gmail.com", host: "Mr. E", checkin: "12:00 pm", checkout: "2:00 pm" },
+  { visitorId: "106", name: "Sophia", email: "sophia@gmail.com", host: "Ms. F", checkin: "12:30 pm", checkout: "2:30 pm" },
+  { visitorId: "107", name: "Mason", email: "mason@gmail.com", host: "Mr. G", checkin: "1:00 pm", checkout: "3:00 pm" },
+  { visitorId: "108", name: "Ava", email: "ava@gmail.com", host: "Ms. H", checkin: "1:30 pm", checkout: "3:30 pm" },
+  { visitorId: "109", name: "Elijah", email: "elijah@gmail.com", host: "Mr. I", checkin: "2:00 pm", checkout: "4:00 pm" },
+  { visitorId: "110", name: "Mia", email: "mia@gmail.com", host: "Ms. J", checkin: "2:30 pm", checkout: "4:30 pm" },
 ];
+
 
 function Home() {
   return (
@@ -141,11 +142,9 @@ function Home() {
                       <TableCell align="center">{visitor.email}</TableCell>
                       <TableCell align="center">{visitor.host}</TableCell>
                       <TableCell align="center">{visitor.checkin}</TableCell>
-                      <TableCell align="center">
-                        <IconButton color="success">
-                          <CheckCircle />
-                        </IconButton>
-                      </TableCell>
+                      <TableCell align="center">{visitor.checkout}</TableCell>
+
+                   
                     </TableRow>
                   ))}
                 </TableBody>

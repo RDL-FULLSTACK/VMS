@@ -145,10 +145,10 @@ const VehicleTicket = ({ data, onClose }) => {
         <hr style={{ width: "100%", margin: "10px 0" }} />
 
         <Typography variant="body1" style={{ marginBottom: 5 }}>
-          <strong>Date & Time:</strong> {checkInTime}
-        </Typography>
-        <Typography variant="body1" style={{ marginBottom: 5 }}>
           <strong>Vehicle Number:</strong> {vehicleNumber}
+        </Typography> 
+        <Typography variant="body1" style={{ marginBottom: 5 }}>
+          <strong>Date & Time:</strong> {checkInTime}
         </Typography>
         <Typography variant="body1" style={{ marginBottom: 15 }}>
           <strong>Purpose:</strong> {purpose}

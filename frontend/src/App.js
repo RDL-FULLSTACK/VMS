@@ -18,6 +18,7 @@ import HostDashboard from "./pages/HostDashboard";
 import UpdateStatus from "./pages/UpdateStatus"; // Import UpdateStatus
 import PreScheduling from "./pages/PreScheduling";
 import { SuccessPage } from "./pages/checkout";
+import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
         <Route path="/update-status/:id" element={<UpdateStatus />} /> 
         <Route path="/presheduling" element={<PreScheduling />} /> 
         <Route path="/success" element={<SuccessPage />} />
+        <Route path="/vehicle-checkout/*" element={<VehicleCheckoutRoutes />} />
       </Routes>
       </>
     

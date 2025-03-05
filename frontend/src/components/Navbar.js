@@ -56,11 +56,15 @@ const Navbar = () => {
                   { label: "Check-In", path: "/checkin" },
                   { label: "Visitor List", path: "/visitorlist" },
                   { label: "Check-Out", path: "/checkout" },
+                  { label: "Pre-Scheduling", path: "/presheduling" },
+
                 ]}
                 active={isDropdownActive([
                   { path: "/checkin" },
                   { path: "/visitorlist" },
                   { path: "/checkout" },
+                  { path: "/presheduling" },
+
                 ])}
               />
 

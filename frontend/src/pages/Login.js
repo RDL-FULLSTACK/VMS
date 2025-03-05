@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { login, forgotPassword, verifyOtp, resetPassword } from "../api/authAPI"; // Adjust path as needed
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "../components/Navbar"; // Import Navbar
 
 const LoginForgotPassword = () => {
   const navigate = useNavigate();
@@ -126,9 +125,6 @@ const LoginForgotPassword = () => {
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {/* Add Navbar */}
-      <Navbar />
-
       {/* Toast Container */}
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
 

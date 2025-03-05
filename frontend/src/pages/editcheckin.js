@@ -204,16 +204,29 @@ const EditCheckin = () => {
     toast.info("Team Member Removed!");
   };
 
-  const handleSendOtp = () => {
-    if (!formData.phoneNumber) {
-      toast.error("Please enter a phone number first!");
+  const handleSendEmailOtp = async () => {
+    if (!formData.email) {
+      toast.error("Please enter an email first!");
       return;
     }
-    if (errors.phoneNumber) {
-      toast.error("Please enter a valid 10-digit phone number!");
+    if (errors.email) {
+      toast.error("Please enter a valid email address!");
       return;
     }
-    toast.success("OTP sent to " + formData.phoneNumber);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/visitors/send-email-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email })
+      });
+
+      if (!response.ok) throw new Error('Failed to send OTP');
+      
+      toast.success(`OTP sent to ${formData.email}!`);
+    } catch (error) {
+      toast.error(error.message || "Error sending OTP");
+    }
   };
 
   const handlePhotoUpload = (e) => {
@@ -259,7 +272,7 @@ const EditCheckin = () => {
     }
 
     toast.success("Changes saved successfully!");
-    setTimeout(() => navigate("/"), 1500);
+    setTimeout(() => navigate("/visitorcard"), 1500); // Redirect to /visitorcard
   };
 
   return (
@@ -302,30 +315,18 @@ const EditCheckin = () => {
               error={!!errors.fullName}
               helperText={errors.fullName}
             />
-            <TextField 
-              fullWidth 
-              label="Email*" 
-              variant="outlined" 
-              margin="dense" 
-              required
-              value={formData.email} 
-              onChange={(e) => handleChange("email", e.target.value)}
-              error={!!errors.email}
-              helperText={errors.email || "example@domain.com"}
-            />
             <Grid container spacing={1} alignItems="center">
               <Grid item xs={8}>
                 <TextField 
                   fullWidth 
-                  label="Phone Number*" 
+                  label="Email*" 
                   variant="outlined" 
                   margin="dense" 
                   required
-                  value={formData.phoneNumber} 
-                  onChange={(e) => handleChange("phoneNumber", e.target.value)}
-                  error={!!errors.phoneNumber}
-                  helperText={errors.phoneNumber || "10 digits required"}
-                  inputProps={{ maxLength: 10 }}
+                  value={formData.email} 
+                  onChange={(e) => handleChange("email", e.target.value)}
+                  error={!!errors.email}
+                  helperText={errors.email || "example@domain.com"}
                 />
               </Grid>
               <Grid item xs={4}>
@@ -334,12 +335,24 @@ const EditCheckin = () => {
                   variant="contained" 
                   color="success" 
                   sx={{ height: "100%" }} 
-                  onClick={handleSendOtp}
+                  onClick={handleSendEmailOtp}
                 >
                   Send OTP
                 </Button>
               </Grid>
             </Grid>
+            <TextField 
+              fullWidth 
+              label="Phone Number*" 
+              variant="outlined" 
+              margin="dense" 
+              required
+              value={formData.phoneNumber} 
+              onChange={(e) => handleChange("phoneNumber", e.target.value)}
+              error={!!errors.phoneNumber}
+              helperText={errors.phoneNumber || "10 digits required"}
+              inputProps={{ maxLength: 10 }}
+            />
             <TextField 
               fullWidth 
               select 

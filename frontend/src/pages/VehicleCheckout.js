@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import {
   Container,
@@ -27,10 +27,11 @@ const vehicles = [
 
 const VehicleCheckout = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isListOpen, setIsListOpen] = useState(false); // Replace isSearchFocused with isListOpen
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [checkOutTime, setCheckOutTime] = useState("");
   const navigate = useNavigate();
+  const wrapperRef = useRef(null); // Ref for the entire component to detect outside clicks
 
   // Filter vehicles based on search query
   const filteredVehicles = vehicles.filter((vehicle) =>
@@ -39,8 +40,8 @@ const VehicleCheckout = () => {
 
   const handleVehicleSelect = (vehicle) => {
     setSelectedVehicle(vehicle);
-    setSearchQuery(""); // Clear search bar after selection
-    setIsSearchFocused(false); // Hide the list after selection
+    setSearchQuery(vehicle.vehicleNumber); // Autofill the search bar with the selected vehicle number
+    setIsListOpen(false); // Close the list immediately
 
     // Set the check-out time to the current time
     const now = new Date();
@@ -58,9 +59,23 @@ const VehicleCheckout = () => {
     }
   };
 
+  // Handle clicks outside to close the list
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setIsListOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <Container maxWidth="md" sx={{ mt: { xs: 3, sm: 5 }, display: "flex", justifyContent: "center" }}>
-      <Card sx={{ width: "100%", maxWidth: 500, p: { xs: 2, sm: 3 }, boxShadow: 3 }}>
+      <Card ref={wrapperRef} sx={{ width: "100%", maxWidth: 500, p: { xs: 2, sm: 3 }, boxShadow: 3 }}>
         <CardContent>
           <Typography variant="h5" textAlign="center" gutterBottom>
             Vehicle Check-Out
@@ -70,18 +85,17 @@ const VehicleCheckout = () => {
             label="Search Vehicle Number"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setIsSearchFocused(true)}
-            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} // Delay to allow click
+            onFocus={() => setIsListOpen(true)} // Open list on focus
             sx={{ mb: 2 }}
           />
-          {(isSearchFocused || searchQuery) && (
+          {isListOpen && (
             <List sx={{ maxHeight: 200, overflow: "auto", border: "1px solid #ddd", borderRadius: 4 }}>
               {filteredVehicles.length > 0 ? (
                 filteredVehicles.map((vehicle) => (
                   <ListItem
                     key={vehicle.id}
                     button
-                    onClick={() => handleVehicleSelect(vehicle)}
+                    onMouseDown={() => handleVehicleSelect(vehicle)} // Use mousedown instead of click
                   >
                     <ListItemText primary={vehicle.vehicleNumber} />
                   </ListItem>

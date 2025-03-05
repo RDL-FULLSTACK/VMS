@@ -99,7 +99,14 @@ const VehicleRegistration = () => {
             </Button>
           </Paper>
         ) : (
-          <VehicleTicket data={ticketData} />
+          <VehicleTicket
+          data={ticketData}
+          onClose={() => {
+            setTicketData(null);
+            setVehicleNumber(""); // Clear vehicle number field
+            setPurpose(""); // Clear purpose field
+          }}
+        />
         )}
       </Container>
     </>

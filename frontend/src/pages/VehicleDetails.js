@@ -16,9 +16,11 @@ import {
   Select,
   FormControl,
   InputLabel,
+  TablePagination,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Navbar from '../components/Navbar';
+import Navbar from "../components/Navbar";
+import VehicleTicket from "../components/VehicleTicket";
 
 const VehicleDetails = () => {
   const vehicles = [
@@ -49,6 +51,9 @@ const VehicleDetails = () => {
   const [filterDate, setFilterDate] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const [ticketData, setTicketData] = useState(null);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 5; // Display 5 records per page
 
   const handleMenuOpen = (event, vehicle) => {
     setAnchorEl(event.currentTarget);
@@ -60,6 +65,21 @@ const VehicleDetails = () => {
     setSelectedVehicle(null);
   };
 
+  const handleViewTicket = () => {
+    if (selectedVehicle) {
+      setTicketData({
+        vehicleNumber: selectedVehicle.vehicleNumber,
+        purpose: selectedVehicle.purpose,
+        checkInTime: selectedVehicle.checkIn,
+      });
+    }
+    handleMenuClose();
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
   const filteredVehicles = vehicles.filter((vehicle) => {
     const matchesSearch = vehicle.vehicleNumber.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesPurpose = filterPurpose ? vehicle.purpose === filterPurpose : true;
@@ -67,98 +87,96 @@ const VehicleDetails = () => {
     return matchesSearch && matchesPurpose && matchesDate;
   });
 
+  // Apply pagination
+  const paginatedVehicles = filteredVehicles.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+
   return (
     <>
-      {/* Navbar Component */}
       <Navbar />
 
-      <Box sx={{ p: 3, bgcolor: "#F3F4F6", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-        <Paper sx={{ p: 3, width: "100%", maxWidth: "1000px", borderRadius: 2, boxShadow: 4, bgcolor: "white" }}>
-          
-          {/* Search & Filters */}
-          <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap", justifyContent: "space-between" }}>
-            <TextField
-              size="small"
-              sx={{ flex: 1, minWidth: "200px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}
-              label="Search Vehicle"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <FormControl size="small" sx={{ flex: 1, minWidth: "200px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}>
-              <InputLabel>Filter by Purpose</InputLabel>
-              <Select value={filterPurpose} onChange={(e) => setFilterPurpose(e.target.value)}>
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="Delivery">Delivery</MenuItem>
-                <MenuItem value="Client Visit">Client Visit</MenuItem>
-                <MenuItem value="Service">Service</MenuItem>
-              </Select>
-            </FormControl>
-            <TextField
-              size="small"
-              sx={{ flex: 1, minWidth: "200px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}
-              label="Filter by Date"
-              type="date"
-              InputLabelProps={{ shrink: true }}
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-            />
-          </Box>
+      {ticketData ? (
+        <VehicleTicket data={ticketData} onClose={() => setTicketData(null)} />
+      ) : (
+        <Box sx={{ p: 3, bgcolor: "#F3F4F6", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <Paper sx={{ p: 3, width: "100%", maxWidth: "1000px", borderRadius: 2, boxShadow: 4, bgcolor: "white" }}>
+            <Box sx={{ display: "flex", gap: 2, mb: 2, flexWrap: "wrap", justifyContent: "space-between" }}>
+              <TextField
+                size="small"
+                sx={{ flex: 1, minWidth: "200px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}
+                label="Search Vehicle"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <FormControl size="small" sx={{ flex: 1, minWidth: "200px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}>
+                <InputLabel>Filter by Purpose</InputLabel>
+                <Select value={filterPurpose} onChange={(e) => setFilterPurpose(e.target.value)}>
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="Delivery">Delivery</MenuItem>
+                  <MenuItem value="Client Visit">Client Visit</MenuItem>
+                  <MenuItem value="Service">Service</MenuItem>
+                </Select>
+              </FormControl>
+              <TextField
+                size="small"
+                sx={{ flex: 1, minWidth: "200px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}
+                label="Filter by Date"
+                type="date"
+                InputLabelProps={{ shrink: true }}
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+              />
+            </Box>
 
-          {/* Vehicle List */}
-          <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, bgcolor: "white" }}>
-            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold", fontSize: "1rem", mb: 1 }}>
-              Vehicle List
-            </Typography>
+            <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3, bgcolor: "white" }}>
+              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold", fontSize: "1rem", mb: 1 }}>
+                Vehicle List
+              </Typography>
 
-            <TableContainer sx={{ borderRadius: 2, overflow: "hidden" }}>
-              <Table size="small">
-                <TableHead sx={{ bgcolor: "#EEEEEE" }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>ID</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Vehicle Number</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Purpose</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Check-In Date</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Check-In Time</TableCell>
-                    <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem", textAlign: "center" }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredVehicles.length > 0 ? (
-                    filteredVehicles.map((vehicle, index) => {
-                      const [date, time] = vehicle.checkIn.split(" ");
-                      return (
+              <TableContainer sx={{ borderRadius: 2, overflow: "hidden" }}>
+                <Table size="small">
+                  <TableHead sx={{ bgcolor: "#EEEEEE" }}>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>ID</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Vehicle Number</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Purpose</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem" }}>Check-In Time</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: "0.8rem", textAlign: "center" }}>Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {paginatedVehicles.length > 0 ? (
+                      paginatedVehicles.map((vehicle, index) => (
                         <TableRow key={vehicle.id} sx={{ height: "35px", bgcolor: index % 2 === 0 ? "#FAFAFA" : "white" }}>
                           <TableCell sx={{ fontSize: "0.8rem", padding: "6px" }}>{vehicle.id}</TableCell>
                           <TableCell sx={{ fontSize: "0.8rem", padding: "6px", fontWeight: "bold" }}>{vehicle.vehicleNumber}</TableCell>
                           <TableCell sx={{ fontSize: "0.8rem", padding: "6px" }}>{vehicle.purpose}</TableCell>
-                          <TableCell sx={{ fontSize: "0.8rem", padding: "6px" }}>{date}</TableCell>
-                          <TableCell sx={{ fontSize: "0.8rem", padding: "6px" }}>{time}</TableCell>
+                          <TableCell sx={{ fontSize: "0.8rem", padding: "6px" }}>{vehicle.checkIn}</TableCell>
                           <TableCell sx={{ textAlign: "center", padding: "6px" }}>
                             <IconButton size="small" onClick={(event) => handleMenuOpen(event, vehicle)}>
                               <MoreVertIcon fontSize="small" />
                             </IconButton>
                           </TableCell>
                         </TableRow>
-                      );
-                    })
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ fontSize: "0.8rem", py: 1 }}>
-                        No vehicles found
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">No vehicles found</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
 
-          {/* Action Menu */}
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-            <MenuItem onClick={handleMenuClose}>Delete</MenuItem>
-          </Menu>
-        </Paper>
-      </Box>
+              <TablePagination component="div" count={filteredVehicles.length} page={page} rowsPerPage={rowsPerPage} onPageChange={handleChangePage} rowsPerPageOptions={[]} />
+            </Paper>
+          </Paper>
+        </Box>
+      )}
+
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+        <MenuItem onClick={handleViewTicket}>Ticket</MenuItem>
+        <MenuItem onClick={handleMenuClose}>Delete</MenuItem>
+      </Menu>
     </>
   );
 };

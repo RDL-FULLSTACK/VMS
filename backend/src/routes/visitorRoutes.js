@@ -1,17 +1,17 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const visitorController = require("../controllers/visitorController"); // Corrected reference
+const { 
+    getAllVisitors, 
+    addVisitor, 
+    checkOutVisitor, 
+    deleteVisitor, 
+    updateVisitor 
+} = require('../controllers/visitorController');
 
-// 🔹 Get All Visitors
-router.get("/", visitorController.getAllVisitors);
-
-// 🔹 Add a Visitor
-router.post("/", visitorController.addVisitor);
-
-// 🔹 Check Out a Visitor
-router.put("/checkout/:id", visitorController.checkOutVisitor);
-
-// 🔹 Delete a Visitor
-router.delete("/:id", visitorController.deleteVisitor);
+router.get('/', getAllVisitors);
+router.post('/checkin', addVisitor); // Matches frontend endpoint
+router.put('/checkout/:id', checkOutVisitor);
+router.delete('/:id', deleteVisitor);
+router.put('/:id', updateVisitor);
 
 module.exports = router;

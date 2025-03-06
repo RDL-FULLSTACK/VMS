@@ -27,9 +27,7 @@ const Checkin = () => {
     personToVisit: "",
     submittedDocument: "",
     hasAssets: "",
-    assetQuantity: "",
-    assetType: "",
-    assetSerialNumber: ""
+    assets: [] // Array to store multiple assets
   });
   const [errors, setErrors] = useState({});
 
@@ -68,18 +66,21 @@ const Checkin = () => {
         break;
       case "submittedDocument": if (!value) error = "Required"; break;
       case "hasAssets": if (!value) error = "Required"; break;
-      case "assetQuantity": if (formData.hasAssets === "yes" && !value) error = "Required"; break;
-      case "assetType": if (formData.hasAssets === "yes" && !value) error = "Required"; break;
-      case "assetSerialNumber": if (formData.hasAssets === "yes" && !value) error = "Required"; break;
       default: break;
     }
+    return error;
+  };
+
+  const validateAssetField = (asset, field) => {
+    let error = "";
+    if (!asset[field]) error = "Required";
     return error;
   };
 
   const handleInputChange = (field, value) => {
     const sanitizedValue = field === "fullName" || field === "personToVisit" 
       ? value.replace(/[^A-Za-z\s]/g, "")
-      : field === "phoneNumber" || field === "expectedDurationHours" || field === "expectedDurationMinutes" || field === "otp" || field === "assetQuantity"
+      : field === "phoneNumber" || field === "expectedDurationHours" || field === "expectedDurationMinutes" || field === "otp"
       ? value.replace(/[^0-9]/g, "")
       : value;
 
@@ -87,8 +88,28 @@ const Checkin = () => {
     setErrors(prev => ({ ...prev, [field]: validateField(field, sanitizedValue) }));
   };
 
+  const handleAssetChange = (index, field, value) => {
+    const updatedAssets = [...formData.assets];
+    updatedAssets[index][field] = field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
+    setFormData(prev => ({ ...prev, assets: updatedAssets }));
+  };
+
+  const handleAddAsset = () => {
+    setFormData(prev => ({
+      ...prev,
+      assets: [...prev.assets, { quantity: "", type: "", serialNumber: "" }]
+    }));
+  };
+
+  const handleRemoveAsset = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      assets: prev.assets.filter((_, i) => i !== index)
+    }));
+  };
+
   const handleAddTeamMember = () => {
-    setTeamMembers([...teamMembers, { name: "", email: "", documentDetail: "", document: null, hasAssets: "", assetQuantity: "", assetType: "", assetSerialNumber: "" }]);
+    setTeamMembers([...teamMembers, { name: "", email: "", documentDetail: "", document: null, hasAssets: "", assets: [] }]);
   };
 
   const handleRemoveTeamMember = (index) => {
@@ -101,9 +122,25 @@ const Checkin = () => {
       ? value.replace(/[^A-Za-z\s]/g, "")
       : field === "email" 
       ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
-      : field === "assetQuantity"
-      ? value.replace(/[^0-9]/g, "")
       : value;
+    setTeamMembers(updatedMembers);
+  };
+
+  const handleTeamMemberAssetChange = (memberIndex, assetIndex, field, value) => {
+    const updatedMembers = [...teamMembers];
+    updatedMembers[memberIndex].assets[assetIndex][field] = field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
+    setTeamMembers(updatedMembers);
+  };
+
+  const handleAddTeamMemberAsset = (index) => {
+    const updatedMembers = [...teamMembers];
+    updatedMembers[index].assets.push({ quantity: "", type: "", serialNumber: "" });
+    setTeamMembers(updatedMembers);
+  };
+
+  const handleRemoveTeamMemberAsset = (memberIndex, assetIndex) => {
+    const updatedMembers = [...teamMembers];
+    updatedMembers[memberIndex].assets = updatedMembers[memberIndex].assets.filter((_, i) => i !== assetIndex);
     setTeamMembers(updatedMembers);
   };
 
@@ -135,8 +172,10 @@ const Checkin = () => {
   const handleSubmit = async () => {
     const newErrors = {};
     Object.keys(formData).forEach(field => {
-      const error = validateField(field, formData[field]);
-      if (error) newErrors[field] = error;
+      if (field !== "assets") {
+        const error = validateField(field, formData[field]);
+        if (error) newErrors[field] = error;
+      }
     });
 
     if (!newErrors.expectedDurationHours && !newErrors.expectedDurationMinutes) {
@@ -145,6 +184,30 @@ const Checkin = () => {
         newErrors.expectedDurationMinutes = "Must be > 0";
       }
     }
+
+    if (formData.hasAssets === "yes" && formData.assets.length === 0) {
+      newErrors.assets = "At least one asset is required";
+    } else if (formData.hasAssets === "yes") {
+      formData.assets.forEach((asset, index) => {
+        ["quantity", "type", "serialNumber"].forEach(field => {
+          const error = validateAssetField(asset, field);
+          if (error) newErrors[`asset_${index}_${field}`] = error;
+        });
+      });
+    }
+
+    teamMembers.forEach((member, memberIndex) => {
+      if (member.hasAssets === "yes" && member.assets.length === 0) {
+        newErrors[`teamMember_${memberIndex}_assets`] = "At least one asset is required";
+      } else if (member.hasAssets === "yes") {
+        member.assets.forEach((asset, assetIndex) => {
+          ["quantity", "type", "serialNumber"].forEach(field => {
+            const error = validateAssetField(asset, field);
+            if (error) newErrors[`teamMember_${memberIndex}_asset_${assetIndex}_${field}`] = error;
+          });
+        });
+      }
+    });
 
     setErrors(newErrors);
 
@@ -173,7 +236,7 @@ const Checkin = () => {
       if (!response.ok) throw new Error('Submission failed');
       
       toast.success("Check-in successful!");
-      setTimeout(() => navigate('/visitorcard'), 2000); // Redirect without passing state
+      setTimeout(() => navigate('/visitorcard'), 2000);
     } catch (error) {
       toast.error(error.message || "Submission error");
     }
@@ -433,35 +496,61 @@ const Checkin = () => {
                 <MenuItem value="no">No</MenuItem>
               </TextField>
               {member.hasAssets === "yes" && (
-                <Grid container spacing={3} mt={2}>
-                  <Grid item xs={12} sm={4}>
-                    <TextField 
-                      fullWidth 
-                      label="Quantity*" 
-                      value={member.assetQuantity} 
-                      onChange={(e) => handleTeamMemberChange(index, "assetQuantity", e.target.value)} 
-                      required 
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField 
-                      fullWidth 
-                      label="Type*" 
-                      value={member.assetType} 
-                      onChange={(e) => handleTeamMemberChange(index, "assetType", e.target.value)} 
-                      required 
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField 
-                      fullWidth 
-                      label="Serial*" 
-                      value={member.assetSerialNumber} 
-                      onChange={(e) => handleTeamMemberChange(index, "assetSerialNumber", e.target.value)} 
-                      required 
-                    />
-                  </Grid>
-                </Grid>
+                <Box mt={2}>
+                  {member.assets.map((asset, assetIndex) => (
+                    <Grid container spacing={3} key={assetIndex} mt={1} alignItems="center">
+                      <Grid item xs={12} sm={4}>
+                        <TextField 
+                          fullWidth 
+                          label="Quantity*" 
+                          value={asset.quantity} 
+                          onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "quantity", e.target.value)} 
+                          required 
+                          error={!!errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
+                          helperText={errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={3}>
+                        <TextField 
+                          fullWidth 
+                          label="Type*" 
+                          value={asset.type} 
+                          onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "type", e.target.value)} 
+                          required 
+                          error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                          helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <TextField 
+                          fullWidth 
+                          label="Serial*" 
+                          value={asset.serialNumber} 
+                          onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "serialNumber", e.target.value)} 
+                          required 
+                          error={!!errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
+                          helperText={errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={1}>
+                        <IconButton 
+                          color="error" 
+                          onClick={() => handleRemoveTeamMemberAsset(index, assetIndex)}
+                        >
+                          <RemoveCircle />
+                        </IconButton>
+                      </Grid>
+                    </Grid>
+                  ))}
+                  <Button 
+                    startIcon={<AddCircle />} 
+                    variant="outlined" 
+                    onClick={() => handleAddTeamMemberAsset(index)} 
+                    sx={{ mt: 2 }}
+                  >
+                    Add Asset
+                  </Button>
+                </Box>
               )}
             </Box>
           ))}
@@ -484,41 +573,61 @@ const Checkin = () => {
             <MenuItem value="no">No</MenuItem>
           </TextField>
           {formData.hasAssets === "yes" && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} sm={4}>
-                <TextField 
-                  fullWidth 
-                  label="Quantity*" 
-                  value={formData.assetQuantity} 
-                  onChange={(e) => handleInputChange("assetQuantity", e.target.value)} 
-                  error={!!errors.assetQuantity} 
-                  helperText={errors.assetQuantity} 
-                  required 
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField 
-                  fullWidth 
-                  label="Type*" 
-                  value={formData.assetType} 
-                  onChange={(e) => handleInputChange("assetType", e.target.value)} 
-                  error={!!errors.assetType} 
-                  helperText={errors.assetType} 
-                  required 
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField 
-                  fullWidth 
-                  label="Serial*" 
-                  value={formData.assetSerialNumber} 
-                  onChange={(e) => handleInputChange("assetSerialNumber", e.target.value)} 
-                  error={!!errors.assetSerialNumber} 
-                  helperText={errors.assetSerialNumber} 
-                  required 
-                />
-              </Grid>
-            </Grid>
+            <Box>
+              {formData.assets.map((asset, index) => (
+                <Grid container spacing={3} key={index} mt={1} alignItems="center">
+                  <Grid item xs={12} sm={4}>
+                    <TextField 
+                      fullWidth 
+                      label="Quantity*" 
+                      value={asset.quantity} 
+                      onChange={(e) => handleAssetChange(index, "quantity", e.target.value)} 
+                      required 
+                      error={!!errors[`asset_${index}_quantity`]}
+                      helperText={errors[`asset_${index}_quantity`]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={3}>
+                    <TextField 
+                      fullWidth 
+                      label="Type*" 
+                      value={asset.type} 
+                      onChange={(e) => handleAssetChange(index, "type", e.target.value)} 
+                      required 
+                      error={!!errors[`asset_${index}_type`]}
+                      helperText={errors[`asset_${index}_type`]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={4}>
+                    <TextField 
+                      fullWidth 
+                      label="Serial*" 
+                      value={asset.serialNumber} 
+                      onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)} 
+                      required 
+                      error={!!errors[`asset_${index}_serialNumber`]}
+                      helperText={errors[`asset_${index}_serialNumber`]}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={1}>
+                    <IconButton 
+                      color="error" 
+                      onClick={() => handleRemoveAsset(index)}
+                    >
+                      <RemoveCircle />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              ))}
+              <Button 
+                startIcon={<AddCircle />} 
+                variant="outlined" 
+                onClick={handleAddAsset} 
+                sx={{ mt: 2 }}
+              >
+                Add Asset
+              </Button>
+            </Box>
           )}
         </Box>
 

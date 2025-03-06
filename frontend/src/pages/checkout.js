@@ -57,6 +57,8 @@ const VisitorCheckout = () => {
     };
 
     return (
+      <>
+      
         <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", display: "flex", flexDirection: "column" }}>
             <Box sx={{ flexGrow: 1, p: 2 }}>
                 <Container>
@@ -108,6 +110,7 @@ const VisitorCheckout = () => {
             </Box>
             <ToastContainer />
         </Box>
+    </>
     );
 };
 

@@ -88,9 +88,9 @@ const HostDashboard = () => {
                                         >
                                             Generate OTP
                                         </Button>
-                                        <IconButton onClick={() => navigate(`/update-status/${visitor.id}`)} sx={{ ml: 1 }}>
+                                        {/* <IconButton onClick={() => navigate(`/update-status/${visitor.id}`)} sx={{ ml: 1 }}>
                                             <MoreVertIcon />
-                                        </IconButton>
+                                        </IconButton> */}
                                     </Grid>
                                 </Grid>
                             </CardContent>

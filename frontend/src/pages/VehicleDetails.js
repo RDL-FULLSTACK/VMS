@@ -49,7 +49,7 @@ const VehicleDetails = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPurpose, setFilterPurpose] = useState("");
   const [filterDate, setFilterDate] = useState("");
-  const [filterCheckOut, setFilterCheckOut] = useState(""); // New state for check-out filter
+  const [filterCheckOut, setFilterCheckOut] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
@@ -101,13 +101,40 @@ const VehicleDetails = () => {
   return (
     <>
       <Navbar />
-
       {ticketData ? (
         <VehicleTicket data={ticketData} onClose={() => setTicketData(null)} />
       ) : (
-        <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, bgcolor: "#F3F4F6", minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <Paper sx={{ p: { xs: 1, sm: 2, md: 3 }, width: "100%", maxWidth: "1000px", borderRadius: 2, boxShadow: 4, bgcolor: "white" }}>
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2, mb: 2, justifyContent: "space-between" }}>
+        <Box
+          sx={{
+            pt: { xs: 1, sm: 5, md: 0 }, // Reduced top padding to decrease gap
+            pb: { xs: 2, sm: 3, md: 4 }, // Kept bottom padding for balance
+            px: { xs: 2, sm: 3, md: 4 }, // Horizontal padding remains the same
+            bgcolor: "#F3F4F6",
+            minHeight: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Paper
+            sx={{
+              p: { xs: 2, sm: 3, md: 4 },
+              width: "100%",
+              maxWidth: { xs: "100%", sm: "1200px", md: "1400px" },
+              borderRadius: 3,
+              boxShadow: 4,
+              bgcolor: "white",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 2,
+                mb: 3,
+                justifyContent: "space-between",
+              }}
+            >
               <TextField
                 size="small"
                 sx={{ flex: 1, minWidth: "150px", bgcolor: "white", borderRadius: 1, boxShadow: 1 }}
@@ -143,35 +170,39 @@ const VehicleDetails = () => {
               </FormControl>
             </Box>
 
-            <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 2, boxShadow: 3, bgcolor: "white", overflow: "hidden" }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: "bold", fontSize: { xs: "0.9rem", sm: "1rem" }, mb: 1 }}>
+            <Paper sx={{ p: { xs: 2, sm: 3 }, borderRadius: 2, boxShadow: 3, bgcolor: "white", overflow: "hidden" }}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ fontWeight: "bold", fontSize: { xs: "1rem", sm: "1.25rem" }, mb: 2 }}
+              >
                 Vehicle List
               </Typography>
 
-              <TableContainer sx={{ maxHeight: "400px", overflowX: "auto" }}>
-                <Table size="small" stickyHeader>
+              <TableContainer sx={{ maxHeight: "450px", overflowX: "auto" }}>
+                <Table size="medium" stickyHeader>
                   <TableHead sx={{ bgcolor: "#EEEEEE" }}>
                     <TableRow>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>ID</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>Vehicle Number</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>Purpose</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>Date</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>Check-In Time</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>Check-Out Time</TableCell>
-                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" }, textAlign: "center" }}>Actions</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>ID</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>Vehicle Number</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>Purpose</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>Date</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>Check-In Time</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>Check-Out Time</TableCell>
+                      <TableCell sx={{ fontWeight: "bold", fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" }, textAlign: "center" }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {paginatedVehicles.length > 0 ? (
                       paginatedVehicles.map((vehicle, index) => (
-                        <TableRow key={vehicle.id} sx={{ height: "35px", bgcolor: index % 2 === 0 ? "#FAFAFA" : "white" }}>
-                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>{vehicle.id}</TableCell>
-                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" }, fontWeight: "bold" }}>{vehicle.vehicleNumber}</TableCell>
-                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>{vehicle.purpose}</TableCell>
-                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>{vehicle.date}</TableCell>
-                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>{vehicle.checkInTime}</TableCell>
-                          <TableCell sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>{vehicle.checkOutTime || "Not Checked Out"}</TableCell>
-                          <TableCell sx={{ textAlign: "center", padding: { xs: "4px", sm: "6px" } }}>
+                        <TableRow key={vehicle.id} sx={{ height: "45px", bgcolor: index % 2 === 0 ? "#FAFAFA" : "white" }}>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>{vehicle.id}</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" }, fontWeight: "bold" }}>{vehicle.vehicleNumber}</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>{vehicle.purpose}</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>{vehicle.date}</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>{vehicle.checkInTime}</TableCell>
+                          <TableCell sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>{vehicle.checkOutTime || "Not Checked Out"}</TableCell>
+                          <TableCell sx={{ textAlign: "center", padding: { xs: "6px", sm: "8px" } }}>
                             <IconButton size="small" onClick={(event) => handleMenuOpen(event, vehicle)}>
                               <MoreVertIcon fontSize="small" />
                             </IconButton>
@@ -180,7 +211,7 @@ const VehicleDetails = () => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={7} align="center" sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, padding: { xs: "4px", sm: "6px" } }}>
+                        <TableCell colSpan={7} align="center" sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" }, padding: { xs: "6px", sm: "8px" } }}>
                           No vehicles found
                         </TableCell>
                       </TableRow>
@@ -196,7 +227,7 @@ const VehicleDetails = () => {
                 rowsPerPage={rowsPerPage}
                 onPageChange={handleChangePage}
                 rowsPerPageOptions={[]}
-                sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+                sx={{ fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
               />
             </Paper>
           </Paper>

@@ -67,7 +67,7 @@ import UpdateStatus from "./pages/UpdateStatus";
 import PreScheduling from "./pages/PreScheduling";
 import { SuccessPage } from "./pages/checkout";
 import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
-import  Receptionist from "./pages/Receptionist";
+import  Receptionist from "./pages/UserList";
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }) => {
@@ -215,7 +215,7 @@ function App() {
       />
 
 
-<Route path="/receptionist" element={<Receptionist />} />         
+<Route path="/userlist" element={<Receptionist />} />         
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

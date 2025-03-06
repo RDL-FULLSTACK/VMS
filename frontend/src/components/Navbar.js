@@ -233,7 +233,24 @@ const Navbar = () => {
           label: "Host",
           items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
         },
-        { type: "button", label: "Admin", path: "/companylogin" },
+        
+
+
+
+        {
+          type: "dropdown",
+          label: "ADMIN",
+          items: [{ label: "Company Login", path: "/companylogin" },
+            {label:"User List", path:"/userlist"}
+          ],
+        },
+        
+
+
+
+
+
+        // { type: "button", label: "Admin", path: "/companylogin" },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
       receptionist: [

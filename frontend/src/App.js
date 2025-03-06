@@ -218,6 +218,7 @@ function App() {
 <Route path="/userlist" element={<Receptionist />} />         
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" />} />
+      
     </Routes>
   );
 }

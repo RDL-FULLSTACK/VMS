@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Container,
-  Typography,
   TextField,
   Table,
   TableBody,
@@ -13,24 +12,26 @@ import {
   MenuItem,
   Select,
   IconButton,
-  Menu,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Button,
-  Snackbar,
-  Alert,
-  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Box,
+  Typography,
+  CircularProgress,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Navbar from "../components/Navbar"; // Ensure this path is correct
+import CloseIcon from "@mui/icons-material/Close";
+import Navbar from "../components/Navbar";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const UserList = () => {
+  const navigate = useNavigate();
+
   const [users, setUsers] = useState([
     { id: 1, username: "john_doe", password: "password123", role: "Admin" },
     { id: 2, username: "jane_smith", password: "securepass", role: "Host" },
@@ -40,12 +41,14 @@ const UserList = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState("");
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [openLoginDialog, setOpenLoginDialog] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [loginData, setLoginData] = useState({
+    username: "",
+    password: "",
+    role: "",
+  });
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -55,61 +58,102 @@ const UserList = () => {
     setFilterRole(event.target.value);
   };
 
-  const handleMenuOpen = (event, user) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedUser(user);
+  const handleLoginOpen = () => {
+    setOpenLoginDialog(true);
+    setLoginError("");
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const handleLoginClose = () => {
+    setOpenLoginDialog(false);
+    setLoginData({
+      username: "",
+      password: "",
+      role: "",
+    });
+    setLoginError("");
   };
 
-  const handleEdit = () => {
-    setOpenEditDialog(true);
-    handleMenuClose();
+  const handleLoginInputChange = (e) => {
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
   };
 
-  const handleCloseEditDialog = () => {
-    setOpenEditDialog(false);
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    
+    const { username, password, role } = loginData;
+    
+    if (!username || !password || !role) {
+      setLoginError("Please fill in all fields");
+      return;
+    }
+    
+    setLoginLoading(true);
+    setLoginError("");
+    
+    try {
+      // Mock API call - replace with actual API call
+      // const response = await axios.post("http://localhost:5000/api/auth/login", {
+      //   username,
+      //   password,
+      //   role: role.toLowerCase(),
+      // });
+      
+      // Simulating API response
+      setTimeout(() => {
+        // Store token in localStorage
+        localStorage.setItem("token", "mock-token-123456");
+        
+        // Redirect based on role
+        switch (role.toLowerCase()) {
+          case "admin":
+            navigate("/dashboard");
+            break;
+          case "receptionist":
+            navigate("/checkin");
+            break;
+          case "security":
+            navigate("/vehicle-details");
+            break;
+          case "host":
+            navigate("/visitorlist");
+            break;
+          default:
+            navigate("/");
+        }
+        
+        setLoginLoading(false);
+        handleLoginClose();
+      }, 1000);
+      
+    } catch (error) {
+      setLoginError(error.response?.data?.message || "Login Failed");
+      setLoginLoading(false);
+    }
   };
 
-  const handleEditChange = (event) => {
-    setSelectedUser({ ...selectedUser, [event.target.name]: event.target.value });
-  };
-
-  const handleSaveChanges = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === selectedUser.id ? selectedUser : user))
-    );
-    setSnackbarMessage("User details updated successfully!");
-    setOpenSnackbar(true);
-    setOpenEditDialog(false);
-  };
-
-  const handleDelete = () => {
-    setUsers((prevUsers) =>
-      prevUsers.filter((user) => user.id !== selectedUser.id)
-    );
-    setSnackbarMessage("User deleted successfully!");
-    setOpenSnackbar(true);
-    handleMenuClose();
-  };
-
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (filterRole === "" || user.role === filterRole)
-  );
+  // Filter users based on search query and role filter
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = user.username.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = filterRole === "" || user.role === filterRole;
+    return matchesSearch && matchesRole;
+  });
 
   return (
     <>
-      <Navbar /> {/* Add Navbar here */}
-      <Container maxWidth="lg" sx={{ padding: 3, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+      <Navbar />
+      <Container maxWidth="lg" sx={{ padding: { xs: 1, sm: 2, md: 3 }, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
+        <div style={{ 
+          display: "flex", 
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between", 
+          marginBottom: 20,
+          gap: 10
+        }}>
           <TextField
             label="Search Username"
             variant="outlined"
             fullWidth
-            sx={{ mr: 2 }}
+            sx={{ mb: { xs: 2, sm: 0 }, mr: { sm: 2 } }}
             value={searchQuery}
             onChange={handleSearchChange}
           />
@@ -118,7 +162,11 @@ const UserList = () => {
             onChange={handleFilterChange}
             displayEmpty
             variant="outlined"
-            sx={{ minWidth: 200 }}
+            sx={{ 
+              minWidth: { xs: "100%", sm: 200 }, 
+              mb: { xs: 2, sm: 0 }, 
+              mr: { sm: 2 } 
+            }}
           >
             <MenuItem value="">Roles</MenuItem>
             <MenuItem value="Admin">Admin</MenuItem>
@@ -126,9 +174,22 @@ const UserList = () => {
             <MenuItem value="Security">Security</MenuItem>
             <MenuItem value="Receptionist">Receptionist</MenuItem>
           </Select>
+
+          <Button
+            variant="contained"
+            sx={{
+              backgroundColor: "#5a3d91",
+              color: "white",
+              "&:hover": { backgroundColor: "#1565c0" },
+              minWidth: { xs: "100%", sm: "auto" }
+            }}
+            onClick={handleLoginOpen}
+          >
+            Company Login
+          </Button>
         </div>
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3, overflowX: "auto" }}>
           <Table>
             <TableHead sx={{ backgroundColor: "#5a3d91" }}>
               <TableRow>
@@ -148,23 +209,9 @@ const UserList = () => {
                     <TableCell>{"*".repeat(user.password.length)}</TableCell>
                     <TableCell>{user.role}</TableCell>
                     <TableCell>
-                      <IconButton onClick={(event) => handleMenuOpen(event, user)}>
+                      <IconButton>
                         <MoreVertIcon />
                       </IconButton>
-                      <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl) && selectedUser?.id === user.id}
-                        onClose={handleMenuClose}
-                      >
-                        <MenuItem onClick={handleEdit}>
-                          <EditIcon fontSize="small" sx={{ mr: 1, color: "#1976d2" }} />
-                          Edit
-                        </MenuItem>
-                        <MenuItem onClick={handleDelete}>
-                          <DeleteIcon fontSize="small" sx={{ mr: 1, color: "red" }} />
-                          Delete
-                        </MenuItem>
-                      </Menu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -178,43 +225,92 @@ const UserList = () => {
             </TableBody>
           </Table>
         </TableContainer>
+      </Container>
 
-        {/* Edit User Dialog */}
-        <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
-          <DialogTitle>Edit User</DialogTitle>
-          <DialogContent>
-            <TextField fullWidth label="Username" name="username" value={selectedUser?.username || ""} onChange={handleEditChange} margin="dense" />
+      {/* Company Login Dialog */}
+      <Dialog 
+        open={openLoginDialog} 
+        onClose={handleLoginClose}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" component="div" sx={{ fontWeight: "bold" }}>
+              Company Login
+            </Typography>
+            <IconButton onClick={handleLoginClose}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <form onSubmit={handleLoginSubmit}>
+            <TextField
+              fullWidth
+              label="Username"
+              variant="outlined"
+              margin="normal"
+              name="username"
+              value={loginData.username}
+              onChange={handleLoginInputChange}
+              disabled={loginLoading}
+            />
             <TextField
               fullWidth
               label="Password"
+              variant="outlined"
+              margin="normal"
+              type="password"
               name="password"
-              type={showPassword ? "text" : "password"}
-              value={selectedUser?.password || ""}
-              onChange={handleEditChange}
-              margin="dense"
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <Visibility /> : <VisibilityOff />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
+              value={loginData.password}
+              onChange={handleLoginInputChange}
+              disabled={loginLoading}
             />
-            <Select fullWidth name="role" value={selectedUser?.role || ""} onChange={handleEditChange} margin="dense">
-              <MenuItem value="Admin">Admin</MenuItem>
-              <MenuItem value="Host">Host</MenuItem>
-              <MenuItem value="Security">Security</MenuItem>
-              <MenuItem value="Receptionist">Receptionist</MenuItem>
-            </Select>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseEditDialog}>Cancel</Button>
-            <Button onClick={handleSaveChanges} color="primary">Save</Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Role</InputLabel>
+              <Select
+                name="role"
+                value={loginData.role}
+                onChange={handleLoginInputChange}
+                label="Role"
+                disabled={loginLoading}
+              >
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="Host">Host</MenuItem>
+                <MenuItem value="Security">Security</MenuItem>
+                <MenuItem value="Receptionist">Receptionist</MenuItem>
+              </Select>
+            </FormControl>
+            {loginError && (
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                {loginError}
+              </Typography>
+            )}
+          </form>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleLoginClose} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleLoginSubmit}
+            variant="contained"
+            sx={{
+              backgroundColor: "#5a3d91",
+              color: "white",
+              "&:hover": { backgroundColor: "#1565c0" },
+            }}
+            disabled={loginLoading}
+          >
+            {loginLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Login"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

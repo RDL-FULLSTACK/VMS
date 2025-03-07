@@ -211,7 +211,7 @@ const Navbar = () => {
         { type: "button", label: "Dashboard", path: "/dashboard" },
         {
           type: "dropdown",
-          label: "Visitor Management",
+          label: "VISITOR MANAGEMENT",
           items: [
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
@@ -220,13 +220,13 @@ const Navbar = () => {
           ],
         },
         {
-          type: "dropdown",
-          label: "Vehicle Management",
-          items: [
-            { label: "Vehicle Details", path: "/vehicle-details" },
-            { label: "Vehicle Registration", path: "/vehicle-registration" },
-            { label: "Vehicle Checkout", path: "/vehicle-checkout" },
-          ],
+          type: "button",
+          label: "Vehicle Management", path:"/combine-vehicle-management"
+          // items: [
+          //   { label: "Vehicle Details", path: "/vehicle-details" },
+          //   // { label: "Vehicle Registration", path: "/vehicle-registration" },
+          //   // { label: "Vehicle Checkout", path: "/vehicle-checkout" },
+          // ],
         },
         {
           type: "dropdown",
@@ -282,7 +282,7 @@ const Navbar = () => {
       host: [
         {
           type: "dropdown",
-          label: "Host",
+          label: "HOST",
           items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },

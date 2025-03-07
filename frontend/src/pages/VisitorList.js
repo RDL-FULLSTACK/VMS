@@ -1,75 +1,71 @@
 import React, { useState } from 'react';
 import { 
-  Box, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
-  Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
-  IconButton, Menu, MenuItem, TextField
+  Box, Paper, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
+  TextField, Pagination
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Navbar from '../components/Navbar';
 import { useNavigate } from "react-router-dom";
 
-
 const VisitorList = () => {
-  
   const visitors = [
     { id: 1, name: 'John Smith', email: 'john@example.com', phone: '+1 (555) 123-4567', checkIn: '09:30 AM', checkOut: '05:30 PM', host: 'Sarah Wilson', designation: 'Vendor', date: '2025-03-01', 
-      assets: [
-        { type: 'Laptop', serialNumber: 'LAP123456' },
-        { type: 'Phone', serialNumber: 'PHN789012' }
-      ] 
+      assets: [{ type: 'Laptop', serialNumber: 'LAP123456' }, { type: 'Phone', serialNumber: 'PHN789012' }] 
     },
     { id: 2, name: 'Emma Davis', email: 'emma@example.com', phone: '+1 (555) 987-6543', checkIn: '10:15 AM', checkOut: '04:45 PM', host: 'Michael Brown', designation: 'Client', date: '2025-03-02', 
-      assets: [
-        { type: 'Tablet', serialNumber: 'TAB456789' }
-      ]
+      assets: [{ type: 'Tablet', serialNumber: 'TAB456789' }]
     },
     { id: 3, name: 'James Wilson', email: 'james@example.com', phone: '+1 (555) 456-7890', checkIn: '11:00 AM', checkOut: '03:30 PM', host: 'Lisa Anderson', designation: 'Interview', date: '2025-03-01', 
       assets: [] 
-    }
+    },
+    { id: 4, name: 'Alice Brown', email: 'alice@example.com', phone: '+1 (555) 111-2222', checkIn: '08:00 AM', checkOut: '04:00 PM', host: 'Tom Lee', designation: 'Vendor', date: '2025-03-01', assets: [] },
+    { id: 5, name: 'Bob Johnson', email: 'bob@example.com', phone: '+1 (555) 333-4444', checkIn: '09:00 AM', checkOut: '05:00 PM', host: 'Jane Doe', designation: 'Client', date: '2025-03-02', assets: [{ type: 'Laptop', serialNumber: 'LAP987654' }] },
+    { id: 6, name: 'Carol White', email: 'carol@example.com', phone: '+1 (555) 555-6666', checkIn: '10:00 AM', checkOut: '06:00 PM', host: 'Mike Smith', designation: 'Interview', date: '2025-03-01', assets: [] },
+    { id: 7, name: 'David Green', email: 'david@example.com', phone: '+1 (555) 777-8888', checkIn: '11:00 AM', checkOut: '07:00 PM', host: 'Sara Jones', designation: 'Vendor', date: '2025-03-02', assets: [{ type: 'Phone', serialNumber: 'PHN123456' }] },
+    { id: 8, name: 'Eve Black', email: 'eve@example.com', phone: '+1 (555) 999-0000', checkIn: '08:30 AM', checkOut: '04:30 PM', host: 'Paul Brown', designation: 'Client', date: '2025-03-01', assets: [] },
+    { id: 9, name: 'Frank Red', email: 'frank@example.com', phone: '+1 (555) 222-3333', checkIn: '09:30 AM', checkOut: '05:30 PM', host: 'Lisa White', designation: 'Interview', date: '2025-03-02', assets: [{ type: 'Tablet', serialNumber: 'TAB654321' }] },
+    { id: 10, name: 'Grace Blue', email: 'grace@example.com', phone: '+1 (555) 444-5555', checkIn: '10:30 AM', checkOut: '06:30 PM', host: 'John Green', designation: 'Vendor', date: '2025-03-01', assets: [] },
+    { id: 11, name: 'Henry Yellow', email: 'henry@example.com', phone: '+1 (555) 666-7777', checkIn: '11:30 AM', checkOut: '07:30 PM', host: 'Emma Black', designation: 'Client', date: '2025-03-02', assets: [{ type: 'Laptop', serialNumber: 'LAP456789' }] },
+    { id: 12, name: 'Ivy Purple', email: 'ivy@example.com', phone: '+1 (555) 888-9999', checkIn: '08:00 AM', checkOut: '04:00 PM', host: 'David Red', designation: 'Interview', date: '2025-03-01', assets: [] }
   ];
+
   const navigate = useNavigate();
   const [selectedVisitor, setSelectedVisitor] = useState(null);
   const [openModal, setOpenModal] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedVisitorForMenu, setSelectedVisitorForMenu] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); // Search filter
-  const [selectedDate, setSelectedDate] = useState(""); // Date filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [page, setPage] = useState(1); // Pagination state
+  const rowsPerPage = 5; // Keeping 5 users per page (corrected from 6 to match your code)
 
   const handleViewClick = (visitor) => {
     setSelectedVisitor(visitor);
     setOpenModal(true);
   };
 
-  const handleMenuOpen = (event, visitor) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedVisitorForMenu(visitor);
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
   };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedVisitorForMenu(null);
-  };
-
-  // Filtered visitors based on search and date
   const filteredVisitors = visitors.filter((visitor) => {
     const matchesSearch = `${visitor.name} ${visitor.email} ${visitor.phone} ${visitor.host} ${visitor.designation}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
-      
     const matchesDate = selectedDate ? visitor.date === selectedDate : true;
-
     return matchesSearch && matchesDate;
   });
+
+  // Calculate paginated visitors
+  const paginatedVisitors = filteredVisitors.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   return (
     <>
       <Navbar />
-
       <Box sx={{ p: 2, bgcolor: '#f5f5f5', minHeight: '100vh' }}>
         <Paper sx={{ p: 2, borderRadius: 1 }}>
           <Typography variant="h6" gutterBottom>Visitor List</Typography>
 
-          {/* Search Bar and Date Filter */}
           <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
             <TextField
               label="Search Visitor"
@@ -90,69 +86,124 @@ const VisitorList = () => {
             />
           </Box>
 
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Phone Number</TableCell>
-                  <TableCell>Check In</TableCell>
-                  <TableCell>Check Out</TableCell>
-                  <TableCell>Host</TableCell>
-                  <TableCell>Designation</TableCell>
-                  <TableCell>Date</TableCell>
-                  <TableCell>Assets Quantity</TableCell>
-                  <TableCell>Assets</TableCell>
-                  <TableCell>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredVisitors.map((visitor) => (
-                  <TableRow key={visitor.id}>
-                    <TableCell>{visitor.id}</TableCell>
-                    <TableCell>{visitor.name}</TableCell>
-                    <TableCell>{visitor.email}</TableCell>
-                    <TableCell>{visitor.phone}</TableCell>
-                    <TableCell>{visitor.checkIn}</TableCell>
-                    <TableCell>{visitor.checkOut}</TableCell>
-                    <TableCell>{visitor.host}</TableCell>
-                    <TableCell>{visitor.designation}</TableCell>
-                    <TableCell>{visitor.date}</TableCell>
-                    <TableCell align="center" style={{ verticalAlign: "middle" }}>
-                      {visitor.assets.length}
-                    </TableCell>
+          {/* Grid Header */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '40px 1.5fr 2fr 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr', // Removed Assets Qty column
+              gap: 1,
+              bgcolor: '#e0e0e0',
+              p: 1,
+              borderRadius: 1,
+              fontWeight: 'bold',
+              alignItems: 'center',
+            }}
+          >
+            <Box>ID</Box>
+            <Box>Name</Box>
+            <Box>Email</Box>
+            <Box>Phone Number</Box>
+            <Box>Check In</Box>
+            <Box>Check Out</Box>
+            <Box>Host</Box>
+            <Box>Designation</Box>
+            <Box>Date</Box>
+            <Box>Assets</Box>
+            <Box textAlign={"center"}>Actions</Box>
+          </Box>
 
-                    <TableCell>
-                      {visitor.assets.length > 0 ? (
-                        <Button 
-                          variant="contained" 
-                          color="primary" 
-                          onClick={() => handleViewClick(visitor)}
-                        >
-                          View
-                        </Button>
-                      ) : (
-                        <Button 
-                          variant="contained" 
-                          color="error"
-                          disabled
-                        >
-                          No Assets
-                        </Button>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <IconButton onClick={(event) => handleMenuOpen(event, visitor)}>
-                        <MoreVertIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+          {/* Grid Body */}
+          {paginatedVisitors.map((visitor) => (
+            <Box
+              key={visitor.id}
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: '40px 1.5fr 2fr 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr', // Removed Assets Qty column
+                gap: 1,
+                p: 1,
+                borderBottom: '1px solid #e0e0e0',
+                alignItems: 'center',
+              }}
+            >
+              <Box>{visitor.id}</Box>
+              <Box>{visitor.name}</Box>
+              <Box>{visitor.email}</Box>
+              <Box>{visitor.phone}</Box>
+              <Box>{visitor.checkIn}</Box>
+              <Box>{visitor.checkOut}</Box>
+              <Box>{visitor.host}</Box>
+              <Box>{visitor.designation}</Box>
+              <Box>{visitor.date}</Box>
+              <Box>
+                {visitor.assets.length > 0 ? (
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    onClick={() => handleViewClick(visitor)}
+                  >
+                    View
+                  </Button>
+                ) : (
+                  <Button 
+                    variant="contained" 
+                    color="error"
+                    disabled
+                    sx={{ 
+                      py: 0.2,
+                      fontSize: '0.7rem',
+                      minWidth: 'auto'
+                    }}
+                  >
+                    No Assets
+                  </Button>
+                )}
+              </Box>
+              <Box>
+                <Box sx={{ display: 'flex', gap: 0.5 }}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ 
+                      py: 0.3,
+                      fontSize: '0.75rem',
+                      minWidth: 'auto',
+                      bgcolor: 'green',
+                      color: 'white',
+                      '&:hover': { bgcolor: 'darkgreen' }
+                    }}
+                    onClick={() => navigate(`/editcheckin/${visitor.id}`)}
+                  >
+                    Edit Check-In
+                  </Button>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ 
+                      py: 0.3,
+                      fontSize: '0.75rem',
+                      minWidth: 'auto',
+                      bgcolor: 'orange',
+                      color: 'white',
+                      '&:hover': { bgcolor: '#e68a00' }
+                    }}
+                    onClick={() => navigate(`/visitorcard/${visitor.id}`)}
+                  >
+                    Visitor Card
+                  </Button>
+                </Box>
+              </Box>
+            </Box>
+          ))}
+
+          {/* Pagination */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+            <Pagination
+              count={Math.ceil(filteredVisitors.length / rowsPerPage)}
+              page={page}
+              onChange={handleChangePage}
+              color="primary"
+            />
+          </Box>
         </Paper>
 
         {/* Modal for Asset Details */}
@@ -160,24 +211,16 @@ const VisitorList = () => {
           <DialogTitle>Asset Details</DialogTitle>
           <DialogContent>
             {selectedVisitor && selectedVisitor.assets.length > 0 ? (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell><strong>Type</strong></TableCell>
-                      <TableCell><strong>Serial Number</strong></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {selectedVisitor.assets.map((asset, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{asset.type}</TableCell>
-                        <TableCell>{asset.serialNumber}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 2 }}>
+                <Typography variant="subtitle1"><strong>Type</strong></Typography>
+                <Typography variant="subtitle1"><strong>Serial Number</strong></Typography>
+                {selectedVisitor.assets.map((asset, index) => (
+                  <React.Fragment key={index}>
+                    <Box>{asset.type}</Box>
+                    <Box>{asset.serialNumber}</Box>
+                  </React.Fragment>
+                ))}
+              </Box>
             ) : (
               <Typography color="error" sx={{ textAlign: 'center', mt: 2 }}>
                 No assets available
@@ -188,13 +231,6 @@ const VisitorList = () => {
             <Button onClick={() => setOpenModal(false)} color="primary">Close</Button>
           </DialogActions>
         </Dialog>
-
-        {/* Three Dots Menu */}
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-          <MenuItem onClick={() => navigate(`/editcheckin/${selectedVisitorForMenu?.id}`)}>Edit Check-In</MenuItem>
-          <MenuItem onClick={() => navigate(`/visitorcard/${selectedVisitorForMenu?.id}`)}>Visitor Card</MenuItem>
-          <MenuItem onClick={handleMenuClose} sx={{ color: 'red' }}>Delete</MenuItem>
-        </Menu>
       </Box>
     </>
   );

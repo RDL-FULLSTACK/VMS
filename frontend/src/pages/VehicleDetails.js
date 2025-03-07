@@ -17,6 +17,9 @@ import {
   FormControl,
   InputLabel,
   TablePagination,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 // import Navbar from "../components/Navbar";
@@ -54,6 +57,7 @@ const VehicleDetails = () => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
+  const [open, setOpen] = useState(false); // Add this state for dialog
   const rowsPerPage = 5;
 
   const handleMenuOpen = (event, vehicle) => {
@@ -75,8 +79,14 @@ const VehicleDetails = () => {
         checkInTime: selectedVehicle.checkInTime,
         checkOutTime: selectedVehicle.checkOutTime,
       });
+      setOpen(true); // Add this to open the dialog
     }
     handleMenuClose();
+  };
+
+  // Add this handler to close the dialog
+  const handleClose = () => {
+    setOpen(false);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -238,6 +248,14 @@ const VehicleDetails = () => {
         <MenuItem onClick={handleViewTicket}>Ticket</MenuItem>
         <MenuItem onClick={handleMenuClose}>Delete</MenuItem>
       </Menu>
+
+      {/* Dialog for E-Ticket */}
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>E-Ticket</DialogTitle>
+        <DialogContent>
+          {ticketData && <VehicleTicket data={ticketData} onClose={handleClose} />}
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

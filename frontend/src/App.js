@@ -68,6 +68,7 @@ import PreScheduling from "./pages/PreScheduling";
 import { SuccessPage } from "./pages/checkout";
 import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
 import  Receptionist from "./pages/UserList";
+import CombineVehicleManagement from "./pages/CombineVehicleManagement";
 
 // PrivateRoute component to protect routes
 const PrivateRoute = ({ children }) => {
@@ -204,6 +205,15 @@ function App() {
           </PrivateRoute>
         }
       />
+      <Route
+  path="/combine-vehicle-management"
+  element={
+    <PrivateRoute>
+      <CombineVehicleManagement />
+    </PrivateRoute>
+  }
+/>
+
 
 <Route
         path="/companylogin/"

@@ -16,7 +16,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { CheckCircle, DirectionsCar, Clear } from "@mui/icons-material";
-import Navbar from "../components/Navbar";
+// import Navbar from "../components/Navbar";
 
 // Sample vehicle data
 const vehicles = [
@@ -222,7 +222,7 @@ const VehicleCheckout = () => {
 const SuccessPage = () => {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Container
         maxWidth="md"
         sx={{
@@ -246,7 +246,7 @@ const SuccessPage = () => {
 const VehicleCheckoutRoutes = () => {
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       <Routes>
         <Route path="/" element={<VehicleCheckout />} />
         <Route path="/success" element={<SuccessPage />} />

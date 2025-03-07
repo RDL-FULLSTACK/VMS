@@ -230,7 +230,7 @@ const Navbar = () => {
         },
         {
           type: "dropdown",
-          label: "Host",
+          label: "HOST",
           items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
         },
         

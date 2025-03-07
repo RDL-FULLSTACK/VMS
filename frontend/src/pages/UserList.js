@@ -92,7 +92,7 @@ const UserList = () => {
   };
 
   const handleCompanyLogin = () => {
-    navigate("/company-login"); // Redirect to Company Login Page
+    navigate("/companylogin"); // Redirect to Company Login Page
   };
 
   const filteredUsers = users.filter((user) =>

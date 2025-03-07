@@ -221,7 +221,7 @@ const Navbar = () => {
         },
         {
           type: "button",
-          label: "Vehicle Management", path:"/combine-vehicle-management"
+          label: "Vehicle Management", path:"/vehicles"
           // items: [
           //   { label: "Vehicle Details", path: "/vehicle-details" },
           //   // { label: "Vehicle Registration", path: "/vehicle-registration" },

@@ -10,8 +10,8 @@ import EditCheckin from "./pages/editcheckin";
 import Admin from "./pages/admin";
 import CompanyLogin from "./pages/companylogin";
 import VisitorCard from "./pages/visitorcard";
-import VehicleRegistration from "./pages/VehicleRegistration";
-import VehicleDetails from "./pages/VehicleDetails";
+// import VehicleRegistration from "./pages/VehicleRegistration";
+// import VehicleDetails from "./pages/VehicleDetails";
 import Login from "./pages/Login";
 import VisitorList from "./pages/VisitorList";
 import Navbar from "./components/Navbar";
@@ -21,8 +21,9 @@ import UpdateStatus from "./pages/UpdateStatus";
 import PreScheduling from "./pages/PreScheduling";
 import { SuccessPage } from "./pages/checkout";
 import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
-import  Receptionist from "./pages/UserList";
-import CombineVehicleManagement from "./pages/CombineVehicleManagement";
+import Receptionist from "./pages/UserList";
+// import CombineVehicleManagement from "./pages/CombineVehicleManagement";
+import CombinedVehiclePage from "./pages/CombinedVehiclePage";
 
 
 // PrivateRoute component to protect routes
@@ -96,7 +97,7 @@ function App() {
           </PrivateRoute>
         }
       />
-      <Route
+      {/* <Route
         path="/vehicle-registration"
         element={
           <PrivateRoute>
@@ -111,7 +112,7 @@ function App() {
             <VehicleDetails />
           </PrivateRoute>
         }
-      />
+      /> */}
       <Route
         path="/visitorlist"
         element={
@@ -152,26 +153,26 @@ function App() {
           </PrivateRoute>
         }
       />
-      <Route
+      {/* <Route
         path="/vehicle-checkout/"
         element={
           <PrivateRoute>
             <VehicleCheckoutRoutes />
           </PrivateRoute>
         }
-      />
+      /> */}
       <Route
-  path="/combine-vehicle-management"
-  element={
-    <PrivateRoute>
-      <CombineVehicleManagement />
-    </PrivateRoute>
-  }
-/>
+        path="/vehicles"
+        element={
+          <PrivateRoute>
+            <CombinedVehiclePage />
+          </PrivateRoute>
+        }
+      />
 
 
 
-<Route
+      <Route
         path="/companylogin/"
         element={
           <PrivateRoute>
@@ -181,10 +182,10 @@ function App() {
       />
 
 
-<Route path="/userlist" element={<Receptionist />} />         
+      <Route path="/userlist" element={<Receptionist />} />
       {/* Catch-all route */}
       <Route path="*" element={<Navigate to="/" />} />
-      
+
     </Routes>
   );
 }

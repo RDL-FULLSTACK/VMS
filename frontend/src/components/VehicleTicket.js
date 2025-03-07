@@ -1,3 +1,5 @@
+//VehicleTicket.js
+
 import React, { useRef } from "react";
 import { Paper, Typography, Button, Container } from "@mui/material";
 import { QRCodeCanvas } from "qrcode.react";
@@ -18,7 +20,7 @@ const VehicleTicket = ({ data, onClose }) => {
   const handlePrint = () => {
     const qrCanvas = document.querySelector("canvas"); // Get the QR code canvas
     const qrCodeDataUrl = qrCanvas.toDataURL(); // Convert QR to image
-  
+
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
@@ -106,7 +108,7 @@ const VehicleTicket = ({ data, onClose }) => {
       </html>
     `);
     printWindow.document.close();
-  };  
+  };
 
   return (
     <Container
@@ -119,9 +121,9 @@ const VehicleTicket = ({ data, onClose }) => {
         padding: "20px",
       }}
     >
-      <Typography variant="h5" align="center" gutterBottom>
+      {/* <Typography variant="h5" align="center" gutterBottom>
         Vehicle E-Ticket
-      </Typography>
+      </Typography> */}
 
       {/* Ticket Container */}
       <Paper
@@ -136,6 +138,10 @@ const VehicleTicket = ({ data, onClose }) => {
           boxShadow: "0 4px 10px rgba(0, 0, 0, 0.1)",
         }}
       >
+        <Typography variant="h5" align="center" gutterBottom>
+          Vehicle E-Ticket
+        </Typography>
+
         <QRCodeCanvas value={vehicleNumber} size={150} />
 
         <Typography variant="body2" style={{ marginTop: 10, marginBottom: 10 }}>
@@ -146,7 +152,7 @@ const VehicleTicket = ({ data, onClose }) => {
 
         <Typography variant="body1" style={{ marginBottom: 5 }}>
           <strong>Vehicle Number:</strong> {vehicleNumber}
-        </Typography> 
+        </Typography>
         <Typography variant="body1" style={{ marginBottom: 5 }}>
           <strong>Date & Time:</strong> {checkInTime}
         </Typography>
@@ -177,7 +183,10 @@ const VehicleTicket = ({ data, onClose }) => {
         <Button
           variant="outlined"
           color="secondary"
-          onClick={onClose}
+          onClick={() => {
+            console.log("Close button clicked"); // Debug log
+            if (onClose) onClose();
+          }}
           style={{
             flex: 1,
             padding: "10px",

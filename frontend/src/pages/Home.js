@@ -228,7 +228,7 @@ function Home() {
                       textAlign: "center",
                       p: isMobile ? 1 : 2,
                       borderRadius: 2, // Kept border radius as it was
-                      height: "100%", // Kept height as it was
+                      height: 100, // Kept height as it was
                     }}
                   >
                     <CardContent>

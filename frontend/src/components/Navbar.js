@@ -211,7 +211,7 @@ const Navbar = () => {
         { type: "button", label: "Dashboard", path: "/dashboard" },
         {
           type: "dropdown",
-          label: "Visitor Management",
+          label: "VISITOR MANAGEMENT",
           items: [
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
@@ -220,29 +220,29 @@ const Navbar = () => {
           ],
         },
         {
-          type: "dropdown",
-          label: "Vehicle Management",
-          items: [
-            { label: "Vehicle Details", path: "/vehicle-details" },
-            { label: "Vehicle Registration", path: "/vehicle-registration" },
-            { label: "Vehicle Checkout", path: "/vehicle-checkout" },
-          ],
+          type: "button",
+          label: "Vehicle Management", path:"/vehicles"
+          // items: [
+          //   { label: "Vehicle Details", path: "/vehicle-details" },
+          //   // { label: "Vehicle Registration", path: "/vehicle-registration" },
+          //   // { label: "Vehicle Checkout", path: "/vehicle-checkout" },
+          // ],
         },
         {
-          type: "dropdown",
-          label: "Host",
-          items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
+          type: "button",
+          label: "HOST",path:"/HostDashboard"
+          // items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
         },
         
 
 
 
         {
-          type: "dropdown",
-          label: "ADMIN",
-          items: [{ label: "Company Login", path: "/companylogin" },
-            {label:"User List", path:"/userlist"}
-          ],
+          type: "button",
+          label: "ADMIN", path:"/userlist"
+          // items: [{ label: "Company Login", path: "/companylogin" },
+          //   {label:"User List", path:"/userlist"}
+          // ],
         },
         
 
@@ -279,14 +279,14 @@ const Navbar = () => {
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
-      host: [
-        {
-          type: "dropdown",
-          label: "Host",
-          items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
-        },
-        { type: "button", label: "Logout", path: "/", onClick: handleLogout },
-      ],
+      // host: [
+      //   {
+      //     type: "dropdown",
+      //     label: "HOST",
+      //     items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
+      //   },
+      //   { type: "button", label: "Logout", path: "/", onClick: handleLogout },
+      // ],
       guest: [
         { type: "button", label: "Login", path: "/" },
         { type: "button", label: "Register", path: "/companyregister" },

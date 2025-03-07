@@ -94,6 +94,7 @@ const UserList = () => {
   };
 
   const handleCompanyLogin = () => {
+<<<<<<< HEAD
     setOpenCompanyLoginDialog(true);
   };
 
@@ -107,6 +108,9 @@ const UserList = () => {
 
   const handleTogglePassword = () => {
     setShowPassword(!showPassword);
+=======
+    navigate("/companylogin"); // Redirect to Company Login Page
+>>>>>>> 17a954033f5ffefdf97dad2ab047d378fc3b8b5e
   };
 
   const filteredUsers = users.filter((user) =>

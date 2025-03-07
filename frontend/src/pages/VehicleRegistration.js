@@ -1,21 +1,14 @@
+//VehicleRegistration.js
+
 import React, { useState } from "react";
-import {
-  TextField,
-  Button,
-  Container,
-  Paper,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-} from "@mui/material";
+import { TextField, Button, Paper, MenuItem, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import VehicleTicket from "../components/VehicleTicket";
 
-const VehicleRegistration = () => {
+const VehicleRegistration = ({ onAddVehicle }) => {
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [purpose, setPurpose] = useState("");
   const [ticketData, setTicketData] = useState(null);
-  const [open, setOpen] = useState(false); // State to control the dialog
+  const [openDialog, setOpenDialog] = useState(false);
 
   const purposes = ["Delivery", "Client Visit", "Service", "Other"];
 
@@ -37,38 +30,47 @@ const VehicleRegistration = () => {
       return;
     }
 
-    const checkInTime = new Date().toLocaleString();
+    const currentDate = new Date();
+    const date = currentDate.toISOString().split("T")[0];
+    const checkInTime = currentDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+
+    const newVehicle = {
+      vehicleNumber,
+      purpose,
+      date,
+      checkInTime,
+      checkOutTime: "",
+    };
+
+    onAddVehicle(newVehicle);
     setTicketData({ vehicleNumber, purpose, checkInTime });
-    setOpen(true); // Open the dialog
+    setOpenDialog(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
     setTicketData(null);
-    setVehicleNumber(""); // Clear vehicle number field
-    setPurpose(""); // Clear purpose field
+    setVehicleNumber("");
+    setPurpose("");
   };
 
   return (
-    <>
-      <Container
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          paddingTop: "64px",
-        }}
-      >
-        <Paper
-          elevation={3}
-          style={{
-            padding: 20,
-            maxWidth: 400,
-            textAlign: "center",
-            borderRadius: 10,
-          }}
-        >
+    <Paper
+      elevation={3}
+      sx={{
+        p: 3,
+        borderRadius: 2,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        width: "100%",
+        maxWidth: 350,
+        bgcolor: "#FFFFFF",
+      }}
+    >
+      {!openDialog ? (
+        <>
+          <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#2D3748", mb: 2 }}>
+            Register Vehicle
+          </Typography>
           <TextField
             fullWidth
             label="Vehicle Number"
@@ -78,8 +80,8 @@ const VehicleRegistration = () => {
             onKeyPress={handleKeyPress}
             margin="normal"
             inputProps={{ maxLength: 10 }}
+            sx={{ mb: 2 }}
           />
-
           <TextField
             fullWidth
             select
@@ -88,6 +90,7 @@ const VehicleRegistration = () => {
             value={purpose}
             onChange={(e) => setPurpose(e.target.value)}
             margin="normal"
+            sx={{ mb: 2 }}
           >
             {purposes.map((option) => (
               <MenuItem key={option} value={option}>
@@ -95,27 +98,27 @@ const VehicleRegistration = () => {
               </MenuItem>
             ))}
           </TextField>
-
           <Button
             fullWidth
             variant="contained"
             color="primary"
             onClick={handleGenerateTicket}
-            style={{ marginTop: 15 }}
+            sx={{ mt: 2, py: 1.5, textTransform: "none", fontWeight: 600 }}
           >
             Generate E-Ticket
           </Button>
-        </Paper>
-      </Container>
+        </>
+      ) : null}
 
-      {/* Dialog for E-Ticket */}
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>E-Ticket</DialogTitle>
+      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ bgcolor: "#3182CE", color: "#FFFFFF", fontWeight: 600 }}>
+          Generated Vehicle Ticket
+        </DialogTitle>
         <DialogContent>
-          {ticketData && <VehicleTicket data={ticketData} onClose={handleClose} />}
+          {ticketData && <VehicleTicket data={ticketData} onClose={handleCloseDialog} />}
         </DialogContent>
       </Dialog>
-    </>
+    </Paper>
   );
 };
 

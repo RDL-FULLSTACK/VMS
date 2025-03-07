@@ -229,9 +229,9 @@ const Navbar = () => {
           // ],
         },
         {
-          type: "dropdown",
-          label: "HOST",
-          items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
+          type: "button",
+          label: "HOST",path:"/HostDashboard"
+          // items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
         },
         
 
@@ -279,14 +279,14 @@ const Navbar = () => {
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
-      host: [
-        {
-          type: "dropdown",
-          label: "HOST",
-          items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
-        },
-        { type: "button", label: "Logout", path: "/", onClick: handleLogout },
-      ],
+      // host: [
+      //   {
+      //     type: "dropdown",
+      //     label: "HOST",
+      //     items: [{ label: "Host Dashboard", path: "/HostDashboard" }],
+      //   },
+      //   { type: "button", label: "Logout", path: "/", onClick: handleLogout },
+      // ],
       guest: [
         { type: "button", label: "Login", path: "/" },
         { type: "button", label: "Register", path: "/companyregister" },

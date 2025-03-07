@@ -59,118 +59,119 @@ const stats = [
 function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-const sampleVisitors = [
-  {
-    id: 1,
-    img: "https://randomuser.me/api/portraits/men/1.jpg",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    company: "Tech Corp",
-    phone: "123-456-7890",
-    checkIn: "2025-03-06 10:00 AM",
-    checkOut: "2025-03-06 05:00 PM",
-  },
-  {
-    id: 2,
-    img: "https://randomuser.me/api/portraits/women/2.jpg",
-    firstName: "Jane",
-    lastName: "Smith",
-    email: "jane.smith@example.com",
-    company: "Business Ltd",
-    phone: "987-654-3210",
-    checkIn: "2025-03-06 09:30 AM",
-    checkOut: "2025-03-06 04:30 PM",
-  },
-  {
-    id: 3,
-    img: "https://randomuser.me/api/portraits/men/3.jpg",
-    firstName: "Michael",
-    lastName: "Brown",
-    email: "michael.brown@example.com",
-    company: "Finance Inc",
-    phone: "555-123-4567",
-    checkIn: "2025-03-06 11:15 AM",
-    checkOut: "2025-03-06 06:00 PM",
-  },
-  {
-    id: 4,
-    img: "https://randomuser.me/api/portraits/women/4.jpg",
-    firstName: "Emily",
-    lastName: "Davis",
-    email: "emily.davis@example.com",
-    company: "Marketing Solutions",
-    phone: "222-333-4444",
-    checkIn: "2025-03-06 08:45 AM",
-    checkOut: "2025-03-06 03:30 PM",
-  },
-  {
-    id: 5,
-    img: "https://randomuser.me/api/portraits/men/5.jpg",
-    firstName: "David",
-    lastName: "Wilson",
-    email: "david.wilson@example.com",
-    company: "Consulting Group",
-    phone: "777-888-9999",
-    checkIn: "2025-03-06 12:00 PM",
-    checkOut: "2025-03-06 07:00 PM",
-  },
-  {
-    id: 6,
-    img: "https://randomuser.me/api/portraits/women/6.jpg",
-    firstName: "Sophia",
-    lastName: "Taylor",
-    email: "sophia.taylor@example.com",
-    company: "Creative Agency",
-    phone: "666-555-4444",
-    checkIn: "2025-03-06 09:00 AM",
-    checkOut: "2025-03-06 02:45 PM",
-  },
-  {
-    id: 7,
-    img: "https://randomuser.me/api/portraits/men/7.jpg",
-    firstName: "James",
-    lastName: "Anderson",
-    email: "james.anderson@example.com",
-    company: "Engineering Ltd",
-    phone: "111-222-3333",
-    checkIn: "2025-03-06 10:30 AM",
-    checkOut: "2025-03-06 05:45 PM",
-  },
-  {
-    id: 8,
-    img: "https://randomuser.me/api/portraits/women/8.jpg",
-    firstName: "Olivia",
-    lastName: "Martinez",
-    email: "olivia.martinez@example.com",
-    company: "Health Solutions",
-    phone: "444-555-6666",
-    checkIn: "2025-03-06 11:45 AM",
-    checkOut: "2025-03-06 06:15 PM",
-  },
-  {
-    id: 9,
-    img: "https://randomuser.me/api/portraits/men/9.jpg",
-    firstName: "William",
-    lastName: "Thomas",
-    email: "william.thomas@example.com",
-    company: "IT Services",
-    phone: "999-000-1111",
-    checkIn: "2025-03-06 07:30 AM",
-    checkOut: "2025-03-06 03:00 PM",
-  },
-  {
-    id: 10,
-    img: "https://randomuser.me/api/portraits/women/10.jpg",
-    firstName: "Emma",
-    lastName: "Garcia",
-    email: "emma.garcia@example.com",
-    company: "Retail Group",
-    phone: "333-222-1111",
-    checkIn: "2025-03-06 08:15 AM",
-    checkOut: "2025-03-06 04:00 PM",
-  },
-];
+
+  const sampleVisitors = [
+    {
+      id: 1,
+      img: "https://randomuser.me/api/portraits/men/1.jpg",
+      firstName: "John",
+      lastName: "Doe",
+      email: "john.doe@example.com",
+      company: "Tech Corp",
+      phone: "123-456-7890",
+      checkIn: "2025-03-06 10:00 AM",
+      checkOut: "2025-03-06 05:00 PM",
+    },
+    {
+      id: 2,
+      img: "https://randomuser.me/api/portraits/women/2.jpg",
+      firstName: "Jane",
+      lastName: "Smith",
+      email: "jane.smith@example.com",
+      company: "Innovate Ltd",
+      phone: "987-654-3210",
+      checkIn: "2025-03-06 09:30 AM",
+      checkOut: "2025-03-06 04:00 PM",
+    },
+    {
+      id: 3,
+      img: "https://randomuser.me/api/portraits/men/3.jpg",
+      firstName: "Michael",
+      lastName: "Brown",
+      email: "michael.brown@example.com",
+      company: "Alpha Solutions",
+      phone: "555-234-5678",
+      checkIn: "2025-03-06 11:00 AM",
+      checkOut: "2025-03-06 06:00 PM",
+    },
+    {
+      id: 4,
+      img: "https://randomuser.me/api/portraits/women/4.jpg",
+      firstName: "Emily",
+      lastName: "Clark",
+      email: "emily.clark@example.com",
+      company: "Beta Tech",
+      phone: "222-333-4444",
+      checkIn: "2025-03-06 08:45 AM",
+      checkOut: "2025-03-06 03:30 PM",
+    },
+    {
+      id: 5,
+      img: "https://randomuser.me/api/portraits/men/5.jpg",
+      firstName: "David",
+      lastName: "Wilson",
+      email: "david.wilson@example.com",
+      company: "Gamma Enterprises",
+      phone: "666-777-8888",
+      checkIn: "2025-03-06 12:15 PM",
+      checkOut: "2025-03-06 07:00 PM",
+    },
+    {
+      id: 6,
+      img: "https://randomuser.me/api/portraits/women/6.jpg",
+      firstName: "Sophia",
+      lastName: "Martinez",
+      email: "sophia.martinez@example.com",
+      company: "Delta Solutions",
+      phone: "999-888-7777",
+      checkIn: "2025-03-06 10:45 AM",
+      checkOut: "2025-03-06 05:30 PM",
+    },
+    {
+      id: 7,
+      img: "https://randomuser.me/api/portraits/men/7.jpg",
+      firstName: "James",
+      lastName: "Anderson",
+      email: "james.anderson@example.com",
+      company: "Epsilon Tech",
+      phone: "444-555-6666",
+      checkIn: "2025-03-06 07:30 AM",
+      checkOut: "2025-03-06 02:00 PM",
+    },
+    {
+      id: 8,
+      img: "https://randomuser.me/api/portraits/women/8.jpg",
+      firstName: "Olivia",
+      lastName: "Harris",
+      email: "olivia.harris@example.com",
+      company: "Zeta Industries",
+      phone: "123-321-1234",
+      checkIn: "2025-03-06 01:00 PM",
+      checkOut: "2025-03-06 08:00 PM",
+    },
+    {
+      id: 9,
+      img: "https://randomuser.me/api/portraits/men/9.jpg",
+      firstName: "Daniel",
+      lastName: "White",
+      email: "daniel.white@example.com",
+      company: "Theta Systems",
+      phone: "777-666-5555",
+      checkIn: "2025-03-06 09:15 AM",
+      checkOut: "2025-03-06 04:45 PM",
+    },
+    {
+      id: 10,
+      img: "https://randomuser.me/api/portraits/women/10.jpg",
+      firstName: "Emma",
+      lastName: "Moore",
+      email: "emma.moore@example.com",
+      company: "Sigma Solutions",
+      phone: "321-654-9870",
+      checkIn: "2025-03-06 11:30 AM",
+      checkOut: "2025-03-06 06:15 PM",
+    },
+  ];
 
   const [visitors, setVisitors] = useState(sampleVisitors);
 
@@ -183,35 +184,34 @@ const sampleVisitors = [
         <Avatar src={params.value} sx={{ width: 50, height: 50 }} />
       ),
     },
-    { field: "firstName", headerName: "First Name", width: 150 },
-    { field: "lastName", headerName: "Last Name", width: 150 },
-    { field: "email", headerName: "Email", width: 200 },
-    { field: "company", headerName: "Company", width: 150 },
-    { field: "phone", headerName: "Phone", width: 150 },
-    { field: "checkIn", headerName: "Check-In", width: 150 },
-    { field: "checkOut", headerName: "Check-Out", width: 150 },
+    { field: "firstName", headerName: "First Name", flex: 1 },
+    { field: "lastName", headerName: "Last Name", flex: 1 },
+    { field: "email", headerName: "Email", flex: 1.5 },
+    { field: "company", headerName: "Company", flex: 1 },
+    { field: "phone", headerName: "Phone", flex: 1 },
+    { field: "checkIn", headerName: "Check-In", flex: 1 },
+    { field: "checkOut", headerName: "Check-Out", flex: 1 },
   ];
 
   return (
     <>
       <Navbar />
 
-      {/* Main Layout with Two Containers */}
-      <Grid container spacing={2} mt={4} px={2}>
+      <Grid container spacing={2} mt={2} px={2}>
         {/* Left Main Container */}
-        <Grid item xs={8}>
+        <Grid item xs={12} md={8}>
           <Container
             sx={{
               bgcolor: "#f8f9fa",
-              minHeight: "auto",
               py: 3,
               px: 3,
               borderRadius: "20px",
               boxShadow: 3,
+              height: "800px", // Adjust as needed
             }}
           >
             {/* Stats Cards */}
-            <Grid container spacing={3} justifyContent="center">
+            <Grid container spacing={2} justifyContent="center">
               {stats.map((stat, index) => (
                 <Grid item xs={6} sm={4} md={2} key={index}>
                   <Card
@@ -239,7 +239,6 @@ const sampleVisitors = [
               ))}
             </Grid>
 
-            {/* Visitors Table */}
             <Box mt={4}>
               <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
                 <Typography variant="h6" gutterBottom>
@@ -260,8 +259,17 @@ const sampleVisitors = [
                     {error}
                   </Typography>
                 ) : (
-                  <Box sx={{ height: 400, width: "100%" }}>
-                    <DataGrid rows={visitors} columns={columns} pageSize={5} />
+                  <Box sx={{ width: "100%" }}>
+                    <DataGrid
+                      rows={visitors}
+                      columns={columns}
+                      autoHeight
+                      disableColumnMenu
+                      pageSizeOptions={[7]} // Allow only 7 rows per page
+                      initialState={{
+                        pagination: { paginationModel: { pageSize: 7 } },
+                      }}
+                    />
                   </Box>
                 )}
               </Paper>
@@ -270,20 +278,29 @@ const sampleVisitors = [
         </Grid>
 
         {/* Right-Side Container with Charts */}
-        <Grid item xs={4}>
+        <Grid item xs={12} md={4}>
           <Container
             sx={{
               bgcolor: "#f8f9fa",
-              minHeight: "auto",
               py: 3,
               px: 3,
               borderRadius: "20px",
               boxShadow: 3,
+              height: "800px", // Adjust as needed
             }}
           >
             {/* Activity Chart */}
             <Paper elevation={4} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                }}
+              >
                 Activity Chart
               </Typography>
               <ResponsiveContainer width="100%" height={250}>
@@ -297,22 +314,30 @@ const sampleVisitors = [
               </ResponsiveContainer>
             </Paper>
 
+            {/* Visitor Status Overview */}
             <Paper
-              elevation={6}
+              elevation={8}
               sx={{
-                p: 3,
-                borderRadius: 3,
-                background: "linear-gradient(135deg, #f3f4f6, #ffffff)",
-                boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                p: 4,
+                borderRadius: "10px",
+                bgcolor: "#fff", // Ensures white background
+                boxShadow: 4, // Soft shadow
+                height: 320, // Explicit height for the entire card
               }}
             >
               <Typography
                 variant="h6"
                 gutterBottom
-                sx={{ textAlign: "center", fontWeight: "bold", color: "#333" }}
+                sx={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                }}
               >
                 Visitor Status Overview
               </Typography>
+
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={meterData}
@@ -367,7 +392,7 @@ const sampleVisitors = [
                   <YAxis tick={{ fill: "#555", fontSize: 14 }} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(255, 255, 255, 0.9)",
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
                       borderRadius: "8px",
                       border: "1px solid #ddd",
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",

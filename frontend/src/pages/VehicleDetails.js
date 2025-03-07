@@ -19,7 +19,7 @@ import {
   TablePagination,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import Navbar from "../components/Navbar";
+// import Navbar from "../components/Navbar";
 import VehicleTicket from "../components/VehicleTicket";
 
 const VehicleDetails = () => {
@@ -91,8 +91,8 @@ const VehicleDetails = () => {
       filterCheckOut === "checkedOut"
         ? vehicle.checkOutTime !== ""
         : filterCheckOut === "notCheckedOut"
-        ? vehicle.checkOutTime === ""
-        : true;
+          ? vehicle.checkOutTime === ""
+          : true;
     return matchesSearch && matchesPurpose && matchesDate && matchesCheckOut;
   });
 
@@ -100,7 +100,7 @@ const VehicleDetails = () => {
 
   return (
     <>
-      <Navbar />
+      {/* <Navbar /> */}
       {ticketData ? (
         <VehicleTicket data={ticketData} onClose={() => setTicketData(null)} />
       ) : (

@@ -10,6 +10,8 @@ import {
   Box,
   CircularProgress,
   Avatar,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import {
@@ -59,6 +61,10 @@ const stats = [
 function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
   const sampleVisitors = [
     {
@@ -175,52 +181,54 @@ function Home() {
 
   const [visitors, setVisitors] = useState(sampleVisitors);
 
+  // Adjust column visibility and width for responsiveness
   const columns = [
     {
       field: "img",
       headerName: "Image",
-      width: 100,
+      width: isMobile ? 70 : 100,
       renderCell: (params) => (
-        <Avatar src={params.value} sx={{ width: 50, height: 50 }} />
+        <Avatar src={params.value} sx={{ width: isMobile ? 40 : 50, height: isMobile ? 40 : 50 }} />
       ),
     },
-    { field: "firstName", headerName: "First Name", flex: 1 },
-    { field: "lastName", headerName: "Last Name", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1.5 },
-    { field: "company", headerName: "Company", flex: 1 },
-    { field: "phone", headerName: "Phone", flex: 1 },
-    { field: "checkIn", headerName: "Check-In", flex: 1 },
-    { field: "checkOut", headerName: "Check-Out", flex: 1 },
+    { field: "firstName", headerName: "First Name", flex: isMobile ? 0 : 1, width: isMobile ? 100 : undefined },
+    { field: "lastName", headerName: "Last Name", flex: isMobile ? 0 : 1, width: isMobile ? 100 : undefined },
+    { field: "email", headerName: "Email", flex: isMobile ? 0 : 1.5, width: isMobile ? 150 : undefined, hide: isMobile },
+    { field: "company", headerName: "Company", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
+    { field: "phone", headerName: "Phone", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined, hide: isTablet },
+    { field: "checkIn", headerName: "Check-In", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
+    { field: "checkOut", headerName: "Check-Out", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
   ];
 
   return (
     <>
       <Navbar />
 
-      <Grid container spacing={2} mt={2} px={2}>
+      <Grid container spacing={isMobile ? 1 : 2} mt={isMobile ? 1 : 2} px={isMobile ? 1 : 2}>
         {/* Left Main Container */}
         <Grid item xs={12} md={8}>
           <Container
             sx={{
               bgcolor: "#f8f9fa",
-              py: 3,
-              px: 3,
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
               borderRadius: "20px",
               boxShadow: 3,
-              height: "800px", // Adjust as needed
+              height: isMobile ? "auto" : "800px",
             }}
           >
             {/* Stats Cards */}
-            <Grid container spacing={2} justifyContent="center">
+            <Grid container spacing={isMobile ? 2 : 3} justifyContent="center">
               {stats.map((stat, index) => (
-                <Grid item xs={6} sm={4} md={2} key={index}>
+                <Grid item xs={6} sm={4} md={2.2} key={index}> {/* Adjusted md to 2.2 to prevent overlap */}
                   <Card
                     sx={{
                       bgcolor: stat.color,
                       color: "white",
                       textAlign: "center",
-                      p: 2,
-                      borderRadius: 2,
+                      p: isMobile ? 1 : 2,
+                      borderRadius: 2, // Kept border radius as it was
+                      height: "100%", // Kept height as it was
                     }}
                   >
                     <CardContent>
@@ -230,8 +238,12 @@ function Home() {
                         alignItems="center"
                       >
                         {stat.icon}
-                        <Typography variant="body1">{stat.title}</Typography>
-                        <Typography variant="h5">{stat.value}</Typography>
+                        <Typography variant={isMobile ? "body2" : "body1"} sx={{ fontSize: isMobile ? "0.8rem" : "1rem" }}>
+                          {stat.title}
+                        </Typography>
+                        <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}>
+                          {stat.value}
+                        </Typography>
                       </Box>
                     </CardContent>
                   </Card>
@@ -239,9 +251,10 @@ function Home() {
               ))}
             </Grid>
 
-            <Box mt={4}>
-              <Paper elevation={4} sx={{ p: 3, borderRadius: 2 }}>
-                <Typography variant="h6" gutterBottom>
+            {/* Visitor Container with Increased Gap */}
+            <Box mt={isMobile ? 6 : 8}> {/* Gap between cards and visitor container */}
+              <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}>
+                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
                   Visitors
                 </Typography>
 
@@ -259,15 +272,20 @@ function Home() {
                     {error}
                   </Typography>
                 ) : (
-                  <Box sx={{ width: "100%" }}>
+                  <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "hidden" }}>
                     <DataGrid
                       rows={visitors}
                       columns={columns}
                       autoHeight
                       disableColumnMenu
-                      pageSizeOptions={[7]} // Allow only 7 rows per page
+                      pageSizeOptions={[5, 7]}
                       initialState={{
-                        pagination: { paginationModel: { pageSize: 7 } },
+                        pagination: { paginationModel: { pageSize: isMobile ? 5 : 7 } },
+                      }}
+                      sx={{
+                        "& .MuiDataGrid-root": {
+                          minWidth: isMobile ? 600 : "auto",
+                        },
                       }}
                     />
                   </Box>
@@ -282,17 +300,17 @@ function Home() {
           <Container
             sx={{
               bgcolor: "#f8f9fa",
-              py: 3,
-              px: 3,
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
               borderRadius: "20px",
               boxShadow: 3,
-              height: "800px", // Adjust as needed
+              height: isMobile ? "auto" : "800px",
             }}
           >
             {/* Activity Chart */}
-            <Paper elevation={4} sx={{ p: 3, borderRadius: 2, mb: 3 }}>
+            <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}>
               <Typography
-                variant="h6"
+                variant={isMobile ? "h6" : "h5"}
                 gutterBottom
                 sx={{
                   textAlign: "center",
@@ -303,13 +321,21 @@ function Home() {
               >
                 Activity Chart
               </Typography>
-              <ResponsiveContainer width="100%" height={250}>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="visits" stroke="#8884d8" />
+                  <XAxis dataKey="name" tick={{ fontSize: isMobile ? 12 : 14 }} />
+                  <YAxis tick={{ fontSize: isMobile ? 12 : 14 }} />
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: isMobile ? 12 : 14,
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                    }}
+                  />
+                  <Line type="monotone" dataKey="visits" stroke="#8884d8" strokeWidth={isMobile ? 1 : 2} />
                 </LineChart>
               </ResponsiveContainer>
             </Paper>
@@ -318,15 +344,15 @@ function Home() {
             <Paper
               elevation={8}
               sx={{
-                p: 4,
+                p: isMobile ? 2 : 4,
                 borderRadius: "10px",
-                bgcolor: "#fff", // Ensures white background
-                boxShadow: 4, // Soft shadow
-                height: 320, // Explicit height for the entire card
+                bgcolor: "#fff",
+                boxShadow: 4,
+                height: isMobile ? 280 : 320,
               }}
             >
               <Typography
-                variant="h6"
+                variant={isMobile ? "h6" : "h5"}
                 gutterBottom
                 sx={{
                   textAlign: "center",
@@ -338,60 +364,31 @@ function Home() {
                 Visitor Status Overview
               </Typography>
 
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
                 <BarChart
                   data={meterData}
-                  margin={{ top: 20, right: 20, left: 0, bottom: 20 }}
+                  margin={{ top: 20, right: isMobile ? 10 : 20, left: 0, bottom: 20 }}
                 >
                   <defs>
-                    <linearGradient
-                      id="colorCheckedIn"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="colorCheckedIn" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#0088FE"
-                        stopOpacity={0.3}
-                      />
+                      <stop offset="95%" stopColor="#0088FE" stopOpacity={0.3} />
                     </linearGradient>
-                    <linearGradient
-                      id="colorCheckedOut"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="colorCheckedOut" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#00C49F"
-                        stopOpacity={0.3}
-                      />
+                      <stop offset="95%" stopColor="#00C49F" stopOpacity={0.3} />
                     </linearGradient>
-                    <linearGradient
-                      id="colorPending"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
+                    <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#FFBB28" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#FFBB28"
-                        stopOpacity={0.3}
-                      />
+                      <stop offset="95%" stopColor="#FFBB28" stopOpacity={0.3} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-                  <XAxis dataKey="name" tick={{ fill: "#555", fontSize: 14 }} />
-                  <YAxis tick={{ fill: "#555", fontSize: 14 }} />
+                  <XAxis dataKey="name" tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }} />
+                  <YAxis tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }} />
                   <Tooltip
                     contentStyle={{
+                      fontSize: isMobile ? 12 : 14,
                       backgroundColor: "rgba(255, 255, 255, 0.95)",
                       borderRadius: "8px",
                       border: "1px solid #ddd",

@@ -238,11 +238,11 @@ const Navbar = () => {
 
 
         {
-          type: "dropdown",
-          label: "ADMIN",
-          items: [{ label: "Company Login", path: "/companylogin" },
-            {label:"User List", path:"/userlist"}
-          ],
+          type: "button",
+          label: "ADMIN", path:"/userlist"
+          // items: [{ label: "Company Login", path: "/companylogin" },
+          //   {label:"User List", path:"/userlist"}
+          // ],
         },
         
 

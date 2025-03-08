@@ -104,22 +104,7 @@ function App() {
 
 
       
-      {/* <Route
-        path="/vehicle-registration"
-        element={
-          <PrivateRoute>
-            <VehicleRegistration />
-          </PrivateRoute>
-        }
-      />
-      <Route
-        path="/vehicle-details"
-        element={
-          <PrivateRoute>
-            <VehicleDetails />
-          </PrivateRoute>
-        }
-      /> */}
+   
  
  
  
@@ -177,14 +162,7 @@ function App() {
           </PrivateRoute>
         }
       />
-      {/* <Route
-        path="/vehicle-checkout/"
-        element={
-          <PrivateRoute>
-            <VehicleCheckoutRoutes />
-          </PrivateRoute>
-        }
-      /> */}
+      
       <Route
         path="/vehicles"
         element={

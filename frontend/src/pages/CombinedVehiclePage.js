@@ -196,13 +196,13 @@ const CombinedVehiclePage = () => {
               maxWidth: "100%",
             }}
           >
-            <Typography
+            {/* <Typography
               variant={{ xs: "h6", md: "h5" }}
               gutterBottom
               sx={{ fontWeight: 700, color: "#2D3748", mb: { xs: 1, md: 2 } }}
             >
               Vehicle List
-            </Typography>
+            </Typography> */}
 
             <Box
               sx={{

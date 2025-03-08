@@ -1,10 +1,3 @@
-
-
-
-
-
-//added responsiveness
-
 import React, { useState, useEffect } from 'react';
 import { 
   Box, Paper, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
@@ -21,7 +14,7 @@ const VisitorList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
-  const rowsPerPage = 5;
+  const rowsPerPage = 7;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -91,6 +84,14 @@ const VisitorList = () => {
     page * rowsPerPage
   );
 
+  // Define common styles for buttons to ensure consistency
+  const buttonStyles = {
+    py: 0.3,
+    fontSize: '0.75rem',
+    minWidth: '80px', // Fixed width for all buttons
+    textAlign: 'center',
+  };
+
   return (
     <>
       <Navbar />
@@ -136,13 +137,15 @@ const VisitorList = () => {
                 />
               </Box>
 
+              {/* Grid Container */}
               <Box sx={{ overflowX: 'auto' }}>
+                {/* Grid Header */}
                 <Box
                   sx={{
                     display: 'grid',
                     gridTemplateColumns: {
                       xs: 'repeat(11, minmax(100px, 1fr))', // Minimum width for mobile
-                      sm: '40px 1.5fr 2fr 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr',
+                      sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 100px 180px', // Fixed pixel widths for desktop
                     },
                     gap: 1,
                     bgcolor: '#e0e0e0',
@@ -150,7 +153,7 @@ const VisitorList = () => {
                     borderRadius: 1,
                     fontWeight: 'bold',
                     alignItems: 'center',
-                    minWidth: '800px', // Ensure horizontal scrolling on small screens
+                    minWidth: '1240px', // Sum of the pixel widths above to ensure consistency
                   }}
                 >
                   <Box>ID</Box>
@@ -166,6 +169,7 @@ const VisitorList = () => {
                   <Box textAlign="center">Actions</Box>
                 </Box>
 
+                {/* Grid Body */}
                 {paginatedVisitors.map((visitor) => (
                   <Box
                     key={visitor.id}
@@ -173,32 +177,50 @@ const VisitorList = () => {
                       display: 'grid',
                       gridTemplateColumns: {
                         xs: 'repeat(11, minmax(100px, 1fr))',
-                        sm: '40px 1.5fr 2fr 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 1.5fr',
+                        sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 100px 180px', // Same as header
                       },
                       gap: 1,
                       p: 1,
                       borderBottom: '1px solid #e0e0e0',
                       alignItems: 'center',
-                      minWidth: '800px',
+                      minWidth: '1240px', // Ensure body matches header
                     }}
                   >
-                    <Box>{visitor.id.slice(-4)}</Box>
-                    <Box>{visitor.name}</Box>
-                    <Box>{visitor.email}</Box>
-                    <Box>{visitor.phone}</Box>
-                    <Box>{visitor.checkIn}</Box>
-                    <Box>{visitor.checkOut}</Box>
-                    <Box>{visitor.host}</Box>
-                    <Box>{visitor.designation}</Box>
-                    <Box>{visitor.date}</Box>
-                    <Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.id.slice(-4)}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.name}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.email}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.phone}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.checkIn}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.checkOut}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.host}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.designation}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.date}
+                    </Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                       {visitor.assets.length > 0 ? (
                         <Button 
                           variant="contained" 
                           color="primary" 
                           onClick={() => handleViewClick(visitor)}
                           size="small"
-                          sx={{ py: 0.2, fontSize: '0.7rem' }}
+                          sx={{ ...buttonStyles }}
                         >
                           View
                         </Button>
@@ -208,7 +230,7 @@ const VisitorList = () => {
                           color="error"
                           disabled
                           size="small"
-                          sx={{ py: 0.2, fontSize: '0.7rem', minWidth: 'auto' }}
+                          sx={{ ...buttonStyles }}
                         >
                           No Assets
                         </Button>
@@ -219,16 +241,15 @@ const VisitorList = () => {
                         sx={{ 
                           display: 'flex', 
                           flexDirection: { xs: 'column', sm: 'row' }, 
-                          gap: 0.5 
+                          gap: 0.5,
+                          justifyContent: 'center', // Center buttons in the column
                         }}
                       >
                         <Button
                           variant="contained"
                           size="small"
                           sx={{ 
-                            py: 0.3,
-                            fontSize: '0.75rem',
-                            minWidth: 'auto',
+                            ...buttonStyles,
                             bgcolor: 'green',
                             color: 'white',
                             '&:hover': { bgcolor: 'darkgreen' }
@@ -241,14 +262,12 @@ const VisitorList = () => {
                           variant="contained"
                           size="small"
                           sx={{ 
-                            py: 0.3,
-                            fontSize: '0.75rem',
-                            minWidth: 'auto',
+                            ...buttonStyles,
                             bgcolor: 'orange',
                             color: 'white',
                             '&:hover': { bgcolor: '#e68a00' }
                           }}
-                          onClick={() => navigate(`/visitorcard/${visitor.id}`)}  //has to change or add this in app.js for specific routing
+                          onClick={() => navigate(`/visitorcard/${visitor.id}`)}
                         >
                           Visitor Card
                         </Button>

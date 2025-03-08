@@ -1,12 +1,11 @@
-//vehicleRoutes.js
-
-const express = require("express");
+// routes/vehicleRoutes.js
+const express = require('express');
 const router = express.Router();
-const vehicleController = require("../controllers/vehicleController");
+const vehicleController = require('../controllers/vehicleController');
 
-// Vehicle Routes
-router.get("/", vehicleController.getAllVehicles);
-router.post("/", vehicleController.addVehicle);
-router.delete("/:id", vehicleController.deleteVehicle);
+router.get('/', vehicleController.getAllVehicles); // GET /api/vehicles
+router.post('/', vehicleController.addVehicle); // POST /api/vehicles
+router.put('/checkout', vehicleController.checkoutVehicle); // PUT /api/vehicles/checkout
+router.delete('/:id', vehicleController.deleteVehicle); // DELETE /api/vehicles/:id
 
 module.exports = router;

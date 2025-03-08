@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+// CombinedVehiclePage.js
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Box,
   Paper,
@@ -18,59 +20,56 @@ import VehicleCheckout from "./VehicleCheckout";
 
 const CombinedVehiclePage = () => {
   const [view, setView] = useState(0); // 0 for Registration, 1 for Checkout
-  const [vehicles, setVehicles] = useState([
-    { id: 1, vehicleNumber: "KA19MF1476", purpose: "Delivery", date: "2025-03-01", checkInTime: "10:30 AM", checkOutTime: "02:30 PM" },
-    { id: 2, vehicleNumber: "MH04AB2025", purpose: "Client Visit", date: "2025-03-01", checkInTime: "11:15 AM", checkOutTime: "03:45 PM" },
-    { id: 3, vehicleNumber: "DL10CD5621", purpose: "Service", date: "2025-03-01", checkInTime: "12:45 PM", checkOutTime: "" },
-    { id: 4, vehicleNumber: "KA19MF1477", purpose: "Delivery", date: "2025-03-01", checkInTime: "02:00 PM", checkOutTime: "06:00 PM" },
-    { id: 5, vehicleNumber: "MH04AB2026", purpose: "Client Visit", date: "2025-03-01", checkInTime: "03:30 PM", checkOutTime: "" },
-    { id: 6, vehicleNumber: "DL10CD5622", purpose: "Service", date: "2025-03-02", checkInTime: "09:00 AM", checkOutTime: "01:30 PM" },
-    { id: 7, vehicleNumber: "KA19MF1478", purpose: "Delivery", date: "2025-03-02", checkInTime: "10:16 AM", checkOutTime: "" },
-    { id: 8, vehicleNumber: "MH04AB2027", purpose: "Client Visit", date: "2025-03-02", checkInTime: "11:00 AM", checkOutTime: "02:00 PM" },
-    { id: 9, vehicleNumber: "DL10CD5623", purpose: "Service", date: "2025-03-02", checkInTime: "01:30 PM", checkOutTime: "" },
-    { id: 10, vehicleNumber: "KA19MF1479", purpose: "Delivery", date: "2025-03-02", checkInTime: "04:00 PM", checkOutTime: "07:30 PM" },
-    { id: 11, vehicleNumber: "MH04AB2028", purpose: "Client Visit", date: "2025-03-03", checkInTime: "08:45 AM", checkOutTime: "12:00 PM" },
-    { id: 12, vehicleNumber: "DL10CD5624", purpose: "Service", date: "2025-03-03", checkInTime: "10:00 AM", checkOutTime: "" },
-    { id: 13, vehicleNumber: "KA19MF1480", purpose: "Delivery", date: "2025-03-03", checkInTime: "11:30 AM", checkOutTime: "03:00 PM" },
-    { id: 14, vehicleNumber: "MH04AB2029", purpose: "Client Visit", date: "2025-03-03", checkInTime: "02:15 PM", checkOutTime: "" },
-    { id: 15, vehicleNumber: "DL10CD5625", purpose: "Service", date: "2025-03-03", checkInTime: "04:00 PM", checkOutTime: "07:00 PM" },
-    { id: 16, vehicleNumber: "KA19MF1481", purpose: "Delivery", date: "2025-03-04", checkInTime: "07:30 AM", checkOutTime: "11:30 AM" },
-    { id: 17, vehicleNumber: "MH04AB2030", purpose: "Client Visit", date: "2025-03-04", checkInTime: "09:15 AM", checkOutTime: "" },
-    { id: 18, vehicleNumber: "DL10CD5626", purpose: "Service", date: "2025-03-04", checkInTime: "12:00 PM", checkOutTime: "03:30 PM" },
-    { id: 19, vehicleNumber: "KA19MF1482", purpose: "Delivery", date: "2025-03-04", checkInTime: "02:45 PM", checkOutTime: "" },
-    { id: 20, vehicleNumber: "MH04AB2031", purpose: "Client Visit", date: "2025-03-05", checkInTime: "08:00 AM", checkOutTime: "12:45 PM" },
-    { id: 21, vehicleNumber: "DL10CD5627", purpose: "Service", date: "2025-03-05", checkInTime: "10:30 AM", checkOutTime: "" },
-    { id: 22, vehicleNumber: "KA19MF1483", purpose: "Delivery", date: "2025-03-05", checkInTime: "01:00 PM", checkOutTime: "04:30 PM" },
-    { id: 23, vehicleNumber: "MH04AB2032", purpose: "Client Visit", date: "2025-03-05", checkInTime: "03:15 PM", checkOutTime: "" },
-    { id: 24, vehicleNumber: "DL10CD5628", purpose: "Service", date: "2025-03-06", checkInTime: "09:00 AM", checkOutTime: "01:00 PM" },
-    { id: 25, vehicleNumber: "KA19MF1484", purpose: "Delivery", date: "2025-03-06", checkInTime: "11:00 AM", checkOutTime: "" },
-    { id: 26, vehicleNumber: "MH04AB2033", purpose: "Client Visit", date: "2025-03-06", checkInTime: "02:00 PM", checkOutTime: "05:30 PM" },
-    { id: 27, vehicleNumber: "DL10CD5629", purpose: "Service", date: "2025-03-07", checkInTime: "08:30 AM", checkOutTime: "" },
-    { id: 28, vehicleNumber: "KA19MF1485", purpose: "Delivery", date: "2025-03-07", checkInTime: "10:45 AM", checkOutTime: "02:15 PM" },
-    { id: 29, vehicleNumber: "MH04AB2034", purpose: "Client Visit", date: "2025-03-07", checkInTime: "01:30 PM", checkOutTime: "" },
-    { id: 30, vehicleNumber: "DL10CD5630", purpose: "Service", date: "2025-03-07", checkInTime: "03:45 PM", checkOutTime: "07:00 PM" },
-  ]);
+  const [vehicles, setVehicles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPurpose, setFilterPurpose] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterCheckOut, setFilterCheckOut] = useState("");
 
+  // Fetch vehicles from backend on component mount
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/vehicles");
+        setVehicles(response.data);
+      } catch (error) {
+        console.error("Error fetching vehicles:", error);
+      }
+    };
+    fetchVehicles();
+  }, []);
+
   const handleViewChange = (event, newValue) => {
     setView(newValue);
   };
 
-  const handleAddVehicle = (newVehicle) => {
-    setVehicles([...vehicles, { ...newVehicle, id: vehicles.length + 1 }]);
+  const handleAddVehicle = async (newVehicle) => {
+    try {
+      const response = await axios.post("http://localhost:5000/api/vehicles", newVehicle);
+      setVehicles([...vehicles, response.data.vehicle]);
+    } catch (error) {
+      console.error("Error adding vehicle:", error);
+      alert(error.response?.data?.message || "Failed to register vehicle");
+    }
   };
 
-  const handleCheckoutVehicle = (vehicleNumber, checkOutTime) => {
-    setVehicles(
-      vehicles.map((vehicle) =>
-        vehicle.vehicleNumber === vehicleNumber
-          ? { ...vehicle, checkOutTime }
-          : vehicle
-      )
-    );
+  const handleCheckoutVehicle = async (vehicleNumber, checkOutTime) => {
+    try {
+      const response = await axios.put("http://localhost:5000/api/vehicles/checkout", {
+        vehicleNumber,
+        checkOutTime,
+      });
+      setVehicles(
+        vehicles.map((vehicle) =>
+          vehicle.vehicleNumber === vehicleNumber
+            ? { ...vehicle, checkOutTime }
+            : vehicle
+        )
+      );
+    } catch (error) {
+      console.error("Error checking out vehicle:", error);
+      alert(error.response?.data?.message || "Failed to check out vehicle");
+    }
   };
 
   const filteredVehicles = vehicles.filter((vehicle) => {
@@ -94,7 +93,7 @@ const CombinedVehiclePage = () => {
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column", md: "row" }, // Stack on mobile, row on medium and up
+          flexDirection: { xs: "column", md: "row" },
           gap: { xs: 2, md: 3 },
           p: { xs: 1, md: 3 },
           bgcolor: "#F5F7FA",
@@ -109,11 +108,11 @@ const CombinedVehiclePage = () => {
           sx={{
             display: "flex",
             flexDirection: "column",
-            flex: { xs: 1, md: 1 }, // Full width on mobile, 40% on desktop
+            flex: { xs: 1, md: 1 },
             minWidth: 0,
             maxWidth: { md: "40%" },
-            order: { xs: 1, md: 2 }, // Move to top on mobile, second on desktop
-            mt: { xs: 0, md: 0 }, // No top margin on mobile
+            order: { xs: 1, md: 2 },
+            mt: { xs: 0, md: 0 },
           }}
         >
           <Paper
@@ -177,10 +176,10 @@ const CombinedVehiclePage = () => {
           sx={{
             display: "flex",
             flexDirection: "column",
-            flex: { xs: 1, md: 2 }, // Full width on mobile, 60% on desktop
+            flex: { xs: 1, md: 2 },
             minWidth: 0,
             maxWidth: { md: "60%" },
-            order: { xs: 2, md: 1 }, // Move to bottom on mobile, first on desktop
+            order: { xs: 2, md: 1 },
           }}
         >
           <Paper
@@ -197,16 +196,14 @@ const CombinedVehiclePage = () => {
               maxWidth: "100%",
             }}
           >
-            {/* Vehicle List */}
             <Typography
-              variant={{ xs: "h6", md: "h5" }} // Smaller header on mobile
+              variant={{ xs: "h6", md: "h5" }}
               gutterBottom
               sx={{ fontWeight: 700, color: "#2D3748", mb: { xs: 1, md: 2 } }}
             >
               Vehicle List
             </Typography>
 
-            {/* Filter Row with Background */}
             <Box
               sx={{
                 display: "flex",
@@ -215,7 +212,7 @@ const CombinedVehiclePage = () => {
                 p: { xs: 1, md: 2 },
                 borderRadius: 1,
                 bgcolor: "#EDEEF2",
-                flexWrap: "wrap", // Wrap on all screen sizes
+                flexWrap: "wrap",
                 alignItems: "center",
                 boxSizing: "border-box",
               }}
@@ -237,7 +234,7 @@ const CombinedVehiclePage = () => {
                 size="small"
                 sx={{
                   flex: { xs: 1, md: "auto" },
-                  minWidth: { xs: "100%", md: 150 }, // Ensure minimum width
+                  minWidth: { xs: "100%", md: 150 },
                   bgcolor: "white",
                   mb: { xs: 1, md: 0 },
                 }}
@@ -249,7 +246,7 @@ const CombinedVehiclePage = () => {
                   onChange={(e) => setFilterPurpose(e.target.value)}
                   sx={{
                     "& .MuiSelect-select": {
-                      paddingRight: "32px", // Increase padding to avoid icon overlap
+                      paddingRight: "32px",
                     },
                   }}
                 >
@@ -290,7 +287,7 @@ const CombinedVehiclePage = () => {
                   onChange={(e) => setFilterCheckOut(e.target.value)}
                   sx={{
                     "& .MuiSelect-select": {
-                      paddingRight: "32px", // Increase padding to avoid icon overlap
+                      paddingRight: "32px",
                     },
                   }}
                 >

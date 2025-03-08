@@ -269,13 +269,17 @@ const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
         user: process.env.EMAIL_USER, // Your Gmail
-        pass: process.env.EMAIL_PASS, // Your App Password
+        pass: process.env.EMAIL_PASS, // App Password (not normal password)
+    },
+    tls: {
+        rejectUnauthorized: false, // Ignore self-signed cert errors
     },
 });
 
+
 // 🔹 Send Email OTP
 exports.sendEmailOtp = async (req, res) => {
-    console.log("function triggered2334433");
+    // console.log("function triggered2334433");
     
     try {
         const { email } = req.body;
@@ -300,12 +304,12 @@ exports.sendEmailOtp = async (req, res) => {
                 
                 // Store OTP in session/database (for verification later)
                 req.session.otp = otp; // If using session-based storage
-                console.log("hello22");
+                // console.log("hello22");
         // OR Store in DB (if using MongoDB)
         // await OTPModel.create({ email, otp, expiresAt: new Date(Date.now() + 5 * 60000) });
 
         // Email Message
-        console.log("done");
+        // console.log("done");
         
         const mailOptions = {
             from: process.env.EMAIL_USER,
@@ -313,7 +317,6 @@ exports.sendEmailOtp = async (req, res) => {
             subject: "Your OTP Code",
             text: `Your OTP for visitor verification is: ${otp}. It is valid for 5 minutes.`,
         };
-        console.log("hello1")
 
         // Send Email
         await transporter.sendMail(mailOptions);

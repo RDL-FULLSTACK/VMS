@@ -31,10 +31,11 @@ const {
     getAllVisitors, 
     getLatestVisitor,
     getVisitorById, // Add this
-    addVisitor, 
+    addVisitor,
+    sendEmailOtp, 
     checkOutVisitor, 
     deleteVisitor, 
-    updateVisitor 
+    updateVisitor
 } = require("../controllers/visitorController");
 
 router.get("/", getAllVisitors);
@@ -44,5 +45,6 @@ router.post("/checkin", addVisitor);
 router.put("/checkout/:id", checkOutVisitor);
 router.put("/:id", updateVisitor);
 router.delete("/:id", deleteVisitor);
+router.post("/send-email-otp", sendEmailOtp);
 
 module.exports = router;

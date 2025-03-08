@@ -224,6 +224,9 @@
 
 
 const Visitor = require("../models/Visitor");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const session = require("express-session");
 
 // 🔹 Get All Visitors
 exports.getAllVisitors = async (req, res) => {
@@ -477,6 +480,76 @@ exports.updateVisitor = async (req, res) => {
             success: false,
             message: "Error updating visitor",
             error: error.message
+        });
+    }
+};
+
+
+
+// Setup Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER, // Your Gmail
+        pass: process.env.EMAIL_PASS, // Your App Password
+    },
+});
+
+// 🔹 Send Email OTP
+exports.sendEmailOtp = async (req, res) => {
+    console.log("function triggered2334433");
+    
+    try {
+        const { email } = req.body;
+        
+        
+        if (!email) {
+            
+            return res.status(400).json({
+                success: false,
+                message: "Email is required",
+            });
+        }
+        // if(email){
+            //     return res.status(200).json({
+                //         success: true,
+                //         message: "ok"
+                //     });
+                // }
+                
+                // Generate a 6-digit OTP
+                const otp = crypto.randomInt(100000, 999999).toString();
+                
+                // Store OTP in session/database (for verification later)
+                req.session.otp = otp; // If using session-based storage
+                console.log("hello22");
+        // OR Store in DB (if using MongoDB)
+        // await OTPModel.create({ email, otp, expiresAt: new Date(Date.now() + 5 * 60000) });
+
+        // Email Message
+        console.log("done");
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Your OTP Code",
+            text: `Your OTP for visitor verification is: ${otp}. It is valid for 5 minutes.`,
+        };
+        console.log("hello1")
+
+        // Send Email
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({
+            success: true,
+            message: `OTP sent to ${email}`,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Error sending OTP",
+            error: error.message,
         });
     }
 };

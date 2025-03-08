@@ -4,10 +4,23 @@ const cors = require('cors');
 const connectDB = require('./src/config/db'); // Ensure correct path
 const authRoutes = require('./src/routes/authRoutes'); // Ensure correct path
 const vehicleRoutes = require('./src/routes/vehicleRoutes');
-const visitorRoutes = require('./src/routes/visitorRoutes'); // Added visitor routes
+const visitorRoutes = require('./src/routes/visitorRoutes');// Added visitor routes
+
+const session = require("express-session");
+
+
+
+
+
 
 // Initialize Express App
 const app = express();
+app.use(session({
+    secret: "12345abc",  // Change this to a secure key
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }  // Set true if using HTTPS
+}));
 
 // Middleware
 app.use(express.json()); // Parse JSON

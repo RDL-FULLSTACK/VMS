@@ -89,6 +89,7 @@ function App() {
           </PrivateRoute>
         }
       />
+      
       <Route
         path="/visitorcard"
         element={
@@ -97,6 +98,12 @@ function App() {
           </PrivateRoute>
         }
       />
+
+
+
+
+
+      
       {/* <Route
         path="/vehicle-registration"
         element={
@@ -113,6 +120,23 @@ function App() {
           </PrivateRoute>
         }
       /> */}
+ 
+ 
+ 
+ 
+           {/* Add the new dynamic route here */}
+      <Route
+        path="/visitorcard/:visitorId"
+        element={
+          <PrivateRoute>
+            <VisitorCard />
+          </PrivateRoute>
+        }
+        />
+
+ 
+ 
+ 
       <Route
         path="/visitorlist"
         element={

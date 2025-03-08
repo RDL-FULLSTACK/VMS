@@ -1,3 +1,8 @@
+
+
+
+
+
 // const Visitor = require("../models/Visitor");
 
 // // 🔹 Get All Visitors
@@ -13,6 +18,30 @@
 //         res.status(500).json({
 //             success: false,
 //             message: "Error fetching visitors",
+//             error: error.message
+//         });
+//     }
+// };
+
+// // 🔹 Get Latest Visitor
+// exports.getLatestVisitor = async (req, res) => {
+//     try {
+//         const latestVisitor = await Visitor.findOne().sort({ createdAt: -1 });
+//         if (!latestVisitor) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "No visitors found"
+//             });
+//         }
+//         res.status(200).json({
+//             success: true,
+//             message: "Latest visitor retrieved successfully",
+//             data: latestVisitor
+//         });
+//     } catch (error) {
+//         res.status(500).json({
+//             success: false,
+//             message: "Error fetching latest visitor",
 //             error: error.message
 //         });
 //     }
@@ -154,7 +183,7 @@
 //     }
 // };
 
-// // 🔹 Update Visitor (Bonus method for completeness)
+// // 🔹 Update Visitor
 // exports.updateVisitor = async (req, res) => {
 //     try {
 //         const visitor = await Visitor.findById(req.params.id);
@@ -191,12 +220,15 @@
 
 
 
+
+
+
 const Visitor = require("../models/Visitor");
 
 // 🔹 Get All Visitors
 exports.getAllVisitors = async (req, res) => {
     try {
-        const visitors = await Visitor.find();
+        const visitors = await Visitor.find().sort({ createdAt: -1 }); // Sort by latest first
         res.status(200).json({
             success: true,
             message: "Visitors retrieved successfully",
@@ -235,6 +267,30 @@ exports.getLatestVisitor = async (req, res) => {
     }
 };
 
+// 🔹 Get Visitor by ID (New Function)
+exports.getVisitorById = async (req, res) => {
+    try {
+        const visitor = await Visitor.findById(req.params.id);
+        if (!visitor) {
+            return res.status(404).json({
+                success: false,
+                message: "Visitor not found"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Visitor retrieved successfully",
+            data: visitor
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Error fetching visitor",
+            error: error.message
+        });
+    }
+};
+
 // 🔹 Add Visitor
 exports.addVisitor = async (req, res) => {
     try {
@@ -267,29 +323,50 @@ exports.addVisitor = async (req, res) => {
 
         // Additional validation
         if (!/^[A-Za-z\s]+$/.test(fullName) || !/^[A-Za-z\s]+$/.test(personToVisit)) {
-            return res.status(400).json({ message: "Names must contain only letters and spaces" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Names must contain only letters and spaces" 
+            });
         }
         if (!/^\d{10}$/.test(phoneNumber)) {
-            return res.status(400).json({ message: "Phone number must be 10 digits" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Phone number must be 10 digits" 
+            });
         }
         if (!/^\d{6}$/.test(otp)) {
-            return res.status(400).json({ message: "OTP must be 6 digits" });
+            return res.status(400).json({ 
+                success: false,
+                message: "OTP must be 6 digits" 
+            });
         }
         if (!["yes", "no"].includes(hasAssets)) {
-            return res.status(400).json({ message: "hasAssets must be 'yes' or 'no'" });
+            return res.status(400).json({ 
+                success: false,
+                message: "hasAssets must be 'yes' or 'no'" 
+            });
         }
         if (hasAssets === "yes" && (!assets || assets.length === 0)) {
-            return res.status(400).json({ message: "Assets are required if hasAssets is 'yes'" });
+            return res.status(400).json({ 
+                success: false,
+                message: "Assets are required if hasAssets is 'yes'" 
+            });
         }
 
         // Validate team members
         if (teamMembers && teamMembers.length > 0) {
             for (const member of teamMembers) {
                 if (!member.name || !member.email || !member.documentDetail || !["yes", "no"].includes(member.hasAssets)) {
-                    return res.status(400).json({ message: "All team member fields are required" });
+                    return res.status(400).json({ 
+                        success: false,
+                        message: "All team member fields are required" 
+                    });
                 }
                 if (member.hasAssets === "yes" && (!member.assets || member.assets.length === 0)) {
-                    return res.status(400).json({ message: "Assets required for team member if hasAssets is 'yes'" });
+                    return res.status(400).json({ 
+                        success: false,
+                        message: "Assets required for team member if hasAssets is 'yes'" 
+                    });
                 }
             }
         }

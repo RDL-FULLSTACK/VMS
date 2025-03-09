@@ -1,270 +1,3 @@
-// import React, { useState, useEffect } from "react"; // Added useEffect
-// import { useNavigate } from "react-router-dom";
-// import {
-//   TextField, Button, Grid, Typography, MenuItem, Box, IconButton
-// } from "@mui/material";
-// import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
-// import { toast, ToastContainer } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-// import Navbar from "../components/Navbar";
-
-// const Checkin = () => {
-//   const navigate = useNavigate();
-//   const [teamMembers, setTeamMembers] = useState([]);
-//   const [photo, setPhoto] = useState(null);
-//   const [latestVisitor, setLatestVisitor] = useState(null); // Added state for latest visitor
-//   const [formData, setFormData] = useState({
-//     fullName: "",
-//     email: "",
-//     phoneNumber: "",
-//     designation: "",
-//     visitType: "",
-//     expectedDurationHours: "",
-//     expectedDurationMinutes: "",
-//     documentDetails: "",
-//     reasonForVisit: "",
-//     otp: "",
-//     visitorCompany: "",
-//     personToVisit: "",
-//     submittedDocument: "",
-//     hasAssets: "",
-//     assets: []
-//   });
-//   const [errors, setErrors] = useState({});
-
-//   // Fetch latest visitor after successful submission (optional: could be on mount)
-//   const fetchLatestVisitor = async () => {
-//     try {
-//       const response = await fetch('http://localhost:5000/api/visitors/latest');
-//       if (!response.ok) throw new Error('Failed to fetch latest visitor');
-//       const data = await response.json();
-//       setLatestVisitor(data);
-//     } catch (error) {
-//       toast.error(error.message || 'Error fetching latest visitor');
-//     }
-//   };
-
-//   const validateField = (name, value) => {
-//     let error = "";
-//     switch (name) {
-//       case "fullName":
-//         if (!value) error = "Required";
-//         else if (!/^[A-Za-z\s]+$/.test(value)) error = "Letters only";
-//         break;
-//       case "email":
-//         if (!value) error = "Required";
-//         else if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value)) error = "Invalid email";
-//         break;
-//       case "phoneNumber":
-//         if (!value) error = "Required";
-//         else if (!/^\d{10}$/.test(value)) error = "10 digits required";
-//         break;
-//       case "designation": if (!value) error = "Required"; break;
-//       case "visitType": if (!value) error = "Required"; break;
-//       case "expectedDurationHours":
-//         if (!value) error = "Required";
-//         else if (!/^\d+$/.test(value) || parseInt(value) > 23) error = "0-23 only";
-//         break;
-//       case "expectedDurationMinutes":
-//         if (!value) error = "Required";
-//         else if (!/^\d+$/.test(value) || parseInt(value) > 59) error = "0-59 only";
-//         break;
-//       case "documentDetails": if (!value) error = "Required"; break;
-//       case "reasonForVisit": if (!value) error = "Required"; break;
-//       case "otp": if (!value) error = "Required"; else if (!/^\d{6}$/.test(value)) error = "6 digits"; break;
-//       case "visitorCompany": if (!value) error = "Required"; break;
-//       case "personToVisit":
-//         if (!value) error = "Required";
-//         else if (!/^[A-Za-z\s]+$/.test(value)) error = "Letters only";
-//         break;
-//       case "submittedDocument": if (!value) error = "Required"; break;
-//       case "hasAssets": if (!value) error = "Required"; break;
-//       default: break;
-//     }
-//     return error;
-//   };
-
-//   const validateAssetField = (asset, field) => {
-//     let error = "";
-//     if (!asset[field]) error = "Required";
-//     return error;
-//   };
-
-//   const handleInputChange = (field, value) => {
-//     const sanitizedValue = field === "fullName" || field === "personToVisit"
-//       ? value.replace(/[^A-Za-z\s]/g, "")
-//       : field === "phoneNumber" || field === "expectedDurationHours" || field === "expectedDurationMinutes" || field === "otp"
-//       ? value.replace(/[^0-9]/g, "")
-//       : value;
-
-//     setFormData(prev => ({ ...prev, [field]: sanitizedValue }));
-//     setErrors(prev => ({ ...prev, [field]: validateField(field, sanitizedValue) }));
-//   };
-
-//   const handleAssetChange = (index, field, value) => {
-//     const updatedAssets = [...formData.assets];
-//     updatedAssets[index][field] = field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
-//     setFormData(prev => ({ ...prev, assets: updatedAssets }));
-//   };
-
-//   const handleAddAsset = () => {
-//     setFormData(prev => ({
-//       ...prev,
-//       assets: [...prev.assets, { quantity: "", type: "", serialNumber: "" }]
-//     }));
-//   };
-
-//   const handleRemoveAsset = (index) => {
-//     setFormData(prev => ({
-//       ...prev,
-//       assets: prev.assets.filter((_, i) => i !== index)
-//     }));
-//   };
-
-//   const handleAddTeamMember = () => {
-//     setTeamMembers([...teamMembers, { name: "", email: "", documentDetail: "", document: null, hasAssets: "", assets: [] }]);
-//   };
-
-//   const handleRemoveTeamMember = (index) => {
-//     setTeamMembers(teamMembers.filter((_, i) => i !== index));
-//   };
-
-//   const handleTeamMemberChange = (index, field, value) => {
-//     const updatedMembers = [...teamMembers];
-//     updatedMembers[index][field] = field === "name"
-//       ? value.replace(/[^A-Za-z\s]/g, "")
-//       : field === "email"
-//       ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
-//       : value;
-//     setTeamMembers(updatedMembers);
-//   };
-
-//   const handleTeamMemberAssetChange = (memberIndex, assetIndex, field, value) => {
-//     const updatedMembers = [...teamMembers];
-//     updatedMembers[memberIndex].assets[assetIndex][field] = field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
-//     setTeamMembers(updatedMembers);
-//   };
-
-//   const handleAddTeamMemberAsset = (index) => {
-//     const updatedMembers = [...teamMembers];
-//     updatedMembers[index].assets.push({ quantity: "", type: "", serialNumber: "" });
-//     setTeamMembers(updatedMembers);
-//   };
-
-//   const handleRemoveTeamMemberAsset = (memberIndex, assetIndex) => {
-//     const updatedMembers = [...teamMembers];
-//     updatedMembers[memberIndex].assets = updatedMembers[memberIndex].assets.filter((_, i) => i !== assetIndex);
-//     setTeamMembers(updatedMembers);
-//   };
-
-//   const handleSendEmailOtp = async () => {
-//     if (!formData.email) {
-//       toast.error("Please enter an email first!");
-//       return;
-//     }
-//     if (errors.email) {
-//       toast.error("Please enter a valid email address!");
-//       return;
-//     }
-
-//     try {
-//       const response = await fetch('http://localhost:5000/api/visitors/send-email-otp', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ email: formData.email })
-//       });
-
-//       if (!response.ok) throw new Error('Failed to send OTP');
-
-//       toast.success(`OTP sent to ${formData.email}!`);
-//     } catch (error) {
-//       toast.error(error.message || "Error sending OTP");
-//     }
-//   };
-
-//   const handleSubmit = async () => {
-//     const newErrors = {};
-//     Object.keys(formData).forEach(field => {
-//       if (field !== "assets") {
-//         const error = validateField(field, formData[field]);
-//         if (error) newErrors[field] = error;
-//       }
-//     });
-
-//     if (!newErrors.expectedDurationHours && !newErrors.expectedDurationMinutes) {
-//       if (parseInt(formData.expectedDurationHours) === 0 && parseInt(formData.expectedDurationMinutes) === 0) {
-//         newErrors.expectedDurationHours = "Must be > 0";
-//         newErrors.expectedDurationMinutes = "Must be > 0";
-//       }
-//     }
-
-//     if (formData.hasAssets === "yes" && formData.assets.length === 0) {
-//       newErrors.assets = "At least one asset is required";
-//     } else if (formData.hasAssets === "yes") {
-//       formData.assets.forEach((asset, index) => {
-//         ["quantity", "type", "serialNumber"].forEach(field => {
-//           const error = validateAssetField(asset, field);
-//           if (error) newErrors[`asset_${index}_${field}`] = error;
-//         });
-//       });
-//     }
-
-//     teamMembers.forEach((member, memberIndex) => {
-//       if (member.hasAssets === "yes" && member.assets.length === 0) {
-//         newErrors[`teamMember_${memberIndex}_assets`] = "At least one asset is required";
-//       } else if (member.hasAssets === "yes") {
-//         member.assets.forEach((asset, assetIndex) => {
-//           ["quantity", "type", "serialNumber"].forEach(field => {
-//             const error = validateAssetField(asset, field);
-//             if (error) newErrors[`teamMember_${memberIndex}_asset_${assetIndex}_${field}`] = error;
-//           });
-//         });
-//       }
-//     });
-
-//     setErrors(newErrors);
-
-//     if (Object.keys(newErrors).length > 0) {
-//       toast.error("Please Fill All The Fields!");
-//       return;
-//     }
-
-//     try {
-//       const visitorData = {
-//         ...formData,
-//         expectedDuration: {
-//           hours: parseInt(formData.expectedDurationHours),
-//           minutes: parseInt(formData.expectedDurationMinutes)
-//         },
-//         teamMembers,
-//         photoUrl: photo ? photo.name : null
-//       };
-
-//       const response = await fetch('http://localhost:5000/api/visitors/checkin', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(visitorData)
-//       });
-
-//       if (!response.ok) throw new Error('Submission failed');
-
-//       toast.success("Check-in successful!");
-
-//       // Fetch latest visitor after successful submission
-//       await fetchLatestVisitor();
-
-//       setTimeout(() => navigate('/visitorcard'), 2000);
-//     } catch (error) {
-//       toast.error(error.message || "Submission error");
-//     }
-//   };
-
-
-
-
-
-
-
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -305,6 +38,8 @@ const Checkin = () => {
     assets: [],
   });
   const [errors, setErrors] = useState({});
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+
 
   const fetchLatestVisitor = async () => {
     try {
@@ -398,8 +133,8 @@ const Checkin = () => {
           field === "expectedDurationHours" ||
           field === "expectedDurationMinutes" ||
           field === "otp"
-        ? value.replace(/[^0-9]/g, "")
-        : value;
+          ? value.replace(/[^0-9]/g, "")
+          : value;
 
     setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
     setErrors((prev) => ({
@@ -453,8 +188,8 @@ const Checkin = () => {
       field === "name"
         ? value.replace(/[^A-Za-z\s]/g, "")
         : field === "email"
-        ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
-        : value;
+          ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
+          : value;
     setTeamMembers(updatedMembers);
   };
 
@@ -515,6 +250,38 @@ const Checkin = () => {
       toast.error(error.message || "Error sending OTP");
     }
   };
+
+  const verifyOtp = async () => {
+
+    
+    if (!formData.otp) {
+        toast.error("Please enter the OTP!");
+        return;
+    }
+
+    try {
+      
+        const response = await fetch("http://localhost:5000/api/visitors/verify-email-otp", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include", // Ensure cookies are sent
+            body: JSON.stringify({ email: formData.email, otp: formData.otp }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) throw new Error(data.message);
+
+        toast.success("OTP verified successfully!");
+        setIsOtpVerified(true); // ✅ Enable submit after verification
+    } catch (error) {
+        toast.error(error.message || "OTP verification failed");
+        setIsOtpVerified(false); // ❌ Keep submit disabled if failed
+    }
+};
+
+
+
 
   const handleSubmit = async () => {
     const newErrors = {};
@@ -772,17 +539,31 @@ const Checkin = () => {
               required
               sx={{ mt: 2, mb: 2 }}
             />
-            <TextField
-              fullWidth
-              label="OTP*"
-              value={formData.otp}
-              onChange={(e) => handleInputChange("otp", e.target.value)}
-              error={!!errors.otp}
-              helperText={errors.otp}
-              required
-              inputProps={{ maxLength: 6 }}
-              sx={{ mb: 2 }}
-            />
+            <Grid container spacing={1} alignItems="center">
+              <Grid item xs={8}>
+                <TextField
+                  fullWidth
+                  label="OTP*"
+                  value={formData.otp}
+                  onChange={(e) => handleInputChange("otp", e.target.value)}
+                  error={!!errors.otp}
+                  helperText={errors.otp}
+                  required
+                  inputProps={{ maxLength: 6 }}
+                  sx={{ mb: 2 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={verifyOtp}
+                  sx={{ height: "56px" }} // Align with TextField height
+                >
+                  Verify OTP
+                </Button>
+              </Grid>
+            </Grid>
             <TextField
               fullWidth
               label="Visitor Company*"
@@ -950,12 +731,12 @@ const Checkin = () => {
                           required
                           error={
                             !!errors[
-                              `teamMember_${index}_asset_${assetIndex}_quantity`
+                            `teamMember_${index}_asset_${assetIndex}_quantity`
                             ]
                           }
                           helperText={
                             errors[
-                              `teamMember_${index}_asset_${assetIndex}_quantity`
+                            `teamMember_${index}_asset_${assetIndex}_quantity`
                             ]
                           }
                         />
@@ -976,12 +757,12 @@ const Checkin = () => {
                           required
                           error={
                             !!errors[
-                              `teamMember_${index}_asset_${assetIndex}_type`
+                            `teamMember_${index}_asset_${assetIndex}_type`
                             ]
                           }
                           helperText={
                             errors[
-                              `teamMember_${index}_asset_${assetIndex}_type`
+                            `teamMember_${index}_asset_${assetIndex}_type`
                             ]
                           }
                         />
@@ -1002,12 +783,12 @@ const Checkin = () => {
                           required
                           error={
                             !!errors[
-                              `teamMember_${index}_asset_${assetIndex}_serialNumber`
+                            `teamMember_${index}_asset_${assetIndex}_serialNumber`
                             ]
                           }
                           helperText={
                             errors[
-                              `teamMember_${index}_asset_${assetIndex}_serialNumber`
+                            `teamMember_${index}_asset_${assetIndex}_serialNumber`
                             ]
                           }
                         />
@@ -1132,6 +913,7 @@ const Checkin = () => {
           color="primary"
           sx={{ mt: 4, display: "block", mx: "auto" }}
           onClick={handleSubmit}
+          disabled={!isOtpVerified}
         >
           Submit
         </Button>

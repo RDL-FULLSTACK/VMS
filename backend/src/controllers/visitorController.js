@@ -277,6 +277,9 @@ const transporter = nodemailer.createTransport({
 });
 
 
+var c_otp=null;//locally storing otp
+
+
 // 🔹 Send Email OTP
 exports.sendEmailOtp = async (req, res) => {
     // console.log("function triggered2334433");
@@ -303,13 +306,19 @@ exports.sendEmailOtp = async (req, res) => {
                 const otp = crypto.randomInt(100000, 999999).toString();
                 
                 // Store OTP in session/database (for verification later)
-                req.session.otp = otp; // If using session-based storage
-                // console.log("hello22");
+                // req.session.otp = otp; // If using session-based storage
+                c_otp=otp;
+                setTimeout(() => { //resetting otp after 5 minutes
+                    c_otp=null
+                }, 300000);
+               
+                
+
         // OR Store in DB (if using MongoDB)
         // await OTPModel.create({ email, otp, expiresAt: new Date(Date.now() + 5 * 60000) });
 
         // Email Message
-        // console.log("done");
+       
         
         const mailOptions = {
             from: process.env.EMAIL_USER,
@@ -334,3 +343,51 @@ exports.sendEmailOtp = async (req, res) => {
         });
     }
 };
+
+// 🔹 Verify Email OTP
+exports.verifyEmailOtp = async (req, res) => {
+    
+    try {
+        const { email, otp } = req.body;
+        
+        console.log("Session OTP:", c_otp);//debug line
+        console.log("User Input OTP:", otp);//debug line
+
+        
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and OTP are required",
+            });
+        }
+
+       
+        
+
+        // Check OTP stored in session
+        if (c_otp && c_otp === otp) {
+            
+            // OTP is correct, clear it from session
+            c_otp = null;
+
+            return res.status(200).json({
+                success: true,
+                message: "OTP verified successfully!",
+            });
+        }
+
+        return res.status(400).json({
+            success: false,
+            message: "Invalid or expired OTP",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Error verifying OTP",
+            error: error.message,
+        });
+    }
+};
+

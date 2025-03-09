@@ -11,7 +11,8 @@ const {
     sendEmailOtp, 
     checkOutVisitor, 
     deleteVisitor, 
-    updateVisitor
+    updateVisitor,
+    verifyEmailOtp
 } = require("../controllers/visitorController");
 
 router.get("/", getAllVisitors);
@@ -22,5 +23,6 @@ router.put("/checkout/:id", checkOutVisitor);
 router.put("/:id", updateVisitor);
 router.delete("/:id", deleteVisitor);
 router.post("/send-email-otp", sendEmailOtp);
+router.post("/verify-email-otp", verifyEmailOtp);
 
 module.exports = router;

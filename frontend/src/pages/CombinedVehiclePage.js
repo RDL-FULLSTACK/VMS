@@ -17,6 +17,8 @@ import Navbar from "../components/Navbar";
 import VehicleDetails from "./VehicleDetails";
 import VehicleRegistration from "./VehicleRegistration";
 import VehicleCheckout from "./VehicleCheckout";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CombinedVehiclePage = () => {
   const [view, setView] = useState(0); // 0 for Registration, 1 for Checkout
@@ -34,6 +36,14 @@ const CombinedVehiclePage = () => {
         setVehicles(response.data);
       } catch (error) {
         console.error("Error fetching vehicles:", error);
+        toast.error("Failed to fetch vehicles. Please try again.", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
       }
     };
     fetchVehicles();
@@ -47,9 +57,24 @@ const CombinedVehiclePage = () => {
     try {
       const response = await axios.post("http://localhost:5000/api/vehicles", newVehicle);
       setVehicles([...vehicles, response.data.vehicle]);
+      toast.success("Vehicle registered successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       console.error("Error adding vehicle:", error);
-      alert(error.response?.data?.message || "Failed to register vehicle");
+      toast.error(error.response?.data?.message || "Failed to register vehicle", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
   };
 
@@ -66,10 +91,29 @@ const CombinedVehiclePage = () => {
             : vehicle
         )
       );
+      toast.success("Vehicle checked out successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     } catch (error) {
       console.error("Error checking out vehicle:", error);
-      alert(error.response?.data?.message || "Failed to check out vehicle");
+      toast.error(error.response?.data?.message || "Failed to check out vehicle", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
+  };
+
+  const handleDeleteVehicle = (vehicleId) => {
+    setVehicles((prevVehicles) => prevVehicles.filter((vehicle) => vehicle._id !== vehicleId));
   };
 
   const filteredVehicles = vehicles.filter((vehicle) => {
@@ -196,14 +240,6 @@ const CombinedVehiclePage = () => {
               maxWidth: "100%",
             }}
           >
-            {/* <Typography
-              variant={{ xs: "h6", md: "h5" }}
-              gutterBottom
-              sx={{ fontWeight: 700, color: "#2D3748", mb: { xs: 1, md: 2 } }}
-            >
-              Vehicle List
-            </Typography> */}
-
             <Box
               sx={{
                 display: "flex",
@@ -299,11 +335,12 @@ const CombinedVehiclePage = () => {
             </Box>
 
             <Box sx={{ flex: 1, overflow: "auto", borderTop: "1px solid #E2E8F0" }}>
-              <VehicleDetails vehicles={filteredVehicles} />
+              <VehicleDetails vehicles={filteredVehicles} onDeleteVehicle={handleDeleteVehicle} />
             </Box>
           </Paper>
         </Box>
       </Box>
+      <ToastContainer />
     </>
   );
 };

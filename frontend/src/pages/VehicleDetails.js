@@ -1,3 +1,4 @@
+// VehicleDetails.js
 import React, { useState } from "react";
 import {
   Table,
@@ -22,7 +23,7 @@ import VehicleTicket from "../components/VehicleTicket";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const VehicleDetails = ({ vehicles }) => {
+const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
@@ -86,10 +87,9 @@ const VehicleDetails = ({ vehicles }) => {
         pauseOnHover: true,
         draggable: true,
       });
-      // Delay reload to show toast
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000); // Match autoClose duration
+      if (onDeleteVehicle) {
+        onDeleteVehicle(selectedVehicle._id);
+      }
       handleMenuClose();
     } catch (error) {
       toast.error(
@@ -115,7 +115,7 @@ const VehicleDetails = ({ vehicles }) => {
     setPage(newPage);
   };
 
-  const paginatedVehicles = vehicles.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  const paginatedVehicles = (vehicles || []).slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   return (
     <>

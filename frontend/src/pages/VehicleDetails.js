@@ -88,7 +88,14 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
     setPage(newPage);
   };
 
-  const paginatedVehicles = (vehicles || []).slice(page * rowsPerPage, (page + 1) * rowsPerPage);
+  // Sort vehicles by date and checkInTime in descending order (latest first)
+  const sortedVehicles = [...vehicles].sort((a, b) => {
+    const dateA = new Date(`${a.date} ${a.checkInTime}`);
+    const dateB = new Date(`${b.date} ${b.checkInTime}`);
+    return dateB - dateA; // Descending order
+  });
+
+  const paginatedVehicles = sortedVehicles.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   return (
     <>

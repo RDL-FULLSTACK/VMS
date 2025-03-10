@@ -1,32 +1,30 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./src/config/db'); // Ensure correct path
-const authRoutes = require('./src/routes/authRoutes'); // Ensure correct path
+const connectDB = require('./src/config/db');
+const authRoutes = require('./src/routes/authRoutes');
 const vehicleRoutes = require('./src/routes/vehicleRoutes');
-const visitorRoutes = require('./src/routes/visitorRoutes');// Added visitor routes
+const visitorRoutes = require('./src/routes/visitorRoutes');
 const preScheduleRoutes = require('./src/routes/preScheduleRoutes');
-const session = require("express-session");
-const MongoStore = require("connect-mongo"); // Store sessions in MongoDB
-
-
-
-
-
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
 
 // Initialize Express App
 const app = express();
 
-
+// Session configuration
 app.use(
     session({
-        secret: "1234abc", // Use a strong secret
+        secret: process.env.SESSION_SECRET, // Moved to .env
         resave: false,
         saveUninitialized: false,
+        store: MongoStore.create({
+            mongoUrl: process.env.MONGO_URI // Use MongoDB URI from .env
+        }),
         cookie: {
-            secure: false, // Change to true if using HTTPS
+            secure: process.env.NODE_ENV === 'production', // Secure in production
             httpOnly: true,
-            maxAge: 5 * 60 * 1000, // Session expires in 5 minutes
+            maxAge: 5 * 60 * 1000, // 5 minutes
         },
     })
 );
@@ -34,19 +32,18 @@ app.use(
 // Middleware
 app.use(express.json()); // Parse JSON
 app.use(cors({
-    origin: "http://localhost:3000", // Your frontend URL
+    origin: process.env.FRONTEND_URL, // Moved to .env
     credentials: true, // Allow session cookies
-})
-); // Enable CORS
+}));
 
 // Connect to Database
-connectDB();
+connectDB(); // Assumes connectDB uses process.env.MONGO_URI
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/visitors', visitorRoutes); // Added visitor API route
-app.use("/api", preScheduleRoutes);
+app.use('/api/visitors', visitorRoutes);
+app.use('/api', preScheduleRoutes);
 
 // Server Port
 const PORT = process.env.PORT || 5000;

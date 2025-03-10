@@ -19,6 +19,8 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import axios from "axios";
 import VehicleTicket from "../components/VehicleTicket";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const VehicleDetails = ({ vehicles }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -26,7 +28,7 @@ const VehicleDetails = ({ vehicles }) => {
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
   const [open, setOpen] = useState(false);
-  const rowsPerPage = 10; // Matching old code's rowsPerPage
+  const rowsPerPage = 10;
 
   const handleMenuOpen = (event, vehicle) => {
     setAnchorEl(event.currentTarget);
@@ -48,20 +50,59 @@ const VehicleDetails = ({ vehicles }) => {
         checkOutTime: selectedVehicle.checkOutTime,
       });
       setOpen(true);
+      toast.success("Viewing ticket for the selected vehicle!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
     }
     handleMenuClose();
   };
 
   const handleDeleteVehicle = async () => {
-    if (selectedVehicle && selectedVehicle._id) {
-      try {
-        await axios.delete(`http://localhost:5000/api/vehicles/${selectedVehicle._id}`);
-        window.location.reload(); // Temporary workaround
-        handleMenuClose();
-      } catch (error) {
-        console.error("Error deleting vehicle:", error);
-        alert(error.response?.data?.message || "Failed to delete vehicle");
-      }
+    if (!selectedVehicle || !selectedVehicle._id) {
+      toast.error("No vehicle selected for deletion!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      handleMenuClose();
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:5000/api/vehicles/${selectedVehicle._id}`);
+      toast.success("Vehicle deleted successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      // Delay reload to show toast
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000); // Match autoClose duration
+      handleMenuClose();
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to delete vehicle. Please try again.",
+        {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        }
+      );
     }
   };
 
@@ -74,7 +115,6 @@ const VehicleDetails = ({ vehicles }) => {
     setPage(newPage);
   };
 
-  // Removed filtering logic; use the raw vehicles prop directly
   const paginatedVehicles = vehicles.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
 
   return (
@@ -100,11 +140,15 @@ const VehicleDetails = ({ vehicles }) => {
                     key={vehicle._id || index}
                     sx={{ bgcolor: index % 2 === 0 ? "#FFFFFF" : "#F9FAFB", height: 50 }}
                   >
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle._id.slice(-6)}</TableCell>
-                    <TableCell sx={{ padding: 1.5, fontWeight: 500 }}>{vehicle.vehicleNumber}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.purpose}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.date}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.checkInTime}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>
+                      {vehicle._id ? vehicle._id.slice(-6) : "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ padding: 1.5, fontWeight: 500 }}>
+                      {vehicle.vehicleNumber || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{vehicle.purpose || "N/A"}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{vehicle.date || "N/A"}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{vehicle.checkInTime || "N/A"}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{vehicle.checkOutTime || "Not Checked Out"}</TableCell>
                     <TableCell sx={{ textAlign: "center", padding: 1.5 }}>
                       <IconButton size="small" onClick={(event) => handleMenuOpen(event, vehicle)}>
@@ -128,7 +172,7 @@ const VehicleDetails = ({ vehicles }) => {
 
         <TablePagination
           component="div"
-          count={vehicles.length}
+          count={vehicles?.length || 0}
           page={page}
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
@@ -150,6 +194,8 @@ const VehicleDetails = ({ vehicles }) => {
           {ticketData && <VehicleTicket data={ticketData} onClose={handleClose} />}
         </DialogContent>
       </Dialog>
+
+      <ToastContainer />
     </>
   );
 };

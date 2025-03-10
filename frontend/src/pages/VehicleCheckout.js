@@ -1,5 +1,4 @@
-//VehicleCheckout.js
-
+// VehicleCheckout.js
 import React, { useState, useRef, useEffect } from "react";
 import {
   TextField,
@@ -15,6 +14,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { Clear } from "@mui/icons-material";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,6 +23,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [checkOutTime, setCheckOutTime] = useState("");
   const wrapperRef = useRef(null);
+  const [errors, setErrors] = useState({ vehicle: "", checkOutTime: "" });
 
   const filteredVehicles = vehicles.filter(
     (vehicle) =>
@@ -33,6 +35,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setSelectedVehicle(vehicle);
     setSearchQuery(vehicle.vehicleNumber);
     setIsListOpen(false);
+    setErrors((prev) => ({ ...prev, vehicle: "" })); // Clear vehicle error on selection
 
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
@@ -42,13 +45,33 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   };
 
   const handleCheckout = () => {
-    if (selectedVehicle && checkOutTime) {
-      onCheckoutVehicle(selectedVehicle.vehicleNumber, checkOutTime);
-      setSelectedVehicle(null);
-      setSearchQuery("");
-      setCheckOutTime("");
-      setIsListOpen(false);
+    const isValid = validateForm();
+    if (!isValid) {
+      toast.error("Please fill in all required fields!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return;
     }
+
+    onCheckoutVehicle(selectedVehicle.vehicleNumber, checkOutTime);
+    toast.success("Vehicle checked out successfully!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
+    setSelectedVehicle(null);
+    setSearchQuery("");
+    setCheckOutTime("");
+    setErrors({ vehicle: "", checkOutTime: "" });
+    setIsListOpen(false);
   };
 
   const handleClearSearch = () => {
@@ -56,7 +79,46 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setIsListOpen(false);
     setSelectedVehicle(null);
     setCheckOutTime("");
+    setErrors({ vehicle: "", checkOutTime: "" });
   };
+
+  const validateField = (field, value) => {
+    let tempErrors = { ...errors };
+    switch (field) {
+      case "vehicle":
+        tempErrors.vehicle = selectedVehicle ? "" : "Vehicle is required";
+        break;
+      case "checkOutTime":
+        tempErrors.checkOutTime = checkOutTime ? "" : "Check-out time is required";
+        break;
+      default:
+        break;
+    }
+    setErrors(tempErrors);
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { vehicle: "", checkOutTime: "" };
+
+    if (!selectedVehicle) {
+      newErrors.vehicle = "Vehicle is required";
+      isValid = false;
+    }
+
+    if (!checkOutTime) {
+      newErrors.checkOutTime = "Check-out time is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  useEffect(() => {
+    validateField("vehicle", selectedVehicle);
+    validateField("checkOutTime", checkOutTime);
+  }, [selectedVehicle, checkOutTime]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -83,16 +145,19 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
       }}
     >
       <CardContent>
+        <ToastContainer />
         <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#2D3748", mb: 2 }}>
           Vehicle Check-Out
         </Typography>
         <TextField
           fullWidth
-          label="Search Vehicle Number"
+          label="Search Vehicle Number *"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsListOpen(true)}
           sx={{ mb: 2 }}
+          error={!!errors.vehicle}
+          helperText={errors.vehicle}
           InputProps={{
             endAdornment: searchQuery.trim().length > 0 && (
               <InputAdornment position="end">
@@ -101,6 +166,28 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
                 </IconButton>
               </InputAdornment>
             ),
+          }}
+          InputLabelProps={{
+            shrink: true,
+            style: { color: errors.vehicle ? "#d32f2f" : "#2D3748" },
+          }}
+          sx={{
+            "& .MuiOutlinedInput-root": {
+              "& fieldset": {
+                borderColor: errors.vehicle ? "#d32f2f" : "#2D3748",
+              },
+              "&:hover fieldset": {
+                borderColor: errors.vehicle ? "#d32f2f" : "#3182CE",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: errors.vehicle ? "#d32f2f" : "#3182CE",
+              },
+            },
+            "& .MuiFormHelperText-root": {
+              color: "#d32f2f",
+              fontSize: "0.75rem",
+              fontWeight: 400,
+            },
           }}
         />
         {isListOpen && (
@@ -134,22 +221,53 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
         {selectedVehicle && (
           <TextField
             fullWidth
-            label="Check-Out Time"
+            label="Check-Out Time *"
             type="time"
             value={checkOutTime}
-            onChange={(e) => setCheckOutTime(e.target.value)}
+            onChange={(e) => {
+              setCheckOutTime(e.target.value);
+              validateField("checkOutTime", e.target.value);
+            }}
             sx={{ mb: 2 }}
-            InputLabelProps={{ shrink: true }}
+            error={!!errors.checkOutTime}
+            helperText={errors.checkOutTime}
+            InputLabelProps={{ shrink: true, style: { color: errors.checkOutTime ? "#d32f2f" : "#2D3748" } }}
             inputProps={{ step: 300 }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: errors.checkOutTime ? "#d32f2f" : "#2D3748",
+                },
+                "&:hover fieldset": {
+                  borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE",
+                },
+              },
+              "& .MuiFormHelperText-root": {
+                color: "#d32f2f",
+                fontSize: "0.75rem",
+                fontWeight: 400,
+              },
+            }}
           />
         )}
         <Button
           variant="contained"
           fullWidth
-          color="primary"
           onClick={handleCheckout}
-          disabled={!selectedVehicle || !checkOutTime}
-          sx={{ mt: 2, py: 1.5, textTransform: "none", fontWeight: 600 }}
+          sx={{
+            mt: 2,
+            py: 1.5,
+            textTransform: "none",
+            fontWeight: 600,
+            bgcolor: "#3182CE",
+            color: "#FFFFFF",
+            "&:hover": {
+              bgcolor: "#2A6AA9",
+            },
+          }}
         >
           Check-Out
         </Button>

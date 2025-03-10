@@ -1,14 +1,16 @@
-//VehicleRegistration.js
-
+// VehicleRegistration.js
 import React, { useState } from "react";
 import { TextField, Button, Paper, MenuItem, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import VehicleTicket from "../components/VehicleTicket";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const VehicleRegistration = ({ onAddVehicle }) => {
   const [vehicleNumber, setVehicleNumber] = useState("");
   const [purpose, setPurpose] = useState("");
   const [ticketData, setTicketData] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [errors, setErrors] = useState({ vehicleNumber: "", purpose: "" });
 
   const purposes = ["Delivery", "Client Visit", "Service", "Other"];
 
@@ -16,6 +18,13 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     let input = e.target.value.toUpperCase();
     input = input.replace(/[^A-Z0-9]/g, "");
     setVehicleNumber(input);
+    validateField("vehicleNumber", input);
+  };
+
+  const handlePurposeChange = (e) => {
+    const value = e.target.value;
+    setPurpose(value);
+    validateField("purpose", value);
   };
 
   const handleKeyPress = (e) => {
@@ -24,9 +33,50 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     }
   };
 
+  const validateField = (field, value) => {
+    let tempErrors = { ...errors };
+    switch (field) {
+      case "vehicleNumber":
+        tempErrors.vehicleNumber = value.trim() ? "" : "Vehicle number is required";
+        break;
+      case "purpose":
+        tempErrors.purpose = value ? "" : "Purpose of visit is required";
+        break;
+      default:
+        break;
+    }
+    setErrors(tempErrors);
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    const newErrors = { vehicleNumber: "", purpose: "" };
+
+    if (!vehicleNumber.trim()) {
+      newErrors.vehicleNumber = "Vehicle number is required";
+      isValid = false;
+    }
+
+    if (!purpose) {
+      newErrors.purpose = "Purpose of visit is required";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
   const handleGenerateTicket = () => {
-    if (!vehicleNumber || !purpose) {
-      alert("Please enter all details");
+    if (!validateForm()) {
+      // Display toast notification for overall form validation failure
+      toast.error("Please fill in all required fields!", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       return;
     }
 
@@ -45,6 +95,15 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     onAddVehicle(newVehicle);
     setTicketData({ vehicleNumber, purpose, checkInTime });
     setOpenDialog(true);
+
+    toast.success("E-Ticket generated successfully!", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+    });
   };
 
   const handleCloseDialog = () => {
@@ -52,6 +111,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     setTicketData(null);
     setVehicleNumber("");
     setPurpose("");
+    setErrors({ vehicleNumber: "", purpose: "" }); // Reset errors
   };
 
   return (
@@ -60,12 +120,13 @@ const VehicleRegistration = ({ onAddVehicle }) => {
       sx={{
         p: 3,
         borderRadius: 2,
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        boxShadow: "0 4px 12px rgba(0, 0,0, 0.1)",
         width: "100%",
         maxWidth: 350,
         bgcolor: "#FFFFFF",
       }}
     >
+      <ToastContainer />
       {!openDialog ? (
         <>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#2D3748", mb: 2 }}>
@@ -73,24 +134,70 @@ const VehicleRegistration = ({ onAddVehicle }) => {
           </Typography>
           <TextField
             fullWidth
-            label="Vehicle Number"
+            label="Vehicle Number *"
             variant="outlined"
             value={vehicleNumber}
             onChange={handleVehicleNumberChange}
             onKeyPress={handleKeyPress}
             margin="normal"
             inputProps={{ maxLength: 10 }}
-            sx={{ mb: 2 }}
+            error={!!errors.vehicleNumber}
+            helperText={errors.vehicleNumber}
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": {
+                color: errors.vehicleNumber ? "#d32f2f" : "#2D3748",
+              },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: errors.vehicleNumber ? "#d32f2f" : "#2D3748",
+                },
+                "&:hover fieldset": {
+                  borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE",
+                },
+              },
+              "& .MuiFormHelperText-root": {
+                color: "#d32f2f",
+                fontSize: "0.75rem",
+                fontWeight: 400,
+              },
+            }}
           />
           <TextField
             fullWidth
             select
-            label="Purpose of Visit"
+            label="Purpose of Visit *"
             variant="outlined"
             value={purpose}
-            onChange={(e) => setPurpose(e.target.value)}
+            onChange={handlePurposeChange}
             margin="normal"
-            sx={{ mb: 2 }}
+            error={!!errors.purpose}
+            helperText={errors.purpose}
+            sx={{
+              mb: 2,
+              "& .MuiInputLabel-root": {
+                color: errors.purpose ? "#d32f2f" : "#2D3748",
+              },
+              "& .MuiOutlinedInput-root": {
+                "& fieldset": {
+                  borderColor: errors.purpose ? "#d32f2f" : "#2D3748",
+                },
+                "&:hover fieldset": {
+                  borderColor: errors.purpose ? "#d32f2f" : "#3182CE",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: errors.purpose ? "#d32f2f" : "#3182CE",
+                },
+              },
+              "& .MuiFormHelperText-root": {
+                color: "#d32f2f",
+                fontSize: "0.75rem",
+                fontWeight: 400,
+              },
+            }}
           >
             {purposes.map((option) => (
               <MenuItem key={option} value={option}>
@@ -103,7 +210,16 @@ const VehicleRegistration = ({ onAddVehicle }) => {
             variant="contained"
             color="primary"
             onClick={handleGenerateTicket}
-            sx={{ mt: 2, py: 1.5, textTransform: "none", fontWeight: 600 }}
+            sx={{
+              mt: 2,
+              py: 1.5,
+              textTransform: "none",
+              fontWeight: 600,
+              bgcolor: "#3182CE",
+              "&:hover": {
+                bgcolor: "#2A6AA9",
+              },
+            }}
           >
             Generate E-Ticket
           </Button>

@@ -913,7 +913,7 @@ const Checkin = () => {
           color="primary"
           sx={{ mt: 4, display: "block", mx: "auto" }}
           onClick={handleSubmit}
-          disabled={!isOtpVerified}
+
         >
           Submit
         </Button>

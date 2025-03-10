@@ -8,6 +8,7 @@ const visitorRoutes = require('./src/routes/visitorRoutes');
 const preScheduleRoutes = require('./src/routes/preScheduleRoutes');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
+const userRoutes = require("./src/routes/userRoutes");
 
 // Initialize Express App
 const app = express();
@@ -44,7 +45,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/visitors', visitorRoutes);
 app.use('/api', preScheduleRoutes);
-
+app.use("/api/users", userRoutes);
 // Server Port
 const PORT = process.env.PORT || 5000;
 

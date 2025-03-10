@@ -16,4 +16,5 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema, "users"); 
+// Fix: Use "UserSchema" instead of "userSchema"

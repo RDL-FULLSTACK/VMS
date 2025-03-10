@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   TextField,
@@ -27,25 +27,46 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import Navbar from "../components/Navbar"; // Ensure this path is correct
-import CompanyLogin from "./companylogin"; // Ensure correct file name and path
+import Navbar from "../components/Navbar";
+import CompanyLogin from "./companylogin";
 
 const UserList = () => {
-  const [users, setUsers] = useState([
-    { id: 1, username: "john_doe", password: "password123", role: "Admin" },
-    { id: 2, username: "jane_smith", password: "securepass", role: "Host" },
-    { id: 3, username: "mike_jones", password: "mypassword", role: "Security" },
-    { id: 4, username: "alice_brown", password: "admin123", role: "Receptionist" },
-  ]);
-
+  const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterRole, setFilterRole] = useState("");
+  const [filterRole, setFilterRole] = useState("All");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedUser , setSelectedUser ] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [openCompanyLoginDialog, setOpenCompanyLoginDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [passwordVisibility, setPasswordVisibility] = useState({}); // New state for toggling password visibility
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:5000/api/users");
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setSnackbar({ 
+          open: true, 
+          message: "Failed to load users", 
+          severity: "error" 
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
@@ -55,9 +76,17 @@ const UserList = () => {
     setFilterRole(event.target.value);
   };
 
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = searchQuery === "" || 
+      user.username.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRole = filterRole === "All" || 
+      user.role.toLowerCase() === filterRole.toLowerCase();
+    return matchesSearch && matchesRole;
+  });
+
   const handleMenuOpen = (event, user) => {
     setAnchorEl(event.currentTarget);
-    setSelectedUser (user);
+    setSelectedUser(user);
   };
 
   const handleMenuClose = () => {
@@ -74,23 +103,69 @@ const UserList = () => {
   };
 
   const handleEditChange = (event) => {
-    setSelectedUser ({ ...selectedUser , [event.target.name]: event.target.value });
+    setSelectedUser({ ...selectedUser, [event.target.name]: event.target.value });
   };
 
-  const handleSaveChanges = () => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) => (user.id === selectedUser .id ? selectedUser  : user))
-    );
-    setOpenEditDialog(false);
-    setSnackbar({ open: true, message: "User  updated successfully!", severity: "success" });
+  const handleSaveChanges = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${selectedUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(selectedUser),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (user.id === selectedUser.id ? selectedUser : user))
+      );
+      setOpenEditDialog(false);
+      setSnackbar({ 
+        open: true, 
+        message: "User updated successfully!", 
+        severity: "success" 
+      });
+    } catch (error) {
+      console.error("Error updating user:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Failed to update user", 
+        severity: "error" 
+      });
+    }
   };
 
-  const handleDelete = () => {
-    setUsers((prevUsers) =>
-      prevUsers.filter((user) => user.id !== selectedUser .id)
-    );
-    handleMenuClose();
-    setSnackbar({ open: true, message: "User  deleted successfully!", severity: "success" });
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${selectedUser.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+
+      setUsers((prevUsers) =>
+        prevUsers.filter((user) => user.id !== selectedUser.id)
+      );
+      handleMenuClose();
+      setSnackbar({ 
+        open: true, 
+        message: "User deleted successfully!", 
+        severity: "success" 
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setSnackbar({ 
+        open: true, 
+        message: "Failed to delete user", 
+        severity: "error" 
+      });
+    }
   };
 
   const handleCompanyLogin = () => {
@@ -109,17 +184,17 @@ const UserList = () => {
     setShowPassword(!showPassword);
   };
 
-  const filteredUsers = users.filter((user) =>
-    user.username.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (filterRole === "" || user.role === filterRole)
-  );
+  const togglePasswordVisibility = (userId) => {
+    setPasswordVisibility((prev) => ({
+      ...prev,
+      [userId]: !prev[userId],
+    }));
+  };
 
   return (
     <>
-      {/* Remove Navbar when Company Login dialog is open */}
       {!openCompanyLoginDialog && <Navbar />}
       <Container maxWidth="lg" sx={{ padding: 3, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
-        {/* Search, Filter & Company Login Button */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <TextField
             label="Search Username"
@@ -132,11 +207,10 @@ const UserList = () => {
           <Select
             value={filterRole}
             onChange={handleFilterChange}
-            displayEmpty
             variant="outlined"
             sx={{ minWidth: 200, mr: 2 }}
           >
-            <MenuItem value="">Roles</MenuItem>
+            <MenuItem value="All">All Roles</MenuItem>
             <MenuItem value="Admin">Admin</MenuItem>
             <MenuItem value="Host">Host</MenuItem>
             <MenuItem value="Security">Security</MenuItem>
@@ -151,7 +225,6 @@ const UserList = () => {
           </Button>
         </div>
 
-        {/* Users Table */}
         <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
           <Table>
             <TableHead sx={{ backgroundColor: "#5a3d91" }}>
@@ -164,12 +237,28 @@ const UserList = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredUsers.length > 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+                    Loading...
+                  </TableCell>
+                </TableRow>
+              ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>{user.id}</TableCell>
                     <TableCell>{user.username}</TableCell>
-                    <TableCell>{"*".repeat(user.password.length)}</TableCell>
+                    <TableCell>
+                      {passwordVisibility[user.id] ? user.password : "*".repeat(user.password.length)}
+                      <IconButton
+                        onClick={() => togglePasswordVisibility(user.id)}
+                        edge="end"
+                        size="small"
+                        sx={{ ml: 1 }}
+                      >
+                        {passwordVisibility[user.id] ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </TableCell>
                     <TableCell>{user.role}</TableCell>
                     <TableCell>
                       <IconButton onClick={(event) => handleMenuOpen(event, user)}>
@@ -189,7 +278,6 @@ const UserList = () => {
           </Table>
         </TableContainer>
 
-        {/* Action Menu (Dropdown) */}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
@@ -209,18 +297,17 @@ const UserList = () => {
           </MenuItem>
         </Menu>
 
-        {/* Edit User Dialog */}
         <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>Edit User</DialogTitle>
           <DialogContent sx={{ mt: 2 }}>
-            {selectedUser  && (
+            {selectedUser && (
               <>
                 <TextField
                   label="Username"
                   name="username"
                   fullWidth
                   margin="normal"
-                  value={selectedUser .username}
+                  value={selectedUser.username}
                   onChange={handleEditChange}
                 />
                 <TextField
@@ -229,7 +316,7 @@ const UserList = () => {
                   fullWidth
                   margin="normal"
                   type={showPassword ? "text" : "password"}
-                  value={selectedUser .password}
+                  value={selectedUser.password}
                   onChange={handleEditChange}
                   InputProps={{
                     endAdornment: (
@@ -243,7 +330,7 @@ const UserList = () => {
                 />
                 <Select
                   name="role"
-                  value={selectedUser .role}
+                  value={selectedUser.role}
                   onChange={handleEditChange}
                   fullWidth
                   margin="dense"
@@ -269,7 +356,6 @@ const UserList = () => {
           </DialogActions>
         </Dialog>
 
-        {/* Company Login Dialog */}
         <Dialog 
           open={openCompanyLoginDialog} 
           onClose={handleCloseCompanyLogin} 
@@ -289,12 +375,10 @@ const UserList = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent dividers sx={{ p: 0 }}>
-            {/* Embed your CompanyLogin component here */}
             <CompanyLogin />
           </DialogContent>
         </Dialog>
 
-        {/* Snackbar for notifications */}
         <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
           <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
             {snackbar.message}

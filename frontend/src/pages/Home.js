@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import {
   Typography,
@@ -12,6 +12,8 @@ import {
   Avatar,
   useMediaQuery,
   useTheme,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import {
@@ -34,13 +36,32 @@ import {
   Cell,
 } from "recharts";
 
+// Custom TabPanel component
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
+      {...other}
+    >
+      {value === index && <Box sx={{ p: 2 }}>{children}</Box>}
+    </div>
+  );
+}
+
 function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visitors, setVisitors] = useState([]);
+  const [vehicles, setVehicles] = useState([]); // State for vehicle list
   const [chartData, setChartData] = useState([]);
   const [meterData, setMeterData] = useState([]);
-  const [vehicleCount, setVehicleCount] = useState(0); // New state for vehicle count
+  const [activeTab, setActiveTab] = useState(0); // State for tab selection
+
   const [stats, setStats] = useState([
     { title: "Total Visitors", value: 0, icon: <People />, color: "#673ab7" },
     { title: "Checked-In", value: 0, icon: <CheckCircle />, color: "#4caf50" },
@@ -53,103 +74,207 @@ function Home() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
-  useEffect(() => {
-    const fetchVisitors = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://localhost:5000/api/visitors");
-        if (!response.ok) {
-          throw new Error("Failed to fetch visitor data");
-        }
-        const rawData = await response.json();
-        console.log("Raw response data:", rawData);
+  // Function to get the current date in YYYY-MM-DD format
+  const getCurrentDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // e.g., "2025-03-10"
+  };
 
-        let data;
-        if (Array.isArray(rawData)) {
-          data = rawData;
-        } else if (rawData.data && Array.isArray(rawData.data)) {
-          data = rawData.data;
-        } else {
-          throw new Error("Unexpected data format from backend");
-        }
+  // Helper function to validate and format a date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    let date;
+    if (dateString.includes("/")) {
+      date = new Date(dateString.replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2"));
+    } else if (dateString.includes("-")) {
+      date = new Date(dateString);
+    } else {
+      date = new Date(dateString);
+    }
+    if (isNaN(date.getTime())) {
+      console.warn(`Invalid date string: ${dateString}`);
+      return "N/A";
+    }
+    return date.toLocaleString();
+  };
 
-        const transformedVisitors = data.map(visitor => ({
-          id: visitor._id,
-          img: visitor.photo || "https://randomuser.me/api/portraits/men/1.jpg",
-          firstName: visitor.fullName ? visitor.fullName.split(" ")[0] : "",
-          lastName: visitor.fullName ? visitor.fullName.split(" ")[1] || "" : "",
-          email: visitor.email || "",
-          company: visitor.visitorCompany || "",
-          phone: visitor.phoneNumber || "",
-          checkIn: visitor.checkInTime ? new Date(visitor.checkInTime).toLocaleString() : visitor.time || "",
-          checkOut: visitor.checkOutTime ? new Date(visitor.checkOutTime).toLocaleString() : "",
-          reasonForVisit: visitor.reasonForVisit || "",
-          personToVisit: visitor.personToVisit || "",
-          designation: visitor.designation || "",
-          vehicle: visitor.vehicle ? true : false, // This field is still mapped but won't be used for the "Vehicles" card
-        }));
+  // Helper function to extract YYYY-MM-DD from a date string
+  const extractDateOnly = (dateString) => {
+    if (!dateString) return null;
+    let date;
+    if (dateString.includes("/")) {
+      date = new Date(dateString.replace(/(\d+)\/(\d+)\/(\d+)/, "$3-$1-$2"));
+    } else if (dateString.includes("-")) {
+      date = new Date(dateString);
+    } else {
+      date = new Date(dateString);
+    }
+    if (isNaN(date.getTime())) {
+      return null;
+    }
+    return date.toISOString().split("T")[0];
+  };
 
-        setVisitors(transformedVisitors);
+  const fetchVisitors = useCallback(async () => {
+    try {
+      setLoading(true);
+      const currentDate = getCurrentDate();
+      console.log("Current date for filtering:", currentDate);
 
-        const totalVisitors = transformedVisitors.length;
-        const checkedIn = transformedVisitors.filter(v => v.checkIn && !v.checkOut).length;
-        const checkedOut = transformedVisitors.filter(v => v.checkOut).length;
-        const pending = transformedVisitors.filter(v => !v.checkIn && !v.checkOut).length;
-
-        // Fetch vehicle data from the /api/vehicles endpoint
-        const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
-        if (!vehicleResponse.ok) {
-          throw new Error("Failed to fetch vehicle data");
-        }
-        const vehicleData = await vehicleResponse.json();
-        const totalVehicles = Array.isArray(vehicleData) ? vehicleData.length : 0;
-        setVehicleCount(totalVehicles);
-
-        // Update stats with the new vehicle count
-        setStats([
-          { ...stats[0], value: totalVisitors },
-          { ...stats[1], value: checkedIn },
-          { ...stats[2], value: checkedOut },
-          { ...stats[3], value: pending },
-          { ...stats[4], value: totalVehicles }, // Use the fetched vehicle count
-        ]);
-
-        setMeterData([
-          { name: "Checked-In", value: checkedIn, color: "#0088FE" },
-          { name: "Checked-Out", value: checkedOut, color: "#00C49F" },
-          { name: "Pending", value: pending, color: "#FFBB28" },
-        ]);
-
-        const monthlyVisits = transformedVisitors.reduce((acc, visitor) => {
-          if (visitor.checkIn) {
-            const date = new Date(visitor.checkIn);
-            const month = date.toLocaleString('default', { month: 'short' });
-            acc[month] = (acc[month] || 0) + 1;
-          }
-          return acc;
-        }, {});
-        
-        setChartData(Object.entries(monthlyVisits).map(([name, visits]) => ({
-          name,
-          visits
-        })));
-
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      // Fetch visitors data
+      const visitorResponse = await fetch("http://localhost:5000/api/visitors");
+      if (!visitorResponse.ok) {
+        throw new Error("Failed to fetch visitor data");
       }
-    };
+      const rawVisitorData = await visitorResponse.json();
+      console.log("Raw visitor response data:", rawVisitorData);
 
+      let visitorData;
+      if (Array.isArray(rawVisitorData)) {
+        visitorData = rawVisitorData;
+      } else if (rawVisitorData.data && Array.isArray(rawVisitorData.data)) {
+        visitorData = rawVisitorData.data;
+      } else {
+        throw new Error("Unexpected visitor data format from backend");
+      }
+
+      // Filter visitors for the current date
+      const filteredVisitors = visitorData.filter(visitor => {
+        const checkInDate = visitor.checkInTime
+          ? extractDateOnly(visitor.checkInTime)
+          : null;
+        return checkInDate && checkInDate === currentDate;
+      });
+
+      const transformedVisitors = filteredVisitors.map(visitor => ({
+        id: visitor._id,
+        img: visitor.photo || "https://randomuser.me/api/portraits/men/1.jpg",
+        firstName: visitor.fullName ? visitor.fullName.split(" ")[0] : "",
+        lastName: visitor.fullName ? visitor.fullName.split(" ")[1] || "" : "",
+        email: visitor.email || "",
+        company: visitor.visitorCompany || "",
+        phone: visitor.phoneNumber || "",
+        checkIn: formatDate(visitor.checkInTime),
+        checkOut: formatDate(visitor.checkOutTime),
+        reasonForVisit: visitor.reasonForVisit || "",
+        personToVisit: visitor.personToVisit || "",
+        designation: visitor.designation || "",
+        vehicle: visitor.vehicle || false,
+      }));
+
+      setVisitors(transformedVisitors);
+
+      const checkedIn = transformedVisitors.filter(v => v.checkIn !== "N/A" && v.checkOut === "N/A").length;
+      const checkedOut = transformedVisitors.filter(v => v.checkOut !== "N/A").length;
+      const pending = transformedVisitors.filter(v => v.checkIn === "N/A" && v.checkOut === "N/A").length;
+      const totalVisitors = checkedIn + checkedOut;
+
+      // Fetch vehicle data
+      const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
+      if (!vehicleResponse.ok) {
+        throw new Error("Failed to fetch vehicle data");
+      }
+      const vehicleData = await vehicleResponse.json();
+      console.log("Raw vehicle response data:", vehicleData);
+
+      // Filter vehicles for the current date and checked-in status
+      const currentDateVehicles = Array.isArray(vehicleData)
+        ? vehicleData.filter(vehicle => {
+            const vehicleDate = vehicle.date ? vehicle.date : null;
+            const isCheckedIn = vehicle.checkInTime && (!vehicle.checkOutTime || vehicle.checkOutTime === "");
+            const matchesCurrentDate = vehicleDate === currentDate;
+            console.log(`Vehicle:`, vehicle, `date: ${vehicle.date}`, `Matches Current Date: ${matchesCurrentDate}`, `Is Checked In: ${isCheckedIn}`);
+            return matchesCurrentDate && isCheckedIn;
+          })
+        : [];
+      const totalVehicles = currentDateVehicles.length;
+
+      // Transform vehicle data for DataGrid
+      const transformedVehicles = currentDateVehicles.map(vehicle => ({
+        id: vehicle._id,
+        vehicleNumber: vehicle.vehicleNumber || "N/A",
+        purpose: vehicle.purpose || "N/A",
+        date: vehicle.date || "N/A",
+        checkInTime: vehicle.checkInTime || "N/A",
+        checkOutTime: vehicle.checkOutTime || "N/A",
+      }));
+
+      setVehicles(transformedVehicles);
+      console.log("Transformed vehicles:", transformedVehicles);
+
+      // Use functional update to avoid dependency on 'stats'
+      setStats(prevStats => [
+        { ...prevStats[0], value: totalVisitors },
+        { ...prevStats[1], value: checkedIn },
+        { ...prevStats[2], value: checkedOut },
+        { ...prevStats[3], value: pending },
+        { ...prevStats[4], value: totalVehicles },
+      ]);
+
+      setMeterData([
+        { name: "Checked-In", value: checkedIn, color: "#0088FE" },
+        { name: "Checked-Out", value: checkedOut, color: "#00C49F" },
+        { name: "Pending", value: pending, color: "#FFBB28" },
+      ]);
+
+      // Update chart data (daily visits for the current day)
+      const dailyVisits = transformedVisitors.reduce((acc, visitor) => {
+        if (visitor.checkIn !== "N/A") {
+          const date = new Date(visitor.checkIn);
+          const day = date.toLocaleDateString("en-US", { day: "numeric", month: "short" });
+          acc[day] = (acc[day] || 0) + 1;
+        }
+        return acc;
+      }, {});
+      setChartData(Object.entries(dailyVisits).map(([name, visits]) => ({
+        name,
+        visits,
+      })));
+
+    } catch (err) {
+      setError(err.message);
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Empty dependency array since no external dependencies
+
+  useEffect(() => {
+    // Initial fetch
     fetchVisitors();
-  }, []);
 
-  const columns = [
+    // Polling every minute to keep the dashboard updated
+    const pollingInterval = setInterval(fetchVisitors, 60000);
+
+    // Reset at midnight
+    const checkDayChange = () => {
+      const now = new Date();
+      const midnight = new Date(now);
+      midnight.setHours(24, 0, 0, 0); // Set to next midnight
+      const timeUntilMidnight = midnight - now;
+
+      const timeoutId = setTimeout(() => {
+        fetchVisitors(); // Re-fetch data at midnight
+        checkDayChange(); // Schedule the next reset
+      }, timeUntilMidnight);
+
+      return () => clearTimeout(timeoutId);
+    };
+    checkDayChange();
+
+    // Cleanup on unmount
+    return () => {
+      clearInterval(pollingInterval);
+      checkDayChange();
+    };
+  }, [fetchVisitors]);
+
+  const visitorColumns = [
     {
       field: "id",
       headerName: "ID",
       width: isMobile ? 70 : 100,
-      renderCell: (params) => params.value.slice(-4) // Display last 4 digits
+      renderCell: (params) => params.value.slice(-4),
     },
     {
       field: "img",
@@ -169,7 +294,21 @@ function Home() {
     { field: "reasonForVisit", headerName: "Purpose", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined, hide: isTablet },
     { field: "personToVisit", headerName: "Host", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined, hide: isTablet },
     { field: "designation", headerName: "Designation", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined, hide: isTablet },
+    { field: "vehicle", headerName: "Vehicle", flex: isMobile ? 0 : 1, width: isMobile ? 80 : undefined, hide: isTablet },
   ];
+
+  const vehicleColumns = [
+    { field: "id", headerName: "ID", width: isMobile ? 70 : 100, renderCell: (params) => params.value.slice(-4) },
+    { field: "vehicleNumber", headerName: "Vehicle Number", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
+    { field: "purpose", headerName: "Purpose", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
+    { field: "date", headerName: "Date", flex: isMobile ? 0 : 1, width: isMobile ? 100 : undefined },
+    { field: "checkInTime", headerName: "Check-In Time", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
+    // Removed: { field: "checkOutTime", headerName: "Check-Out Time", flex: isMobile ? 0 : 1, width: isMobile ? 120 : undefined },
+  ];
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
 
   return (
     <>
@@ -200,11 +339,7 @@ function Home() {
                     }}
                   >
                     <CardContent>
-                      <Box
-                        display="flex"
-                        flexDirection="column"
-                        alignItems="center"
-                      >
+                      <Box display="flex" flexDirection="column" alignItems="center">
                         {stat.icon}
                         <Typography variant={isMobile ? "body2" : "body1"} sx={{ fontSize: isMobile ? "0.8rem" : "1rem" }}>
                           {stat.title}
@@ -221,43 +356,70 @@ function Home() {
 
             <Box mt={isMobile ? 6 : 8}>
               <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}>
-                <Typography variant={isMobile ? "h6" : "h5"} gutterBottom>
-                  Visitors
-                </Typography>
-
-                {loading ? (
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    py={4}
-                  >
-                    <CircularProgress />
-                  </Box>
-                ) : error ? (
-                  <Typography variant="body1" color="error" align="center">
-                    {error}
-                  </Typography>
-                ) : (
-                  <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "hidden" }}>
-                    <DataGrid
-                      rows={visitors}
-                      columns={columns}
-                      getRowId={(row) => row.id}
-                      autoHeight
-                      disableColumnMenu
-                      pageSizeOptions={[5, 7]}
-                      initialState={{
-                        pagination: { paginationModel: { pageSize: isMobile ? 5 : 7 } },
-                      }}
-                      sx={{
-                        "& .MuiDataGrid-root": {
-                          minWidth: isMobile ? 600 : "auto",
-                        },
-                      }}
-                    />
-                  </Box>
-                )}
+                <Tabs value={activeTab} onChange={handleTabChange} centered>
+                  <Tab label="Visitors" id="tab-0" aria-controls="tabpanel-0" />
+                  <Tab label="Vehicles" id="tab-1" aria-controls="tabpanel-1" />
+                </Tabs>
+                <TabPanel value={activeTab} index={0}>
+                  {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                      <CircularProgress />
+                    </Box>
+                  ) : error ? (
+                    <Typography variant="body1" color="error" align="center">
+                      {error}
+                    </Typography>
+                  ) : (
+                    <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "hidden" }}>
+                      <DataGrid
+                        rows={visitors}
+                        columns={visitorColumns}
+                        getRowId={(row) => row.id}
+                        autoHeight
+                        disableColumnMenu
+                        pageSizeOptions={[5, 7]}
+                        initialState={{
+                          pagination: { paginationModel: { pageSize: isMobile ? 5 : 7 } },
+                        }}
+                        sx={{
+                          "& .MuiDataGrid-root": {
+                            minWidth: isMobile ? 600 : "auto",
+                          },
+                        }}
+                      />
+                    </Box>
+                  )}
+                </TabPanel>
+                <TabPanel value={activeTab} index={1}>
+                  {loading ? (
+                    <Box display="flex" justifyContent="center" alignItems="center" py={4}>
+                      <CircularProgress />
+                    </Box>
+                  ) : error ? (
+                    <Typography variant="body1" color="error" align="center">
+                      {error}
+                    </Typography>
+                  ) : (
+                    <Box sx={{ width: "100%", overflowX: isMobile ? "auto" : "hidden" }}>
+                      <DataGrid
+                        rows={vehicles}
+                        columns={vehicleColumns}
+                        getRowId={(row) => row.id}
+                        autoHeight
+                        disableColumnMenu
+                        pageSizeOptions={[5, 7]}
+                        initialState={{
+                          pagination: { paginationModel: { pageSize: isMobile ? 5 : 7 } },
+                        }}
+                        sx={{
+                          "& .MuiDataGrid-root": {
+                            minWidth: isMobile ? 600 : "auto",
+                          },
+                        }}
+                      />
+                    </Box>
+                  )}
+                </TabPanel>
               </Paper>
             </Box>
           </Container>

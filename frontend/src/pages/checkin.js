@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TextField,
@@ -19,7 +18,6 @@ const Checkin = () => {
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
   const [photo, setPhoto] = useState(null);
-  const [latestVisitor, setLatestVisitor] = useState(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -38,25 +36,7 @@ const Checkin = () => {
     assets: [],
   });
   const [errors, setErrors] = useState({});
-  const [isOtpVerified, setIsOtpVerified] = useState(false);
-
-
-  const fetchLatestVisitor = async () => {
-    try {
-      const response = await fetch("http://localhost:5000/api/visitors/latest");
-      if (!response.ok) throw new Error("Failed to fetch latest visitor");
-      const data = await response.json();
-      console.log("Fetched latest visitor:", data); // Debug: Check the response
-      setLatestVisitor(data);
-    } catch (error) {
-      toast.error(error.message || "Error fetching latest visitor");
-    }
-  };
-
-  // Optional: Fetch on mount to see if data loads initially
-  useEffect(() => {
-    fetchLatestVisitor();
-  }, []);
+  const [isOtpVerified, setIsOtpVerified] = useState(false); // Line 41: Used in handleSubmit and to disable Submit button
 
   const validateField = (name, value) => {
     let error = "";
@@ -133,8 +113,8 @@ const Checkin = () => {
           field === "expectedDurationHours" ||
           field === "expectedDurationMinutes" ||
           field === "otp"
-          ? value.replace(/[^0-9]/g, "")
-          : value;
+        ? value.replace(/[^0-9]/g, "")
+        : value;
 
     setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
     setErrors((prev) => ({
@@ -188,8 +168,8 @@ const Checkin = () => {
       field === "name"
         ? value.replace(/[^A-Za-z\s]/g, "")
         : field === "email"
-          ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
-          : value;
+        ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
+        : value;
     setTeamMembers(updatedMembers);
   };
 
@@ -252,36 +232,30 @@ const Checkin = () => {
   };
 
   const verifyOtp = async () => {
-
-    
     if (!formData.otp) {
-        toast.error("Please enter the OTP!");
-        return;
+      toast.error("Please enter the OTP!");
+      return;
     }
 
     try {
-      
-        const response = await fetch("http://localhost:5000/api/visitors/verify-email-otp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include", // Ensure cookies are sent
-            body: JSON.stringify({ email: formData.email, otp: formData.otp }),
-        });
+      const response = await fetch("http://localhost:5000/api/visitors/verify-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: formData.email, otp: formData.otp }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok) throw new Error(data.message);
+      if (!response.ok) throw new Error(data.message);
 
-        toast.success("OTP verified successfully!");
-        setIsOtpVerified(true); // ✅ Enable submit after verification
+      toast.success("OTP verified successfully!");
+      setIsOtpVerified(true);
     } catch (error) {
-        toast.error(error.message || "OTP verification failed");
-        setIsOtpVerified(false); // ❌ Keep submit disabled if failed
+      toast.error(error.message || "OTP verification failed");
+      setIsOtpVerified(false);
     }
-};
-
-
-
+  };
 
   const handleSubmit = async () => {
     const newErrors = {};
@@ -340,6 +314,11 @@ const Checkin = () => {
       return;
     }
 
+    if (!isOtpVerified) {
+      toast.error("Please verify OTP before submitting!");
+      return;
+    }
+
     try {
       const visitorData = {
         ...formData,
@@ -363,12 +342,12 @@ const Checkin = () => {
       if (!response.ok) throw new Error("Submission failed");
 
       toast.success("Check-in successful!");
-      await fetchLatestVisitor(); // Fetch after submission
       setTimeout(() => navigate("/visitorcard"), 2000);
     } catch (error) {
       toast.error(error.message || "Submission error");
     }
   };
+
   return (
     <>
       <Navbar />
@@ -558,7 +537,7 @@ const Checkin = () => {
                   variant="contained"
                   color="primary"
                   onClick={verifyOtp}
-                  sx={{ height: "56px" }} // Align with TextField height
+                  sx={{ height: "56px" }}
                 >
                   Verify OTP
                 </Button>
@@ -731,12 +710,12 @@ const Checkin = () => {
                           required
                           error={
                             !!errors[
-                            `teamMember_${index}_asset_${assetIndex}_quantity`
+                              `teamMember_${index}_asset_${assetIndex}_quantity`
                             ]
                           }
                           helperText={
                             errors[
-                            `teamMember_${index}_asset_${assetIndex}_quantity`
+                              `teamMember_${index}_asset_${assetIndex}_quantity`
                             ]
                           }
                         />
@@ -757,12 +736,12 @@ const Checkin = () => {
                           required
                           error={
                             !!errors[
-                            `teamMember_${index}_asset_${assetIndex}_type`
+                              `teamMember_${index}_asset_${assetIndex}_type`
                             ]
                           }
                           helperText={
                             errors[
-                            `teamMember_${index}_asset_${assetIndex}_type`
+                              `teamMember_${index}_asset_${assetIndex}_type`
                             ]
                           }
                         />
@@ -783,12 +762,12 @@ const Checkin = () => {
                           required
                           error={
                             !!errors[
-                            `teamMember_${index}_asset_${assetIndex}_serialNumber`
+                              `teamMember_${index}_asset_${assetIndex}_serialNumber`
                             ]
                           }
                           helperText={
                             errors[
-                            `teamMember_${index}_asset_${assetIndex}_serialNumber`
+                              `teamMember_${index}_asset_${assetIndex}_serialNumber`
                             ]
                           }
                         />
@@ -913,7 +892,7 @@ const Checkin = () => {
           color="primary"
           sx={{ mt: 4, display: "block", mx: "auto" }}
           onClick={handleSubmit}
-
+          disabled={!isOtpVerified}
         >
           Submit
         </Button>

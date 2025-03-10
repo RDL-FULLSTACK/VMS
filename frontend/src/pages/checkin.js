@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TextField,
@@ -18,6 +18,7 @@ const Checkin = () => {
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
   const [photo, setPhoto] = useState(null);
+  const [hosts, setHosts] = useState([]); // State to store hosts
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -36,7 +37,28 @@ const Checkin = () => {
     assets: [],
   });
   const [errors, setErrors] = useState({});
-  const [isOtpVerified, setIsOtpVerified] = useState(false); // Line 41: Used in handleSubmit and to disable Submit button
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+
+  // Fetch hosts from the API
+  useEffect(() => {
+    const fetchHosts = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/users");
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        // Filter users with role "Host"
+        const hostUsers = data.filter((user) => user.role.toLowerCase() === "host");
+        setHosts(hostUsers);
+      } catch (error) {
+        console.error("Error fetching hosts:", error);
+        toast.error("Failed to load hosts. Please try again later.");
+      }
+    };
+
+    fetchHosts();
+  }, []);
 
   const validateField = (name, value) => {
     let error = "";
@@ -85,7 +107,6 @@ const Checkin = () => {
         break;
       case "personToVisit":
         if (!value) error = "Required";
-        else if (!/^[A-Za-z\s]+$/.test(value)) error = "Letters only";
         break;
       case "submittedDocument":
         if (!value) error = "Required";
@@ -107,7 +128,7 @@ const Checkin = () => {
 
   const handleInputChange = (field, value) => {
     const sanitizedValue =
-      field === "fullName" || field === "personToVisit"
+      field === "fullName"
         ? value.replace(/[^A-Za-z\s]/g, "")
         : field === "phoneNumber" ||
           field === "expectedDurationHours" ||
@@ -555,18 +576,28 @@ const Checkin = () => {
               required
               sx={{ mb: 2 }}
             />
+            {/* Updated Person to Visit Field as a Dropdown */}
             <TextField
+              select
               fullWidth
               label="Person to Visit*"
               value={formData.personToVisit}
-              onChange={(e) =>
-                handleInputChange("personToVisit", e.target.value)
-              }
+              onChange={(e) => handleInputChange("personToVisit", e.target.value)}
               error={!!errors.personToVisit}
-              helperText={errors.personToVisit}
+              helperText={errors.personToVisit || (hosts.length === 0 ? "No hosts available" : "")}
               required
               sx={{ mb: 2 }}
-            />
+              disabled={hosts.length === 0} // Disable if no hosts are available
+            >
+              <MenuItem value="" disabled>
+                Select Host
+              </MenuItem>
+              {hosts.map((host) => (
+                <MenuItem key={host.id} value={host.username}>
+                  {host.username}
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               select
               fullWidth
@@ -892,7 +923,6 @@ const Checkin = () => {
           color="primary"
           sx={{ mt: 4, display: "block", mx: "auto" }}
           onClick={handleSubmit}
-          // disabled={!isOtpVerified}
         >
           Submit
         </Button>

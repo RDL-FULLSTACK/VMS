@@ -27,7 +27,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
   const [open, setOpen] = useState(false);
-  const rowsPerPage = 10;
+  const rowsPerPage = 6;
 
   const handleMenuOpen = (event, vehicle) => {
     setAnchorEl(event.currentTarget);

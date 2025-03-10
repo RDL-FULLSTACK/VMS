@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import {
@@ -44,12 +40,13 @@ function Home() {
   const [visitors, setVisitors] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [meterData, setMeterData] = useState([]);
+  const [vehicleCount, setVehicleCount] = useState(0); // New state for vehicle count
   const [stats, setStats] = useState([
     { title: "Total Visitors", value: 0, icon: <People />, color: "#673ab7" },
     { title: "Checked-In", value: 0, icon: <CheckCircle />, color: "#4caf50" },
     { title: "Checked-Out", value: 0, icon: <Cancel />, color: "#f44336" },
     { title: "Pending", value: 0, icon: <TrendingUp />, color: "#ff9800" },
-    { title: "Vehicles", value: 0, icon: <DirectionsCar />, color: "#3f51b5" },
+    { title: "Vehicle Checked-In", value: 0, icon: <DirectionsCar />, color: "#3f51b5" },
   ]);
 
   const theme = useTheme();
@@ -89,7 +86,7 @@ function Home() {
           reasonForVisit: visitor.reasonForVisit || "",
           personToVisit: visitor.personToVisit || "",
           designation: visitor.designation || "",
-          vehicle: visitor.vehicle ? true : false,
+          vehicle: visitor.vehicle ? true : false, // This field is still mapped but won't be used for the "Vehicles" card
         }));
 
         setVisitors(transformedVisitors);
@@ -98,14 +95,23 @@ function Home() {
         const checkedIn = transformedVisitors.filter(v => v.checkIn && !v.checkOut).length;
         const checkedOut = transformedVisitors.filter(v => v.checkOut).length;
         const pending = transformedVisitors.filter(v => !v.checkIn && !v.checkOut).length;
-        const vehicles = transformedVisitors.filter(v => v.vehicle).length;
 
+        // Fetch vehicle data from the /api/vehicles endpoint
+        const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
+        if (!vehicleResponse.ok) {
+          throw new Error("Failed to fetch vehicle data");
+        }
+        const vehicleData = await vehicleResponse.json();
+        const totalVehicles = Array.isArray(vehicleData) ? vehicleData.length : 0;
+        setVehicleCount(totalVehicles);
+
+        // Update stats with the new vehicle count
         setStats([
           { ...stats[0], value: totalVisitors },
           { ...stats[1], value: checkedIn },
           { ...stats[2], value: checkedOut },
           { ...stats[3], value: pending },
-          { ...stats[4], value: vehicles },
+          { ...stats[4], value: totalVehicles }, // Use the fetched vehicle count
         ]);
 
         setMeterData([

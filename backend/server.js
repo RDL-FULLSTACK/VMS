@@ -1,3 +1,8 @@
+
+
+
+
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -44,8 +49,15 @@ connectDB(); // Assumes connectDB uses process.env.MONGO_URI
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/visitors', visitorRoutes);
-app.use('/api', preScheduleRoutes);
+app.use('/api', preScheduleRoutes); // Pre-schedule routes mounted at /api
 app.use("/api/users", userRoutes);
+
+// Error Handling Middleware (optional but recommended)
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: "Something went wrong!", error: err.message });
+});
+
 // Server Port
 const PORT = process.env.PORT || 5000;
 

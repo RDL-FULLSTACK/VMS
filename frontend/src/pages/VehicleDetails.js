@@ -1,4 +1,3 @@
-// VehicleDetails.js
 import React, { useState } from "react";
 import {
   Table,
@@ -20,8 +19,7 @@ import {
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import axios from "axios";
 import VehicleTicket from "../components/VehicleTicket";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -51,58 +49,33 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         checkOutTime: selectedVehicle.checkOutTime,
       });
       setOpen(true);
-      toast.success("Viewing ticket for the selected vehicle!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.dismiss();
+      toast.success("Viewing ticket for the selected vehicle!", { toastId: "view-ticket" });
     }
     handleMenuClose();
   };
 
   const handleDeleteVehicle = async () => {
     if (!selectedVehicle || !selectedVehicle._id) {
-      toast.error("No vehicle selected for deletion!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.dismiss();
+      toast.error("No vehicle selected for deletion!", { toastId: "delete-error" });
       handleMenuClose();
       return;
     }
 
     try {
       await axios.delete(`http://localhost:5000/api/vehicles/${selectedVehicle._id}`);
-      toast.success("Vehicle deleted successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.dismiss();
+      toast.success("Vehicle deleted successfully!", { toastId: "delete-success" });
       if (onDeleteVehicle) {
         onDeleteVehicle(selectedVehicle._id);
       }
       handleMenuClose();
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to delete vehicle. Please try again.",
-        {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        }
-      );
+      toast.dismiss();
+      toast.error(error.response?.data?.message || "Failed to delete vehicle. Please try again.", {
+        toastId: "delete-error",
+      });
     }
   };
 
@@ -169,7 +142,6 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
             </TableBody>
           </Table>
         </TableContainer>
-
         <TablePagination
           component="div"
           count={vehicles?.length || 0}
@@ -194,8 +166,6 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
           {ticketData && <VehicleTicket data={ticketData} onClose={handleClose} />}
         </DialogContent>
       </Dialog>
-
-      <ToastContainer />
     </>
   );
 };

@@ -1,9 +1,7 @@
-// VehicleRegistration.js
 import React, { useState } from "react";
 import { TextField, Button, Paper, MenuItem, Typography, Dialog, DialogTitle, DialogContent } from "@mui/material";
 import VehicleTicket from "../components/VehicleTicket";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const VehicleRegistration = ({ onAddVehicle }) => {
   const [vehicleNumber, setVehicleNumber] = useState("");
@@ -66,16 +64,14 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     return isValid;
   };
 
-  const handleGenerateTicket = () => {
+  const handleGenerateTicket = async () => {
     if (!validateForm()) {
-      // Display toast notification for overall form validation failure
+      toast.dismiss("register-error");
       toast.error("Please fill in all required fields!", {
-        position: "top-right",
+        toastId: "register-error",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        onOpen: () => console.log("Error toast opened"),
+        onClose: () => console.log("Error toast closed"),
       });
       return;
     }
@@ -92,18 +88,28 @@ const VehicleRegistration = ({ onAddVehicle }) => {
       checkOutTime: "",
     };
 
-    onAddVehicle(newVehicle);
-    setTicketData({ vehicleNumber, purpose, checkInTime });
-    setOpenDialog(true);
+    try {
+      // Perform the async operation first
+      await onAddVehicle(newVehicle);
+      setTicketData({ vehicleNumber, purpose, checkInTime });
+      setOpenDialog(true);
 
-    toast.success("E-Ticket generated successfully!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
+      // Show success toast after async success
+      toast.dismiss("register-success");
+      toast.success("E-Ticket generated successfully!", {
+        toastId: "register-success",
+        autoClose: 3000,
+        onOpen: () => console.log("Success toast opened"),
+        onClose: () => console.log("Success toast closed"),
+      });
+    } catch (error) {
+      console.error("Error in handleGenerateTicket:", error);
+      toast.dismiss("register-error");
+      toast.error("Failed to generate ticket. Please try again.", {
+        toastId: "register-error",
+        autoClose: 3000,
+      });
+    }
   };
 
   const handleCloseDialog = () => {
@@ -111,7 +117,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     setTicketData(null);
     setVehicleNumber("");
     setPurpose("");
-    setErrors({ vehicleNumber: "", purpose: "" }); // Reset errors
+    setErrors({ vehicleNumber: "", purpose: "" });
   };
 
   return (
@@ -126,7 +132,6 @@ const VehicleRegistration = ({ onAddVehicle }) => {
         bgcolor: "#FFFFFF",
       }}
     >
-      <ToastContainer />
       {!openDialog ? (
         <>
           <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#2D3748", mb: 2 }}>
@@ -145,25 +150,13 @@ const VehicleRegistration = ({ onAddVehicle }) => {
             helperText={errors.vehicleNumber}
             sx={{
               mb: 2,
-              "& .MuiInputLabel-root": {
-                color: errors.vehicleNumber ? "#d32f2f" : "#2D3748",
-              },
+              "& .MuiInputLabel-root": { color: errors.vehicleNumber ? "#d32f2f" : "#2D3748" },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: errors.vehicleNumber ? "#d32f2f" : "#2D3748",
-                },
-                "&:hover fieldset": {
-                  borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE",
-                },
+                "& fieldset": { borderColor: errors.vehicleNumber ? "#d32f2f" : "#2D3748" },
+                "&:hover fieldset": { borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE" },
+                "&.Mui-focused fieldset": { borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE" },
               },
-              "& .MuiFormHelperText-root": {
-                color: "#d32f2f",
-                fontSize: "0.75rem",
-                fontWeight: 400,
-              },
+              "& .MuiFormHelperText-root": { color: "#d32f2f", fontSize: "0.75rem", fontWeight: 400 },
             }}
           />
           <TextField
@@ -178,25 +171,13 @@ const VehicleRegistration = ({ onAddVehicle }) => {
             helperText={errors.purpose}
             sx={{
               mb: 2,
-              "& .MuiInputLabel-root": {
-                color: errors.purpose ? "#d32f2f" : "#2D3748",
-              },
+              "& .MuiInputLabel-root": { color: errors.purpose ? "#d32f2f" : "#2D3748" },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: errors.purpose ? "#d32f2f" : "#2D3748",
-                },
-                "&:hover fieldset": {
-                  borderColor: errors.purpose ? "#d32f2f" : "#3182CE",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: errors.purpose ? "#d32f2f" : "#3182CE",
-                },
+                "& fieldset": { borderColor: errors.purpose ? "#d32f2f" : "#2D3748" },
+                "&:hover fieldset": { borderColor: errors.purpose ? "#d32f2f" : "#3182CE" },
+                "&.Mui-focused fieldset": { borderColor: errors.purpose ? "#d32f2f" : "#3182CE" },
               },
-              "& .MuiFormHelperText-root": {
-                color: "#d32f2f",
-                fontSize: "0.75rem",
-                fontWeight: 400,
-              },
+              "& .MuiFormHelperText-root": { color: "#d32f2f", fontSize: "0.75rem", fontWeight: 400 },
             }}
           >
             {purposes.map((option) => (
@@ -216,9 +197,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
               textTransform: "none",
               fontWeight: 600,
               bgcolor: "#3182CE",
-              "&:hover": {
-                bgcolor: "#2A6AA9",
-              },
+              "&:hover": { bgcolor: "#2A6AA9" },
             }}
           >
             Generate E-Ticket

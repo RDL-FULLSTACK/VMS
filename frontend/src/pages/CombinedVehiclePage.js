@@ -1,4 +1,3 @@
-// CombinedVehiclePage.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -17,18 +16,16 @@ import Navbar from "../components/Navbar";
 import VehicleDetails from "./VehicleDetails";
 import VehicleRegistration from "./VehicleRegistration";
 import VehicleCheckout from "./VehicleCheckout";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const CombinedVehiclePage = () => {
-  const [view, setView] = useState(0); // 0 for Registration, 1 for Checkout
+  const [view, setView] = useState(0);
   const [vehicles, setVehicles] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterPurpose, setFilterPurpose] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [filterCheckOut, setFilterCheckOut] = useState("");
 
-  // Fetch vehicles from backend on component mount
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
@@ -36,14 +33,8 @@ const CombinedVehiclePage = () => {
         setVehicles(response.data);
       } catch (error) {
         console.error("Error fetching vehicles:", error);
-        toast.error("Failed to fetch vehicles. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-        });
+        toast.dismiss("fetch-error");
+        toast.error("Failed to fetch vehicles. Please try again.", { toastId: "fetch-error", autoClose: 3000 });
       }
     };
     fetchVehicles();
@@ -57,24 +48,15 @@ const CombinedVehiclePage = () => {
     try {
       const response = await axios.post("http://localhost:5000/api/vehicles", newVehicle);
       setVehicles([...vehicles, response.data.vehicle]);
-      toast.success("Vehicle registered successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      return Promise.resolve(); // Ensure the promise resolves for VehicleRegistration
     } catch (error) {
       console.error("Error adding vehicle:", error);
+      toast.dismiss("register-error");
       toast.error(error.response?.data?.message || "Failed to register vehicle", {
-        position: "top-right",
+        toastId: "register-error",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
       });
+      return Promise.reject(error); // Propagate the error back to VehicleRegistration
     }
   };
 
@@ -91,24 +73,15 @@ const CombinedVehiclePage = () => {
             : vehicle
         )
       );
-      toast.success("Vehicle checked out successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      return Promise.resolve(); // Ensure the promise resolves for VehicleCheckout
     } catch (error) {
       console.error("Error checking out vehicle:", error);
+      toast.dismiss("checkout-error");
       toast.error(error.response?.data?.message || "Failed to check out vehicle", {
-        position: "top-right",
+        toastId: "checkout-error",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
       });
+      return Promise.reject(error); // Propagate the error back to VehicleCheckout
     }
   };
 
@@ -179,10 +152,7 @@ const CombinedVehiclePage = () => {
               variant="fullWidth"
               sx={{
                 mb: { xs: 1, md: 2 },
-                "& .MuiTabs-indicator": {
-                  height: 3,
-                  bgcolor: "#3182CE",
-                },
+                "& .MuiTabs-indicator": { height: 3, bgcolor: "#3182CE" },
               }}
             >
               <Tab
@@ -194,7 +164,6 @@ const CombinedVehiclePage = () => {
                 sx={{ textTransform: "none", fontWeight: 600, fontSize: { xs: "0.875rem", md: "1rem" } }}
               />
             </Tabs>
-
             <Box
               sx={{
                 flex: 1,
@@ -215,7 +184,6 @@ const CombinedVehiclePage = () => {
             </Box>
           </Paper>
         </Box>
-
         <Box
           sx={{
             display: "flex",
@@ -259,32 +227,15 @@ const CombinedVehiclePage = () => {
                 variant="outlined"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{
-                  flex: { xs: 1, md: "auto" },
-                  minWidth: { xs: "100%", md: 150 },
-                  bgcolor: "white",
-                  mb: { xs: 1, md: 0 },
-                }}
+                sx={{ flex: { xs: 1, md: "auto" }, minWidth: { xs: "100%", md: 150 }, bgcolor: "white", mb: { xs: 1, md: 0 } }}
               />
-              <FormControl
-                size="small"
-                sx={{
-                  flex: { xs: 1, md: "auto" },
-                  minWidth: { xs: "100%", md: 150 },
-                  bgcolor: "white",
-                  mb: { xs: 1, md: 0 },
-                }}
-              >
+              <FormControl size="small" sx={{ flex: { xs: 1, md: "auto" }, minWidth: { xs: "100%", md: 150 }, bgcolor: "white", mb: { xs: 1, md: 0 } }}>
                 <InputLabel>Purpose</InputLabel>
                 <Select
                   label="Filter by Purpose"
                   value={filterPurpose}
                   onChange={(e) => setFilterPurpose(e.target.value)}
-                  sx={{
-                    "& .MuiSelect-select": {
-                      paddingRight: "32px",
-                    },
-                  }}
+                  sx={{ "& .MuiSelect-select": { paddingRight: "32px" } }}
                 >
                   <MenuItem value="">All</MenuItem>
                   <MenuItem value="Delivery">Delivery</MenuItem>
@@ -300,32 +251,15 @@ const CombinedVehiclePage = () => {
                 InputLabelProps={{ shrink: true }}
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                sx={{
-                  flex: { xs: 1, md: "auto" },
-                  minWidth: { xs: "100%", md: 150 },
-                  bgcolor: "white",
-                  mb: { xs: 1, md: 0 },
-                }}
+                sx={{ flex: { xs: 1, md: "auto" }, minWidth: { xs: "100%", md: 150 }, bgcolor: "white", mb: { xs: 1, md: 0 } }}
               />
-              <FormControl
-                size="small"
-                sx={{
-                  flex: { xs: 1, md: "auto" },
-                  minWidth: { xs: "100%", md: 150 },
-                  bgcolor: "white",
-                  mb: { xs: 1, md: 0 },
-                }}
-              >
+              <FormControl size="small" sx={{ flex: { xs: 1, md: "auto" }, minWidth: { xs: "100%", md: 150 }, bgcolor: "white", mb: { xs: 1, md: 0 } }}>
                 <InputLabel>Filter by Check-Out</InputLabel>
                 <Select
                   label="Filter by Check-Out"
                   value={filterCheckOut}
                   onChange={(e) => setFilterCheckOut(e.target.value)}
-                  sx={{
-                    "& .MuiSelect-select": {
-                      paddingRight: "32px",
-                    },
-                  }}
+                  sx={{ "& .MuiSelect-select": { paddingRight: "32px" } }}
                 >
                   <MenuItem value="">All</MenuItem>
                   <MenuItem value="checkedOut">Checked Out</MenuItem>
@@ -333,14 +267,12 @@ const CombinedVehiclePage = () => {
                 </Select>
               </FormControl>
             </Box>
-
             <Box sx={{ flex: 1, overflow: "auto", borderTop: "1px solid #E2E8F0" }}>
               <VehicleDetails vehicles={filteredVehicles} onDeleteVehicle={handleDeleteVehicle} />
             </Box>
           </Paper>
         </Box>
       </Box>
-      <ToastContainer />
     </>
   );
 };

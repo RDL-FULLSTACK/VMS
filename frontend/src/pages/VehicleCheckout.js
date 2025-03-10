@@ -1,4 +1,3 @@
-// VehicleCheckout.js
 import React, { useState, useRef, useEffect } from "react";
 import {
   TextField,
@@ -14,8 +13,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { Clear } from "@mui/icons-material";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +33,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setSelectedVehicle(vehicle);
     setSearchQuery(vehicle.vehicleNumber);
     setIsListOpen(false);
-    setErrors((prev) => ({ ...prev, vehicle: "" })); // Clear vehicle error on selection
+    setErrors((prev) => ({ ...prev, vehicle: "" }));
 
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
@@ -44,34 +42,46 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setCheckOutTime(currentTime);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     const isValid = validateForm();
     if (!isValid) {
+      toast.dismiss("checkout-error");
       toast.error("Please fill in all required fields!", {
-        position: "top-right",
+        toastId: "checkout-error",
         autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
+        onOpen: () => console.log("Error toast opened"),
+        onClose: () => console.log("Error toast closed"),
       });
       return;
     }
 
-    onCheckoutVehicle(selectedVehicle.vehicleNumber, checkOutTime);
-    toast.success("Vehicle checked out successfully!", {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-    });
-    setSelectedVehicle(null);
-    setSearchQuery("");
-    setCheckOutTime("");
-    setErrors({ vehicle: "", checkOutTime: "" });
-    setIsListOpen(false);
+    try {
+      // Perform the async operation first
+      await onCheckoutVehicle(selectedVehicle.vehicleNumber, checkOutTime);
+
+      // Show success toast after async success
+      toast.dismiss("checkout-success");
+      toast.success("Vehicle checked out successfully!", {
+        toastId: "checkout-success",
+        autoClose: 3000,
+        onOpen: () => console.log("Success toast opened"),
+        onClose: () => console.log("Success toast closed"),
+      });
+
+      // Reset state after toast is shown
+      setSelectedVehicle(null);
+      setSearchQuery("");
+      setCheckOutTime("");
+      setErrors({ vehicle: "", checkOutTime: "" });
+      setIsListOpen(false);
+    } catch (error) {
+      console.error("Error in handleCheckout:", error);
+      toast.dismiss("checkout-error");
+      toast.error("Failed to check out vehicle. Please try again.", {
+        toastId: "checkout-error",
+        autoClose: 3000,
+      });
+    }
   };
 
   const handleClearSearch = () => {
@@ -145,7 +155,6 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
       }}
     >
       <CardContent>
-        <ToastContainer />
         <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: "#2D3748", mb: 2 }}>
           Vehicle Check-Out
         </Typography>
@@ -173,21 +182,11 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
           }}
           sx={{
             "& .MuiOutlinedInput-root": {
-              "& fieldset": {
-                borderColor: errors.vehicle ? "#d32f2f" : "#2D3748",
-              },
-              "&:hover fieldset": {
-                borderColor: errors.vehicle ? "#d32f2f" : "#3182CE",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: errors.vehicle ? "#d32f2f" : "#3182CE",
-              },
+              "& fieldset": { borderColor: errors.vehicle ? "#d32f2f" : "#2D3748" },
+              "&:hover fieldset": { borderColor: errors.vehicle ? "#d32f2f" : "#3182CE" },
+              "&.Mui-focused fieldset": { borderColor: errors.vehicle ? "#d32f2f" : "#3182CE" },
             },
-            "& .MuiFormHelperText-root": {
-              color: "#d32f2f",
-              fontSize: "0.75rem",
-              fontWeight: 400,
-            },
+            "& .MuiFormHelperText-root": { color: "#d32f2f", fontSize: "0.75rem", fontWeight: 400 },
           }}
         />
         {isListOpen && (
@@ -235,21 +234,11 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
             inputProps={{ step: 300 }}
             sx={{
               "& .MuiOutlinedInput-root": {
-                "& fieldset": {
-                  borderColor: errors.checkOutTime ? "#d32f2f" : "#2D3748",
-                },
-                "&:hover fieldset": {
-                  borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE",
-                },
+                "& fieldset": { borderColor: errors.checkOutTime ? "#d32f2f" : "#2D3748" },
+                "&:hover fieldset": { borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE" },
+                "&.Mui-focused fieldset": { borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE" },
               },
-              "& .MuiFormHelperText-root": {
-                color: "#d32f2f",
-                fontSize: "0.75rem",
-                fontWeight: 400,
-              },
+              "& .MuiFormHelperText-root": { color: "#d32f2f", fontSize: "0.75rem", fontWeight: 400 },
             }}
           />
         )}
@@ -264,9 +253,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
             fontWeight: 600,
             bgcolor: "#3182CE",
             color: "#FFFFFF",
-            "&:hover": {
-              bgcolor: "#2A6AA9",
-            },
+            "&:hover": { bgcolor: "#2A6AA9" },
           }}
         >
           Check-Out

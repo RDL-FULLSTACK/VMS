@@ -2,6 +2,9 @@
 
 
 const Visitor = require("../models/Visitor");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+const session = require("express-session");
 
 // 🔹 Get All Visitors
 exports.getAllVisitors = async (req, res) => {
@@ -258,3 +261,133 @@ exports.updateVisitor = async (req, res) => {
         });
     }
 };
+
+
+
+// Setup Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER, // Your Gmail
+        pass: process.env.EMAIL_PASS, // App Password (not normal password)
+    },
+    tls: {
+        rejectUnauthorized: false, // Ignore self-signed cert errors
+    },
+});
+
+
+var c_otp=null;//locally storing otp
+
+
+// 🔹 Send Email OTP
+exports.sendEmailOtp = async (req, res) => {
+    // console.log("function triggered2334433");
+    
+    try {
+        const { email } = req.body;
+        
+        
+        if (!email) {
+            
+            return res.status(400).json({
+                success: false,
+                message: "Email is required",
+            });
+        }
+        // if(email){
+            //     return res.status(200).json({
+                //         success: true,
+                //         message: "ok"
+                //     });
+                // }
+                
+                // Generate a 6-digit OTP
+                const otp = crypto.randomInt(100000, 999999).toString();
+                
+                // Store OTP in session/database (for verification later)
+                // req.session.otp = otp; // If using session-based storage
+                c_otp=otp;
+                setTimeout(() => { //resetting otp after 5 minutes
+                    c_otp=null
+                }, 300000);
+               
+                
+
+        // OR Store in DB (if using MongoDB)
+        // await OTPModel.create({ email, otp, expiresAt: new Date(Date.now() + 5 * 60000) });
+
+        // Email Message
+       
+        
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Your OTP Code",
+            text: `Your OTP for visitor verification is: ${otp}. It is valid for 5 minutes.`,
+        };
+
+        // Send Email
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({
+            success: true,
+            message: `OTP sent to ${email}`,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Error sending OTP",
+            error: error.message,
+        });
+    }
+};
+
+// 🔹 Verify Email OTP
+exports.verifyEmailOtp = async (req, res) => {
+    
+    try {
+        const { email, otp } = req.body;
+        
+        console.log("Session OTP:", c_otp);//debug line
+        console.log("User Input OTP:", otp);//debug line
+
+        
+
+        if (!email || !otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Email and OTP are required",
+            });
+        }
+
+       
+        
+
+        // Check OTP stored in session
+        if (c_otp && c_otp === otp) {
+            
+            // OTP is correct, clear it from session
+            c_otp = null;
+
+            return res.status(200).json({
+                success: true,
+                message: "OTP verified successfully!",
+            });
+        }
+
+        return res.status(400).json({
+            success: false,
+            message: "Invalid or expired OTP",
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false,
+            message: "Error verifying OTP",
+            error: error.message,
+        });
+    }
+};
+

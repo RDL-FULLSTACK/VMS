@@ -1,10 +1,22 @@
-
-
-
-
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Custom CSS for larger toasts
+const toastStyles = `
+  .custom-toast {
+    font-size: 18px; /* Increase font size */
+    padding: 20px 30px; /* Increase padding for larger toast */
+    min-width: 400px; /* Minimum width of the toast */
+    border-radius: 8px; /* Slightly larger border radius */
+    line-height: 1.5; /* Better readability */
+  }
+  .custom-toast .Toastify__toast-body {
+    white-space: pre-line; /* Ensure line breaks are respected */
+  }
+`;
 
 const PreScheduling = () => {
   const [formData, setFormData] = useState({
@@ -26,7 +38,7 @@ const PreScheduling = () => {
         setFetchingHosts(true);
         console.log("Fetching hosts from: http://localhost:5000/api/users");
         const response = await axios.get("http://localhost:5000/api/users", {
-          withCredentials: true, // Include credentials if session-based auth is used
+          withCredentials: true,
         });
         console.log("Hosts response:", response.data);
         const hostUsers = response.data.filter((user) => user.role.toLowerCase() === "host");
@@ -71,12 +83,14 @@ const PreScheduling = () => {
   const validateForm = () => {
     const newErrors = {};
     if (!formData.fullName) newErrors.fullName = "Name is required";
-    else if (!/^[A-Za-z\s]+$/.test(formData.fullName)) newErrors.fullName = "Name must contain only letters and spaces";
+    else if (!/^[A-Za-z\s]+$/.test(formData.fullName))
+      newErrors.fullName = "Name must contain only letters and spaces";
     if (!formData.date) newErrors.date = "Date is required";
     if (!formData.purpose) newErrors.purpose = "Purpose is required";
     if (!formData.host) newErrors.host = "Host is required";
     if (!formData.email) newErrors.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Invalid email format";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+      newErrors.email = "Invalid email format";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -87,7 +101,9 @@ const PreScheduling = () => {
 
     setLoading(true);
     try {
-      const selectedHost = hosts.find((h) => h.id === formData.host)?.username || hosts.find((h) => h._id === formData.host)?.username;
+      const selectedHost =
+        hosts.find((h) => h.id === formData.host)?.username ||
+        hosts.find((h) => h._id === formData.host)?.username;
       if (!selectedHost) throw new Error("Selected host not found");
 
       console.log("Submitting form data:", {
@@ -108,7 +124,7 @@ const PreScheduling = () => {
           email: formData.email,
         },
         {
-          withCredentials: true, // Include credentials if session-based auth is used
+          withCredentials: true,
           headers: {
             "Content-Type": "application/json",
           },
@@ -116,7 +132,18 @@ const PreScheduling = () => {
       );
 
       console.log("Form submission response:", response.data);
-      alert(`Form submitted!\nName: ${formData.fullName}\nDate: ${formData.date}\nPurpose: ${formData.purpose}\nHost: ${selectedHost}\nEmail: ${formData.email}`);
+      toast.success(
+        `Form submitted!\nName: ${formData.fullName}\nDate: ${formData.date}\nPurpose: ${formData.purpose}\nHost: ${selectedHost}\nEmail: ${formData.email}`,
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          className: "custom-toast", // Apply custom class
+        }
+      );
       setFormData({ fullName: "", date: "", purpose: "", host: "", email: "" });
       setErrors({});
     } catch (error) {
@@ -128,7 +155,15 @@ const PreScheduling = () => {
       const errorMsg = error.response
         ? error.response.data.message || "Server error occurred"
         : "Network error. Please check your connection or server status.";
-      alert(`Failed to submit form: ${errorMsg}`);
+      toast.error(`Failed to submit form: ${errorMsg}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        className: "custom-toast", // Apply custom class
+      });
     } finally {
       setLoading(false);
     }
@@ -164,13 +199,18 @@ const PreScheduling = () => {
             textAlign: "center",
           }}
         >
-          <h2 style={{ marginBottom: "30px", fontSize: "28px" }}>Pre-Scheduling & Approval</h2>
+          <h2 style={{ marginBottom: "30px", fontSize: "28px" }}>
+            Pre-Scheduling & Approval
+          </h2>
           {fetchingHosts ? (
             <p>Loading hosts...</p>
           ) : hosts.length === 0 ? (
             <p style={{ color: "red" }}>No hosts available. Please try again later.</p>
           ) : (
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "25px" }}>
+            <form
+              onSubmit={handleSubmit}
+              style={{ display: "flex", flexDirection: "column", gap: "25px" }}
+            >
               <div>
                 <input
                   type="text"
@@ -189,7 +229,9 @@ const PreScheduling = () => {
                   }}
                 />
                 {errors.fullName && (
-                  <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{errors.fullName}</p>
+                  <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                    {errors.fullName}
+                  </p>
                 )}
               </div>
               <div>
@@ -231,7 +273,9 @@ const PreScheduling = () => {
                   }}
                 />
                 {errors.purpose && (
-                  <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{errors.purpose}</p>
+                  <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>
+                    {errors.purpose}
+                  </p>
                 )}
               </div>
               <div>
@@ -249,7 +293,9 @@ const PreScheduling = () => {
                     width: "100%",
                   }}
                 >
-                  <option value="" disabled>Select Host*</option>
+                  <option value="" disabled>
+                    Select Host*
+                  </option>
                   {hosts.map((host) => (
                     <option key={host._id} value={host._id}>
                       {host.username}
@@ -294,8 +340,12 @@ const PreScheduling = () => {
                   cursor: loading || hosts.length === 0 ? "not-allowed" : "pointer",
                   transition: "background-color 0.3s",
                 }}
-                onMouseOver={(e) => !loading && hosts.length > 0 && (e.target.style.backgroundColor = "#2563eb")}
-                onMouseOut={(e) => !loading && hosts.length > 0 && (e.target.style.backgroundColor = "#3b82f6")}
+                onMouseOver={(e) =>
+                  !loading && hosts.length > 0 && (e.target.style.backgroundColor = "#2563eb")
+                }
+                onMouseOut={(e) =>
+                  !loading && hosts.length > 0 && (e.target.style.backgroundColor = "#3b82f6")
+                }
               >
                 {loading ? "Submitting..." : "Submit"}
               </button>
@@ -303,6 +353,23 @@ const PreScheduling = () => {
           )}
         </div>
       </div>
+
+      {/* Inject custom styles for toast */}
+      <style>{toastStyles}</style>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        toastClassName="custom-toast" // Apply custom class to all toasts
+      />
     </div>
   );
 };

@@ -19,7 +19,8 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isListOpen, setIsListOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [checkOutTime, setCheckOutTime] = useState("");
+  const [checkOutTime, setCheckOutTime] = useState(""); // 12-hour format (e.g., "02:30 PM")
+  const [checkOutTime24, setCheckOutTime24] = useState(""); // 24-hour format (e.g., "14:30")
   const wrapperRef = useRef(null);
   const [errors, setErrors] = useState({ vehicle: "", checkOutTime: "" });
 
@@ -36,15 +37,21 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setErrors((prev) => ({ ...prev, vehicle: "" }));
 
     const now = new Date();
+    const time12 = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }); // e.g., "02:30 PM"
     const hours = String(now.getHours()).padStart(2, "0");
     const minutes = String(now.getMinutes()).padStart(2, "0");
-    const currentTime = `${hours}:${minutes}`;
-    setCheckOutTime(currentTime);
+    const time24 = `${hours}:${minutes}`; // e.g., "14:30"
+    setCheckOutTime(time12);
+    setCheckOutTime24(time24);
   };
 
   const handleCheckout = async () => {
+    console.log("handleCheckout called");
     const isValid = validateForm();
+    console.log("isValid:", isValid, "selectedVehicle:", selectedVehicle, "checkOutTime:", checkOutTime);
+
     if (!isValid) {
+      console.log("Validation failed, errors:", errors);
       toast.dismiss("checkout-error");
       toast.error("Please fill in all required fields!", {
         toastId: "checkout-error",
@@ -56,10 +63,10 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     }
 
     try {
-      // Perform the async operation first
+      console.log("Calling onCheckoutVehicle with:", selectedVehicle.vehicleNumber, checkOutTime);
       await onCheckoutVehicle(selectedVehicle.vehicleNumber, checkOutTime);
 
-      // Show success toast after async success
+      console.log("Checkout successful");
       toast.dismiss("checkout-success");
       toast.success("Vehicle checked out successfully!", {
         toastId: "checkout-success",
@@ -68,10 +75,10 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
         onClose: () => console.log("Success toast closed"),
       });
 
-      // Reset state after toast is shown
       setSelectedVehicle(null);
       setSearchQuery("");
       setCheckOutTime("");
+      setCheckOutTime24("");
       setErrors({ vehicle: "", checkOutTime: "" });
       setIsListOpen(false);
     } catch (error) {
@@ -89,6 +96,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setIsListOpen(false);
     setSelectedVehicle(null);
     setCheckOutTime("");
+    setCheckOutTime24("");
     setErrors({ vehicle: "", checkOutTime: "" });
   };
 
@@ -222,10 +230,17 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
             fullWidth
             label="Check-Out Time *"
             type="time"
-            value={checkOutTime}
+            value={checkOutTime24}
             onChange={(e) => {
-              setCheckOutTime(e.target.value);
-              validateField("checkOutTime", e.target.value);
+              const time24 = e.target.value; // e.g., "14:30"
+              const [hours, minutes] = time24.split(":");
+              const date = new Date();
+              date.setHours(parseInt(hours));
+              date.setMinutes(parseInt(minutes));
+              const time12 = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }); // e.g., "02:30 PM"
+              setCheckOutTime24(time24);
+              setCheckOutTime(time12);
+              validateField("checkOutTime", time12);
             }}
             sx={{ mb: 2 }}
             error={!!errors.checkOutTime}

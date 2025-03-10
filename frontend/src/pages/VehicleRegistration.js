@@ -78,7 +78,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
 
     const currentDate = new Date();
     const date = currentDate.toISOString().split("T")[0];
-    const checkInTime = currentDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+    const checkInTime = currentDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }); // 12-hour format
 
     const newVehicle = {
       vehicleNumber,
@@ -89,12 +89,10 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     };
 
     try {
-      // Perform the async operation first
       await onAddVehicle(newVehicle);
       setTicketData({ vehicleNumber, purpose, checkInTime });
       setOpenDialog(true);
 
-      // Show success toast after async success
       toast.dismiss("register-success");
       toast.success("E-Ticket generated successfully!", {
         toastId: "register-success",

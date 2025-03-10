@@ -48,7 +48,7 @@ const CombinedVehiclePage = () => {
     try {
       const response = await axios.post("http://localhost:5000/api/vehicles", newVehicle);
       setVehicles([...vehicles, response.data.vehicle]);
-      return Promise.resolve(); // Ensure the promise resolves for VehicleRegistration
+      return Promise.resolve();
     } catch (error) {
       console.error("Error adding vehicle:", error);
       toast.dismiss("register-error");
@@ -56,7 +56,7 @@ const CombinedVehiclePage = () => {
         toastId: "register-error",
         autoClose: 3000,
       });
-      return Promise.reject(error); // Propagate the error back to VehicleRegistration
+      return Promise.reject(error);
     }
   };
 
@@ -64,7 +64,7 @@ const CombinedVehiclePage = () => {
     try {
       const response = await axios.put("http://localhost:5000/api/vehicles/checkout", {
         vehicleNumber,
-        checkOutTime,
+        checkOutTime, // Already in 12-hour format from VehicleCheckout.js
       });
       setVehicles(
         vehicles.map((vehicle) =>
@@ -73,7 +73,7 @@ const CombinedVehiclePage = () => {
             : vehicle
         )
       );
-      return Promise.resolve(); // Ensure the promise resolves for VehicleCheckout
+      return Promise.resolve();
     } catch (error) {
       console.error("Error checking out vehicle:", error);
       toast.dismiss("checkout-error");
@@ -81,7 +81,7 @@ const CombinedVehiclePage = () => {
         toastId: "checkout-error",
         autoClose: 3000,
       });
-      return Promise.reject(error); // Propagate the error back to VehicleCheckout
+      return Promise.reject(error);
     }
   };
 

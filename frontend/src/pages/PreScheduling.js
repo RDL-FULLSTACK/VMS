@@ -1,37 +1,61 @@
 import React, { useState } from "react";
-import Navbar from "../components/Navbar"; // Added Navbar import
+import Navbar from "../components/Navbar";
+import axios from "axios";
 
 const PreScheduling = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     date: "",
     purpose: "",
+    host: "",
   });
+  const [loading, setLoading] = useState(false);
+
+  const hosts = [
+    { id: "host1", name: "Alice Johnson" },
+    { id: "host2", name: "Bob Smith" },
+    { id: "host3", name: "Charlie Brown" },
+    { id: "host4", name: "Diana Lee" },
+    { id: "host5", name: "Eve Taylor" },
+  ];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert(`Form submitted!\nName: ${formData.fullName}\nDate: ${formData.date}\nPurpose: ${formData.purpose}`);
+    setLoading(true);
+    try {
+      const response = await axios.post("http://localhost:5000/api/preschedule", {
+        name: formData.fullName,
+        date: formData.date,
+        purpose: formData.purpose,
+        host: formData.host,
+      });
+      alert(`Form submitted!\nName: ${formData.fullName}\nDate: ${formData.date}\nPurpose: ${formData.purpose}\nHost: ${hosts.find(h => h.id === formData.host)?.name}`);
+      setFormData({ fullName: "", date: "", purpose: "", host: "" });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Failed to submit form. Please check your network or try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div style={{
       display: "flex",
-      flexDirection: "column", // Changed to column to stack Navbar and content
-      minHeight: "100vh", // Changed to minHeight to ensure full height
+      flexDirection: "column",
+      minHeight: "100vh",
       backgroundColor: "#f4f4f4",
     }}>
-      {/* Added Navbar */}
       <Navbar />
-      
       <div style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        flexGrow: 1, // Added to make the content take remaining space
+        flexGrow: 1,
         padding: "40px",
       }}>
         <div style={{
@@ -52,6 +76,7 @@ const PreScheduling = () => {
               value={formData.fullName}
               onChange={handleChange}
               required
+              disabled={loading}
               style={{
                 padding: "16px",
                 fontSize: "20px",
@@ -63,10 +88,10 @@ const PreScheduling = () => {
             <input
               type="date"
               name="date"
-              placeholder="dd-mm-yyyy"
               value={formData.date}
               onChange={handleChange}
               required
+              disabled={loading}
               style={{
                 padding: "16px",
                 fontSize: "20px",
@@ -82,6 +107,7 @@ const PreScheduling = () => {
               value={formData.purpose}
               onChange={handleChange}
               required
+              disabled={loading}
               style={{
                 padding: "16px",
                 fontSize: "20px",
@@ -90,19 +116,39 @@ const PreScheduling = () => {
                 width: "100%",
               }}
             />
-            <button
-              type="submit"
+            <select
+              name="host"
+              value={formData.host}
+              onChange={handleChange}
+              required
+              disabled={loading}
               style={{
                 padding: "16px",
                 fontSize: "20px",
-                backgroundColor: "#3b82f6",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+                width: "100%",
+              }}
+            >
+              <option value="" disabled>Select Host*</option>
+              {hosts.map(host => (
+                <option key={host.id} value={host.id}>{host.name}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                padding: "16px",
+                fontSize: "20px",
+                backgroundColor: loading ? "#ccc" : "#3b82f6",
                 color: "#fff",
                 border: "none",
                 borderRadius: "8px",
-                cursor: "pointer",
+                cursor: loading ? "not-allowed" : "pointer",
               }}
             >
-              Submit
+              {loading ? "Submitting..." : "Submit"}
             </button>
           </form>
         </div>

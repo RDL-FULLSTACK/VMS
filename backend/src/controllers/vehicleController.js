@@ -15,7 +15,7 @@ exports.getAllVehicles = async (req, res) => {
 exports.addVehicle = async (req, res) => {
   try {
     const { vehicleNumber, purpose, date, checkInTime } = req.body;
-    console.log("Request body:", req.body); // Log the incoming request body
+    // console.log("Request body:", req.body); // Log the incoming request body
 
     // Validate required fields manually
     if (!vehicleNumber || !purpose || !date || !checkInTime) {

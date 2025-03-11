@@ -13,7 +13,7 @@ const VehicleTicket = ({ data, onClose }) => {
     );
   }
 
-  const { vehicleNumber, purpose, checkInTime } = data;
+  const { vehicleNumber, purpose, checkInTime, date } = data; // Destructure date and checkInTime
 
   const handlePrint = () => {
     const qrCanvas = document.querySelector("canvas"); // Get the QR code canvas
@@ -90,9 +90,10 @@ const VehicleTicket = ({ data, onClose }) => {
               </div>
               <p>Scan this QR code at the entrance</p>
               <hr />
-              <p><strong>Date & Time:</strong> ${checkInTime}</p>
               <p><strong>Vehicle Number:</strong> ${vehicleNumber}</p>
               <p><strong>Purpose:</strong> ${purpose}</p>
+              <p><strong>Date:</strong> ${date}</p>
+              <p><strong>Time:</strong> ${checkInTime}</p>
               <p class="footer-text">This ticket is valid for one-time entry only.</p>
             </div>
           </div>
@@ -160,10 +161,13 @@ const VehicleTicket = ({ data, onClose }) => {
           <strong>Vehicle Number:</strong> {vehicleNumber}
         </Typography>
         <Typography variant="body1" style={{ marginBottom: 5 }}>
-          <strong>Date & Time:</strong> {checkInTime}
+          <strong>Purpose:</strong> {purpose}
+        </Typography>
+        <Typography variant="body1" style={{ marginBottom: 5 }}>
+          <strong>Date:</strong> {date}
         </Typography>
         <Typography variant="body1" style={{ marginBottom: 15 }}>
-          <strong>Purpose:</strong> {purpose}
+          <strong>Time:</strong> {checkInTime}
         </Typography>
 
         <Typography variant="caption" style={{ display: "block", marginBottom: 15 }}>

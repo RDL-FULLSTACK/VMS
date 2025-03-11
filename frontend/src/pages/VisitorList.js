@@ -49,6 +49,7 @@ const VisitorList = () => {
           designation: visitor.designation || "",
           date: visitor.checkInTime ? new Date(visitor.checkInTime).toISOString().split('T')[0] : visitor.date || "",
           assets: visitor.assets || [],
+          visitorCompany: visitor.visitorCompany || "", // Added visitorCompany
         }));
 
         setVisitors(transformedVisitors);
@@ -72,9 +73,9 @@ const VisitorList = () => {
   };
 
   const filteredVisitors = visitors.filter((visitor) => {
-    const matchesSearch = `${visitor.name} ${visitor.email} ${visitor.phone} ${visitor.host} ${visitor.designation}`
+    const matchesSearch = `${visitor.name} ${visitor.email} ${visitor.phone} ${visitor.host} ${visitor.designation} ${visitor.visitorCompany}`
       .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      .includes(searchTerm.toLowerCase()); // Updated to include visitorCompany in search
     const matchesDate = selectedDate ? visitor.date === selectedDate : true;
     return matchesSearch && matchesDate;
   });
@@ -144,8 +145,8 @@ const VisitorList = () => {
                   sx={{
                     display: 'grid',
                     gridTemplateColumns: {
-                      xs: 'repeat(11, minmax(100px, 1fr))', // Minimum width for mobile
-                      sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 100px 180px', // Fixed pixel widths for desktop
+                      xs: 'repeat(12, minmax(100px, 1fr))', // Adjusted for mobile
+                      sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 150px 100px 180px', // Added 150px for visitorCompany
                     },
                     gap: 1,
                     bgcolor: '#e0e0e0',
@@ -153,7 +154,7 @@ const VisitorList = () => {
                     borderRadius: 1,
                     fontWeight: 'bold',
                     alignItems: 'center',
-                    minWidth: '1240px', // Sum of the pixel widths above to ensure consistency
+                    minWidth: '1390px', // Updated sum of pixel widths (1240 + 150)
                   }}
                 >
                   <Box>ID</Box>
@@ -165,6 +166,7 @@ const VisitorList = () => {
                   <Box>Host</Box>
                   <Box>Designation</Box>
                   <Box>Date</Box>
+                  <Box>Company</Box> {/* Added visitorCompany header */}
                   <Box>Assets</Box>
                   <Box textAlign="center">Actions</Box>
                 </Box>
@@ -176,14 +178,14 @@ const VisitorList = () => {
                     sx={{
                       display: 'grid',
                       gridTemplateColumns: {
-                        xs: 'repeat(11, minmax(100px, 1fr))',
-                        sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 100px 180px', // Same as header
+                        xs: 'repeat(12, minmax(100px, 1fr))',
+                        sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 150px 100px 180px', // Same as header
                       },
                       gap: 1,
                       p: 1,
                       borderBottom: '1px solid #e0e0e0',
                       alignItems: 'center',
-                      minWidth: '1240px', // Ensure body matches header
+                      minWidth: '1390px', // Updated to match header
                     }}
                   >
                     <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -212,6 +214,9 @@ const VisitorList = () => {
                     </Box>
                     <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {visitor.date}
+                    </Box>
+                    <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {visitor.visitorCompany} {/* Added visitorCompany data */}
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                       {visitor.assets.length > 0 ? (

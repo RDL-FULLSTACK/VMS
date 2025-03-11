@@ -34,7 +34,10 @@ const CombinedVehiclePage = () => {
       } catch (error) {
         console.error("Error fetching vehicles:", error);
         toast.dismiss("fetch-error");
-        toast.error("Failed to fetch vehicles. Please try again.", { toastId: "fetch-error", autoClose: 3000 });
+        toast.error("Failed to fetch vehicles. Please try again.", { 
+          toastId: "fetch-error", 
+          autoClose: 3000 
+        });
       }
     };
     fetchVehicles();
@@ -46,16 +49,26 @@ const CombinedVehiclePage = () => {
 
   const handleAddVehicle = async (newVehicle) => {
     try {
+      console.log("Posting vehicle data to Axios:", newVehicle); // Log the data being posted
       const response = await axios.post("http://localhost:5000/api/vehicles", newVehicle);
+      console.log("Axios response:", response.data); // Log the response
       setVehicles([...vehicles, response.data.vehicle]);
       return Promise.resolve();
     } catch (error) {
-      console.error("Error adding vehicle:", error);
+      console.error("Error adding vehicle:", error.response ? error.response.data : error);
       toast.dismiss("register-error");
-      toast.error(error.response?.data?.message || "Failed to register vehicle", {
-        toastId: "register-error",
-        autoClose: 3000,
-      });
+      
+      if (error.response?.data?.message === "Vehicle is already checked in and hasn't checked out yet") {
+        toast.error("This vehicle is already checked in. Please check it out first.", {
+          toastId: "register-error",
+          autoClose: 5000,
+        });
+      } else {
+        toast.error(error.response?.data?.message || "Failed to register vehicle", {
+          toastId: "register-error",
+          autoClose: 3000,
+        });
+      }
       return Promise.reject(error);
     }
   };
@@ -64,7 +77,7 @@ const CombinedVehiclePage = () => {
     try {
       const response = await axios.put("http://localhost:5000/api/vehicles/checkout", {
         vehicleNumber,
-        checkOutTime, // Already in 12-hour format from VehicleCheckout.js
+        checkOutTime,
       });
       setVehicles(
         vehicles.map((vehicle) =>

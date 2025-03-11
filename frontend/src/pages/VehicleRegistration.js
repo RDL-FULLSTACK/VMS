@@ -78,7 +78,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
 
     const currentDate = new Date();
     const date = currentDate.toISOString().split("T")[0];
-    const checkInTime = currentDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }); // 12-hour format
+    const checkInTime = `${currentDate.getHours().toString().padStart(2, '0')}:${currentDate.getMinutes().toString().padStart(2, '0')} ${currentDate.getHours() >= 12 ? 'PM' : 'AM'}`;
 
     const newVehicle = {
       vehicleNumber,
@@ -87,6 +87,8 @@ const VehicleRegistration = ({ onAddVehicle }) => {
       checkInTime,
       checkOutTime: "",
     };
+
+    console.log("Sending vehicle data to onAddVehicle:", newVehicle);
 
     try {
       await onAddVehicle(newVehicle);
@@ -101,12 +103,20 @@ const VehicleRegistration = ({ onAddVehicle }) => {
         onClose: () => console.log("Success toast closed"),
       });
     } catch (error) {
-      console.error("Error in handleGenerateTicket:", error);
+      console.error("Error in handleGenerateTicket:", error.response ? error.response.data : error);
       toast.dismiss("register-error");
-      toast.error("Failed to generate ticket. Please try again.", {
-        toastId: "register-error",
-        autoClose: 3000,
-      });
+      
+      if (error.response?.data?.message === "Vehicle is already checked in and hasn't checked out yet") {
+        toast.error("This vehicle is already checked in. Please check it out first.", {
+          toastId: "register-error",
+          autoClose: 5000,
+        });
+      } else {
+        toast.error(error.response?.data?.message || "Failed to generate ticket. Please try again.", {
+          toastId: "register-error",
+          autoClose: 3000,
+        });
+      }
     }
   };
 

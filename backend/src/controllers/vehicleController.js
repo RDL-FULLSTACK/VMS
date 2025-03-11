@@ -15,11 +15,25 @@ exports.getAllVehicles = async (req, res) => {
 exports.addVehicle = async (req, res) => {
   try {
     const { vehicleNumber, purpose, date, checkInTime } = req.body;
+    console.log("Request body:", req.body); // Log the incoming request body
 
-    // Check if vehicleNumber already exists
-    const existingVehicle = await Vehicle.findOne({ vehicleNumber });
+    // Validate required fields manually
+    if (!vehicleNumber || !purpose || !date || !checkInTime) {
+      return res.status(400).json({ 
+        message: "Missing required fields: vehicleNumber, purpose, date, and checkInTime are required" 
+      });
+    }
+
+    // Check if vehicle exists and hasn't checked out
+    const existingVehicle = await Vehicle.findOne({ 
+      vehicleNumber,
+      checkOutTime: "" 
+    });
+
     if (existingVehicle) {
-      return res.status(400).json({ message: "Vehicle already exists" });
+      return res.status(400).json({ 
+        message: "Vehicle is already checked in and hasn't checked out yet" 
+      });
     }
 
     const newVehicle = new Vehicle({
@@ -30,9 +44,15 @@ exports.addVehicle = async (req, res) => {
       checkOutTime: "",
     });
     await newVehicle.save();
-    res.status(201).json({ message: "Vehicle registered successfully", vehicle: newVehicle });
+    res.status(201).json({ 
+      message: "Vehicle registered successfully", 
+      vehicle: newVehicle 
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error("Error in addVehicle:", error); // Log the error
+    res.status(400).json({ 
+      message: error.message || "Failed to register vehicle due to server error" 
+    });
   }
 };
 

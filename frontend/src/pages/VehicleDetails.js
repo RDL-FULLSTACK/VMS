@@ -192,7 +192,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
               <TableRow>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "5%", bgcolor: "#EDF2F7" }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "20%", bgcolor: "#EDF2F7" }}>Vehicle Number</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "20%", bgcolor: "#EDF2F7" }}>Purpose</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Purpose</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-In Time</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
@@ -212,7 +212,9 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
                     <TableCell sx={{ padding: 1.5, fontWeight: 500 }}>
                       {vehicle.vehicleNumber || "N/A"}
                     </TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.purpose || "N/A"}</TableCell>
+                    <TableCell sx={{ padding: 1.5, maxWidth: "100px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {vehicle.purpose || "N/A"}
+                    </TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{vehicle.date || "N/A"}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{vehicle.checkInTime || "N/A"}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{vehicle.checkOutTime || "Not Checked Out"}</TableCell>

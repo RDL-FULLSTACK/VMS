@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -28,19 +28,54 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(6); // Initial value, will be updated dynamically
   const [openTicketDialog, setOpenTicketDialog] = useState(false);
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // State for confirmation dialog
-  const rowsPerPage = 6;
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
+
+  // Calculate rowsPerPage dynamically based on screen size
+  useEffect(() => {
+    const calculateRowsPerPage = () => {
+      // Approximate heights in pixels
+      const rowHeight = 50; // Height of each table row (as defined in sx={{ height: 50 }})
+      const headerHeight = 56; // Approximate height of the table header (adjust based on your design)
+      const paginationHeight = 52; // Approximate height of the pagination component
+      const otherElementsHeight = 150; // Space for surrounding elements (navbar, filters, margins, etc.)
+      
+      // Calculate available height for the table body
+      const windowHeight = window.innerHeight;
+      const availableHeight = windowHeight - headerHeight - paginationHeight - otherElementsHeight;
+
+      // Calculate how many rows can fit in the available height
+      let calculatedRows = Math.floor(availableHeight / rowHeight);
+
+      // Set minimum and maximum rows for usability
+      const minRows = 3; // Minimum rows to show
+      const maxRows = 20; // Maximum rows to show
+      calculatedRows = Math.max(minRows, Math.min(maxRows, calculatedRows));
+
+      setRowsPerPage(calculatedRows);
+    };
+
+    // Calculate on mount
+    calculateRowsPerPage();
+
+    // Recalculate on window resize
+    window.addEventListener("resize", calculateRowsPerPage);
+    
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", calculateRowsPerPage);
+    };
+  }, []);
 
   const handleMenuOpen = (event, vehicle) => {
-    console.log("Opening menu for vehicle:", vehicle); // Debug log
+    console.log("Opening menu for vehicle:", vehicle);
     setAnchorEl(event.currentTarget);
-    setSelectedVehicle(vehicle); // Ensure vehicle is set
+    setSelectedVehicle(vehicle);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    // Do not clear selectedVehicle here; clear it after deletion or cancellation
   };
 
   const handleViewTicket = () => {
@@ -62,9 +97,9 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   };
 
   const handleDeleteClick = () => {
-    console.log("Delete clicked, selectedVehicle:", selectedVehicle); // Debug log
+    console.log("Delete clicked, selectedVehicle:", selectedVehicle);
     if (selectedVehicle) {
-      setOpenConfirmDialog(true); // Open confirmation dialog only if vehicle is selected
+      setOpenConfirmDialog(true);
     } else {
       toast.error("No vehicle selected for deletion!", { toastId: "delete-error" });
     }
@@ -72,7 +107,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   };
 
   const handleDeleteConfirm = async () => {
-    console.log("Confirming deletion, selectedVehicle:", selectedVehicle); // Debug log
+    console.log("Confirming deletion, selectedVehicle:", selectedVehicle);
     if (!selectedVehicle) {
       toast.error("No vehicle selected for deletion!", { toastId: "delete-error" });
       setOpenConfirmDialog(false);
@@ -102,19 +137,19 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
       });
     } finally {
       setOpenConfirmDialog(false);
-      setSelectedVehicle(null); // Clear selectedVehicle after deletion
+      setSelectedVehicle(null);
     }
   };
 
   const handleDeleteCancel = () => {
     setOpenConfirmDialog(false);
-    setSelectedVehicle(null); // Clear selectedVehicle on cancel
+    setSelectedVehicle(null);
   };
 
   const handleCloseTicketDialog = () => {
     setOpenTicketDialog(false);
     setTicketData(null);
-    setSelectedVehicle(null); // Clear selectedVehicle when closing ticket dialog
+    setSelectedVehicle(null);
   };
 
   const handleChangePage = (event, newPage) => {
@@ -142,7 +177,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "20%", bgcolor: "#EDF2F7" }}>Purpose</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-In Time</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
+                <TableCell sx={{ fontWeight: 700, paging: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "10%", textAlign: "center", bgcolor: "#EDF2F7" }}>Actions</TableCell>
               </TableRow>
             </TableHead>

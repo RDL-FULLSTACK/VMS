@@ -41,7 +41,7 @@ const UserList = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [openCompanyLoginDialog, setOpenCompanyLoginDialog] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [passwordVisibility, setPasswordVisibility] = useState({}); // New state for toggling password visibility
+  const [passwordVisibility, setPasswordVisibility] = useState({});
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -68,6 +68,17 @@ const UserList = () => {
     fetchUsers();
   }, []);
 
+  // Utility to get last 4 digits of ID
+  const getLastFourDigits = (id) => {
+    const idStr = (id || "").toString();
+    return idStr.slice(-4);
+  };
+
+  // Utility to handle missing values
+  const formatValue = (value) => {
+    return value || "N/A";
+  };
+
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
   };
@@ -78,9 +89,9 @@ const UserList = () => {
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch = searchQuery === "" || 
-      user.username.toLowerCase().includes(searchQuery.toLowerCase());
+      formatValue(user.username).toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === "All" || 
-      user.role.toLowerCase() === filterRole.toLowerCase();
+      formatValue(user.role).toLowerCase() === filterRole.toLowerCase();
     return matchesSearch && matchesRole;
   });
 
@@ -108,7 +119,7 @@ const UserList = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${selectedUser.id}`, {
+      const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -121,7 +132,7 @@ const UserList = () => {
       }
 
       setUsers((prevUsers) =>
-        prevUsers.map((user) => (user.id === selectedUser.id ? selectedUser : user))
+        prevUsers.map((user) => (user._id === selectedUser._id ? selectedUser : user))
       );
       setOpenEditDialog(false);
       setSnackbar({ 
@@ -141,7 +152,7 @@ const UserList = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${selectedUser.id}`, {
+      const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
         method: "DELETE",
       });
 
@@ -150,7 +161,7 @@ const UserList = () => {
       }
 
       setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.id !== selectedUser.id)
+        prevUsers.filter((user) => user._id !== selectedUser._id)
       );
       handleMenuClose();
       setSnackbar({ 
@@ -245,21 +256,23 @@ const UserList = () => {
                 </TableRow>
               ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.id}</TableCell>
-                    <TableCell>{user.username}</TableCell>
+                  <TableRow key={user._id || "unknown"}>
+                    <TableCell>{getLastFourDigits(user._id)}</TableCell>
+                    <TableCell>{formatValue(user.username)}</TableCell>
                     <TableCell>
-                      {passwordVisibility[user.id] ? user.password : "*".repeat(user.password.length)}
+                      {passwordVisibility[user._id] 
+                        ? formatValue(user.password) 
+                        : "*".repeat(formatValue(user.password).length)}
                       <IconButton
-                        onClick={() => togglePasswordVisibility(user.id)}
+                        onClick={() => togglePasswordVisibility(user._id)}
                         edge="end"
                         size="small"
                         sx={{ ml: 1 }}
                       >
-                        {passwordVisibility[user.id] ? <VisibilityOff /> : <Visibility />}
+                        {passwordVisibility[user._id] ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
                     </TableCell>
-                    <TableCell>{user.role}</TableCell>
+                    <TableCell>{formatValue(user.role)}</TableCell>
                     <TableCell>
                       <IconButton onClick={(event) => handleMenuOpen(event, user)}>
                         <MoreVertIcon />
@@ -298,16 +311,26 @@ const UserList = () => {
         </Menu>
 
         <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>Edit User</DialogTitle>
+          <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
+            Edit User (ID: {getLastFourDigits(selectedUser?._id)})
+          </DialogTitle>
           <DialogContent sx={{ mt: 2 }}>
             {selectedUser && (
               <>
+                <TextField
+                  label="ID (Last 4)"
+                  name="_id"
+                  fullWidth
+                  margin="normal"
+                  value={getLastFourDigits(selectedUser._id)}
+                  disabled
+                />
                 <TextField
                   label="Username"
                   name="username"
                   fullWidth
                   margin="normal"
-                  value={selectedUser.username}
+                  value={formatValue(selectedUser.username)}
                   onChange={handleEditChange}
                 />
                 <TextField
@@ -316,7 +339,7 @@ const UserList = () => {
                   fullWidth
                   margin="normal"
                   type={showPassword ? "text" : "password"}
-                  value={selectedUser.password}
+                  value={formatValue(selectedUser.password)}
                   onChange={handleEditChange}
                   InputProps={{
                     endAdornment: (
@@ -330,7 +353,7 @@ const UserList = () => {
                 />
                 <Select
                   name="role"
-                  value={selectedUser.role}
+                  value={formatValue(selectedUser.role)}
                   onChange={handleEditChange}
                   fullWidth
                   margin="dense"

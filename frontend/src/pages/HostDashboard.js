@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useState, useEffect } from "react";
 import { Box, Container, Grid, Card, CardContent, Typography, IconButton, Button, Popover } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
@@ -11,12 +8,15 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { Switch } from "@mui/material";
+
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const HostDashboard = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [toggleVisitor, setToggleVisitor] = useState(false);
 
   useEffect(() => {
     const fetchPreSchedules = async () => {
@@ -133,7 +133,11 @@ const HostDashboard = () => {
   const handleNotificationClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
+  const handleToggleClick = () => {
+    setToggleVisitor(!toggleVisitor);
+    navigate("/HostVisitorFormCheckIn");
+  };
+  
   const handleClose = () => {
     setAnchorEl(null);
   };
@@ -147,19 +151,22 @@ const HostDashboard = () => {
       <ToastContainer position="top-right" autoClose={3000} />
       <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 3 } }}>
         <Container>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+          {/* <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
             <Typography
               variant="h5"
               sx={{ fontWeight: "bold", textAlign: "center", fontSize: { xs: "1.5rem", sm: "1.75rem" } }}
             >
               Host Panel
             </Typography>
+
             <IconButton onClick={handleNotificationClick}>
+              
               <NotificationsIcon sx={{ fontSize: 30, color: "#5F3B91" }} />
+
               {visitors.filter(v => v.status === "Pending").length > 0 && (
                 <Box
                   sx={{
-                    position: "absolute",
+                    display: "flex",
                     top: 5,
                     right: 5,
                     bgcolor: "red",
@@ -168,7 +175,7 @@ const HostDashboard = () => {
                     height: 15,
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    justifyContent: "flex-end",
                     color: "white",
                     fontSize: "10px",
                   }}
@@ -177,7 +184,72 @@ const HostDashboard = () => {
                 </Box>
               )}
             </IconButton>
-          </Box>
+              <Switch
+    checked={toggleVisitor}
+    onChange={() => {
+      setToggleVisitor(!toggleVisitor);
+      handleToggleClick(); // Navigate when toggled
+    }}
+    sx={{
+      "& .MuiSwitch-switchBase.Mui-checked": {
+        color: "#5F3B91", // Active color
+      },
+      "& .MuiSwitch-track": {
+        bgcolor: toggleVisitor ? "#5F3B91" : "lightgray", // Track color change
+      },
+    }}
+  />
+          </Box> */}
+
+<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+  <Typography
+    variant="h5"
+    sx={{ fontWeight: "bold", textAlign: "center", fontSize: { xs: "1.5rem", sm: "1.75rem" } }}
+  >
+    Host Panel
+  </Typography>
+
+  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}> {/* Grouped items together */}
+    <IconButton onClick={handleNotificationClick}>
+      <NotificationsIcon sx={{ fontSize: 30, color: "#5F3B91" }} />
+      {visitors.filter(v => v.status === "Pending").length > 0 && (
+        <Box
+          sx={{
+            display: "flex",
+            top: 5,
+            right: 5,
+            bgcolor: "red",
+            borderRadius: "50%",
+            width: 15,
+            height: 15,
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            fontSize: "10px",
+          }}
+        >
+          {visitors.filter(v => v.status === "Pending").length}
+        </Box>
+      )}
+    </IconButton>
+
+    <Switch
+      checked={toggleVisitor}
+      onChange={() => {
+
+        handleToggleClick(); // Navigate when toggled
+      }}
+      sx={{
+        "& .MuiSwitch-switchBase.Mui-checked": {
+          color: "#5F3B91", // Active color
+        },
+        "& .MuiSwitch-track": {
+          bgcolor: toggleVisitor ? "#5F3B91" : "lightgray", // Track color change
+        },
+      }}
+    />
+  </Box>
+</Box>
 
           {/* Notification Popover */}
           <Popover
@@ -321,7 +393,7 @@ const HostDashboard = () => {
                               Reject
                             </Button> */}
                           </>
-                        )}
+                        )} 
                         <Button
                           variant="contained"
                           color="primary"
@@ -336,7 +408,7 @@ const HostDashboard = () => {
                   </Grid>
                 </CardContent>
               </Card>
-            ))
+            )) 
           ) : (
             <Typography variant="body1" sx={{ textAlign: "center", mt: 2 }}>
               No pre-schedule data available.

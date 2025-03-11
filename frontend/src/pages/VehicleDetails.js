@@ -28,7 +28,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(6); // Initial value, will be updated dynamically
+  const [rowsPerPage, setRowsPerPage] = useState(7); // Already set to 7
   const [openTicketDialog, setOpenTicketDialog] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
@@ -39,7 +39,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
       const rowHeight = 50; // Height of each table row (as defined in sx={{ height: 50 }})
       const headerHeight = 56; // Approximate height of the table header
       const paginationHeight = 52; // Approximate height of the pagination component
-      const otherElementsHeight = 300; // Adjusted space for navbar (70px), filters (50px), margins (180px), etc.
+      const otherElementsHeight = 230; // Reduced from 300 to 230 to allow more space for rows (navbar: 70px, filters: 50px, margins/padding: 110px)
 
       // Calculate available height for the table body
       const windowHeight = window.innerHeight;
@@ -49,7 +49,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
       let calculatedRows = Math.floor(availableHeight / rowHeight);
 
       // Set minimum and maximum rows for usability
-      const minRows = 3; // Minimum rows to show
+      const minRows = 7; // Minimum rows to show
       const maxRows = 20; // Maximum rows to show
       calculatedRows = Math.max(minRows, Math.min(maxRows, calculatedRows));
 
@@ -183,8 +183,8 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         <TableContainer
           sx={{
             flex: 1, // Take available space
-            maxHeight: `calc(100vh - ${52}px - 2px)`, // Subtract pagination height and a small buffer for borders/padding
-            overflow: "hidden", // Prevent internal scrolling
+            maxHeight: `calc(100vh - ${52 + 70 + 50 + 30}px)`, // Adjusted: Subtract pagination (52px), navbar (70px), filters (50px), and reduced buffer (30px)
+            overflowY: "auto", // Allow scrolling if content overflows
           }}
         >
           <Table size="small" stickyHeader>

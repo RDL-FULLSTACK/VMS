@@ -257,7 +257,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
       {/* Menu for actions */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleViewTicket}>View Ticket</MenuItem>
-        <MenuItem onClick={handleDeleteClick} disabled={!selectedVehicle}>
+        <MenuItem onClick={handleDeleteClick} disabled={!selectedVehicle} sx={{ color: "red" }}>
           Delete
         </MenuItem>
       </Menu>

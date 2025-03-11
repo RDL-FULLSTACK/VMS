@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 
+
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
 
 const HostVisitorFromCheckIn = () => {

@@ -37,10 +37,10 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
     const calculateRowsPerPage = () => {
       // Approximate heights in pixels
       const rowHeight = 50; // Height of each table row (as defined in sx={{ height: 50 }})
-      const headerHeight = 56; // Approximate height of the table header (adjust based on your design)
+      const headerHeight = 56; // Approximate height of the table header
       const paginationHeight = 52; // Approximate height of the pagination component
-      const otherElementsHeight = 150; // Space for surrounding elements (navbar, filters, margins, etc.)
-      
+      const otherElementsHeight = 300; // Adjusted space for navbar (70px), filters (50px), margins (180px), etc.
+
       // Calculate available height for the table body
       const windowHeight = window.innerHeight;
       const availableHeight = windowHeight - headerHeight - paginationHeight - otherElementsHeight;
@@ -61,7 +61,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
 
     // Recalculate on window resize
     window.addEventListener("resize", calculateRowsPerPage);
-    
+
     // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener("resize", calculateRowsPerPage);
@@ -167,8 +167,26 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
 
   return (
     <>
-      <Paper sx={{ p: 0, borderRadius: 0, boxShadow: 0, bgcolor: "transparent" }}>
-        <TableContainer sx={{ maxHeight: "calc(100vh - 300px)", overflow: "auto" }}>
+      <Paper
+        sx={{
+          p: 0,
+          borderRadius: 0,
+          boxShadow: 0,
+          bgcolor: "transparent",
+          height: "auto", // Allow Paper to adjust to content
+          maxHeight: "100vh", // Constrain to viewport height
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden", // Prevent page scrolling
+        }}
+      >
+        <TableContainer
+          sx={{
+            flex: 1, // Take available space
+            maxHeight: `calc(100vh - ${52}px - 2px)`, // Subtract pagination height and a small buffer for borders/padding
+            overflow: "hidden", // Prevent internal scrolling
+          }}
+        >
           <Table size="small" stickyHeader>
             <TableHead sx={{ bgcolor: "#EDF2F7" }}>
               <TableRow>
@@ -177,7 +195,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "20%", bgcolor: "#EDF2F7" }}>Purpose</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Date</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-In Time</TableCell>
-                <TableCell sx={{ fontWeight: 700, paging: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
                 <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "10%", textAlign: "center", bgcolor: "#EDF2F7" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -224,7 +242,7 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
           rowsPerPage={rowsPerPage}
           onPageChange={handleChangePage}
           rowsPerPageOptions={[]}
-          sx={{ borderTop: "1px solid #E2E8F0", fontSize: "0.875rem", color: "#4A5568" }}
+          sx={{ borderTop: "1px solid #E2E8F0", fontSize: "0.875rem", color: "#4A5568", height: "52px" }}
         />
       </Paper>
 

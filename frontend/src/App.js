@@ -20,6 +20,7 @@ import { SuccessPage } from "./pages/checkout";
 import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
 import Receptionist from "./pages/UserList";
 import CombinedVehiclePage from "./pages/CombinedVehiclePage";
+import HomeVisitorFormCheckIn from "./pages/HostVisitorFromCheckIn";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -39,6 +40,7 @@ function App() {
             </PrivateRoute>
           }
         />
+         
         <Route
           path="/checkout"
           element={
@@ -47,6 +49,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/checkin"
           element={
@@ -55,6 +58,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/editcheckin/:id"
           element={
@@ -63,6 +67,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/admin"
           element={
@@ -71,6 +76,7 @@ function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/admin2"
           element={
@@ -143,16 +149,13 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route
-          path="/companylogin/"
-          element={
-            <PrivateRoute>
-              <CompanyLogin />
-            </PrivateRoute>
-          }
-        />
+        <Route path="/companylogin/"  element={ <PrivateRoute> <CompanyLogin />  </PrivateRoute> } /> 
+
+        <Route path="/HostVisitorFormCheckIn/"  element={  <PrivateRoute>  <HomeVisitorFormCheckIn /> </PrivateRoute> } /> 
+
         <Route path="/userlist" element={<Receptionist />} />
         <Route path="*" element={<Navigate to="/" />} />
+       
       </Routes>
       <ToastContainer
         position="top-right"

@@ -14,6 +14,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
+  Button,
   Paper,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -26,17 +28,19 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
-  const [open, setOpen] = useState(false);
+  const [openTicketDialog, setOpenTicketDialog] = useState(false);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false); // State for confirmation dialog
   const rowsPerPage = 6;
 
   const handleMenuOpen = (event, vehicle) => {
+    console.log("Opening menu for vehicle:", vehicle); // Debug log
     setAnchorEl(event.currentTarget);
-    setSelectedVehicle(vehicle);
+    setSelectedVehicle(vehicle); // Ensure vehicle is set
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-    setSelectedVehicle(null);
+    // Do not clear selectedVehicle here; clear it after deletion or cancellation
   };
 
   const handleViewTicket = () => {
@@ -48,40 +52,69 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         checkInTime: selectedVehicle.checkInTime,
         checkOutTime: selectedVehicle.checkOutTime,
       });
-      setOpen(true);
+      setOpenTicketDialog(true);
       toast.dismiss();
       toast.success("Viewing ticket for the selected vehicle!", { toastId: "view-ticket" });
+    } else {
+      toast.error("No vehicle selected for viewing!", { toastId: "view-error" });
     }
     handleMenuClose();
   };
 
-  const handleDeleteVehicle = async () => {
-    if (!selectedVehicle || !selectedVehicle._id) {
-      toast.dismiss();
+  const handleDeleteClick = () => {
+    console.log("Delete clicked, selectedVehicle:", selectedVehicle); // Debug log
+    if (selectedVehicle) {
+      setOpenConfirmDialog(true); // Open confirmation dialog only if vehicle is selected
+    } else {
       toast.error("No vehicle selected for deletion!", { toastId: "delete-error" });
-      handleMenuClose();
+    }
+    handleMenuClose();
+  };
+
+  const handleDeleteConfirm = async () => {
+    console.log("Confirming deletion, selectedVehicle:", selectedVehicle); // Debug log
+    if (!selectedVehicle) {
+      toast.error("No vehicle selected for deletion!", { toastId: "delete-error" });
+      setOpenConfirmDialog(false);
+      return;
+    }
+
+    const vehicleId = selectedVehicle._id;
+    if (!vehicleId) {
+      console.error("Selected vehicle does not have an _id:", selectedVehicle);
+      toast.error("Invalid vehicle data: No ID found!", { toastId: "delete-error" });
+      setOpenConfirmDialog(false);
+      setSelectedVehicle(null);
       return;
     }
 
     try {
-      await axios.delete(`http://localhost:5000/api/vehicles/${selectedVehicle._id}`);
+      await axios.delete(`http://localhost:5000/api/vehicles/${vehicleId}`);
       toast.dismiss();
       toast.success("Vehicle deleted successfully!", { toastId: "delete-success" });
       if (onDeleteVehicle) {
-        onDeleteVehicle(selectedVehicle._id);
+        onDeleteVehicle(vehicleId);
       }
-      handleMenuClose();
     } catch (error) {
       toast.dismiss();
       toast.error(error.response?.data?.message || "Failed to delete vehicle. Please try again.", {
         toastId: "delete-error",
       });
+    } finally {
+      setOpenConfirmDialog(false);
+      setSelectedVehicle(null); // Clear selectedVehicle after deletion
     }
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleDeleteCancel = () => {
+    setOpenConfirmDialog(false);
+    setSelectedVehicle(null); // Clear selectedVehicle on cancel
+  };
+
+  const handleCloseTicketDialog = () => {
+    setOpenTicketDialog(false);
     setTicketData(null);
+    setSelectedVehicle(null); // Clear selectedVehicle when closing ticket dialog
   };
 
   const handleChangePage = (event, newPage) => {
@@ -160,18 +193,43 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         />
       </Paper>
 
+      {/* Menu for actions */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleViewTicket}>View Ticket</MenuItem>
-        <MenuItem onClick={handleDeleteVehicle}>Delete</MenuItem>
+        <MenuItem onClick={handleDeleteClick} disabled={!selectedVehicle}>
+          Delete
+        </MenuItem>
       </Menu>
 
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+      {/* Ticket Dialog */}
+      <Dialog open={openTicketDialog} onClose={handleCloseTicketDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ bgcolor: "#3182CE", color: "#FFFFFF", fontWeight: 600 }}>
           Vehicle Ticket
         </DialogTitle>
         <DialogContent>
-          {ticketData && <VehicleTicket data={ticketData} onClose={handleClose} />}
+          {ticketData && <VehicleTicket data={ticketData} onClose={handleCloseTicketDialog} />}
         </DialogContent>
+      </Dialog>
+
+      {/* Confirmation Dialog for Deletion */}
+      <Dialog open={openConfirmDialog} onClose={handleDeleteCancel} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ bgcolor: "#f44336", color: "#FFFFFF", fontWeight: 600 }}>
+          Confirm Deletion
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2 }}>
+          <Typography variant="body1">
+            Are you sure you want to delete the vehicle{" "}
+            <strong>{selectedVehicle?.vehicleNumber || "N/A"}</strong>? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );

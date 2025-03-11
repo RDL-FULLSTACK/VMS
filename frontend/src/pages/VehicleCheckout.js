@@ -24,11 +24,19 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   const wrapperRef = useRef(null);
   const [errors, setErrors] = useState({ vehicle: "", checkOutTime: "" });
 
+  // Filter vehicles that have not been checked out and match the search query
   const filteredVehicles = vehicles.filter(
     (vehicle) =>
       vehicle.vehicleNumber.toLowerCase().includes(searchQuery.toLowerCase()) &&
       vehicle.checkOutTime === ""
   );
+
+  // Sort filtered vehicles by date and checkInTime in descending order (latest first)
+  const sortedVehicles = [...filteredVehicles].sort((a, b) => {
+    const dateA = new Date(`${a.date} ${a.checkInTime}`);
+    const dateB = new Date(`${b.date} ${b.checkInTime}`);
+    return dateB - dateA; // Descending order
+  });
 
   const handleVehicleSelect = (vehicle) => {
     setSelectedVehicle(vehicle);
@@ -199,8 +207,8 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
         />
         {isListOpen && (
           <List sx={{ maxHeight: 200, overflow: "auto", border: "1px solid #E2E8F0", borderRadius: 1, mb: 2, bgcolor: "#FFFFFF" }}>
-            {filteredVehicles.length > 0 ? (
-              filteredVehicles.map((vehicle) => (
+            {sortedVehicles.length > 0 ? (
+              sortedVehicles.map((vehicle) => (
                 <ListItem
                   key={vehicle.id}
                   button

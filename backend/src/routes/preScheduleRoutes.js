@@ -54,7 +54,7 @@ const sendEmail = (mailOptions) => {
 router.post("/preschedule", async (req, res) => {
   try {
     const { name, date, purpose, host, email } = req.body;
-    console.log("Received data for saving:", { name, date, purpose, host, email });
+  
 
     if (!name || !date || !purpose || !host || !email) {
       return res.status(400).json({ message: "All fields (name, date, purpose, host, email) are required" });
@@ -70,7 +70,7 @@ router.post("/preschedule", async (req, res) => {
     });
 
     const savedSchedule = await preSchedule.save();
-    console.log("Pre-schedule saved successfully in DB:", savedSchedule);
+   
     res.status(201).json(savedSchedule);
   } catch (error) {
     console.error("Error saving pre-scheduling data:", {
@@ -106,7 +106,6 @@ router.put("/preschedules/:id/approve", async (req, res) => {
     preSchedule.status = "Approved";
     // const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP for email
     await preSchedule.save();
-    console.log("Pre-schedule approved and retained in DB:", preSchedule);
 
     const approvalMailOptions = {
       from: process.env.EMAIL_USER,
@@ -115,7 +114,7 @@ router.put("/preschedules/:id/approve", async (req, res) => {
       text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been approved by ${preSchedule.host}.\n\nRegards,\nTeam`,
     };
 
-    console.log("Sending approval email to:", preSchedule.email);
+  
     await sendEmail(approvalMailOptions);
 
     res.status(200).json({ message: "Pre-schedule approved, email sent.", preSchedule });

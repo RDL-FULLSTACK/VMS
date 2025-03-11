@@ -86,7 +86,7 @@ router.post("/preschedule", async (req, res) => {
 router.get("/preschedules", async (req, res) => {
   try {
     const preSchedules = await PreSchedule.find({});
-    console.log("Fetched pre-schedules from DB:", preSchedules);
+   
     res.status(200).json(preSchedules);
   } catch (error) {
     console.error("Error fetching pre-schedules:", error);

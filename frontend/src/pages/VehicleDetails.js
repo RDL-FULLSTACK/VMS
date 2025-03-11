@@ -190,13 +190,13 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
           <Table size="small" stickyHeader>
             <TableHead sx={{ bgcolor: "#EDF2F7" }}>
               <TableRow>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "5%", bgcolor: "#EDF2F7" }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "18%", bgcolor: "#EDF2F7" }}>Vehicle Number</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "12%", bgcolor: "#EDF2F7" }}>Purpose</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Date</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "15%", bgcolor: "#EDF2F7" }}>Check-In Time</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "20%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
-                <TableCell sx={{ fontWeight: 700, padding: 1.5, width: "10%", textAlign: "center", bgcolor: "#EDF2F7" }}>Actions</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "8%", bgcolor: "#EDF2F7" }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "16%", bgcolor: "#EDF2F7" }}>Vehicle Number</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "16%", bgcolor: "#EDF2F7" }}>Purpose</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "16%", bgcolor: "#EDF2F7" }}>Date</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "16%", bgcolor: "#EDF2F7" }}>Check-In Time</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "16%", bgcolor: "#EDF2F7" }}>Check-Out Time</TableCell>
+                <TableCell sx={{ fontWeight: 700, padding: 1, width: "8%", textAlign: "center", bgcolor: "#EDF2F7" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -206,19 +206,25 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
                     key={vehicle._id || index}
                     sx={{ bgcolor: index % 2 === 0 ? "#FFFFFF" : "#F9FAFB", height: 50 }}
                   >
-                    <TableCell sx={{ padding: 1.5 }}>
+                    <TableCell sx={{ padding: 1 }}>
                       {vehicle._id ? vehicle._id.slice(-6) : "N/A"}
                     </TableCell>
-                    <TableCell sx={{ padding: 1.5, maxWidth: "100px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
+                    <TableCell sx={{ padding: 1, maxWidth: "90px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", fontWeight: 500 }}>
                       {vehicle.vehicleNumber || "N/A"}
                     </TableCell>
-                    <TableCell sx={{ padding: 1.5, maxWidth: "80px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <TableCell sx={{ padding: 1, maxWidth: "90px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {vehicle.purpose || "N/A"}
                     </TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.date || "N/A"}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.checkInTime || "N/A"}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{vehicle.checkOutTime || "Not Checked Out"}</TableCell>
-                    <TableCell sx={{ textAlign: "center", padding: 1.5 }}>
+                    <TableCell sx={{ padding: 1, maxWidth: "90px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {vehicle.date || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ padding: 1, maxWidth: "90px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {vehicle.checkInTime || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ padding: 1, maxWidth: "90px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {vehicle.checkOutTime || "Not Checked Out"}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: "center", padding: 1 }}>
                       <IconButton size="small" onClick={(event) => handleMenuOpen(event, vehicle)}>
                         <MoreVertIcon fontSize="small" />
                       </IconButton>

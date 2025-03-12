@@ -420,8 +420,8 @@ exports.verifyEmailOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    console.log("Session OTP:", c_otp);
-    console.log("User Input OTP:", otp);
+   // console.log("Session OTP:", c_otp);
+   // console.log("User Input OTP:", otp);
 
     if (!email || !otp) {
       return res.status(400).json({

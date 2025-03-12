@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   TextField,
   Card,
@@ -105,7 +105,8 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     setErrors({ vehicle: "", checkOutTime: "" });
   };
 
-  const validateField = (field, value) => {
+  // Memoize validateField to prevent unnecessary re-renders and fix useEffect dependency warning
+  const validateField = useCallback((field, value) => {
     let tempErrors = { ...errors };
     switch (field) {
       case "vehicle":
@@ -118,7 +119,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
         break;
     }
     setErrors(tempErrors);
-  };
+  }, [errors, selectedVehicle, checkOutTime]); // Dependencies for validateField
 
   const validateForm = () => {
     let isValid = true;
@@ -143,7 +144,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   useEffect(() => {
     validateField("vehicle", selectedVehicle);
     validateField("checkOutTime", checkOutTime);
-  }, [selectedVehicle, checkOutTime]);
+  }, [selectedVehicle, checkOutTime, validateField]); // Added validateField to dependencies
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -179,7 +180,6 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => setIsListOpen(true)}
-          sx={{ mb: 2 }}
           error={!!errors.vehicle}
           helperText={errors.vehicle}
           InputProps={{
@@ -196,6 +196,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
             style: { color: errors.vehicle ? "#d32f2f" : "#2D3748" },
           }}
           sx={{
+            mb: 2,
             "& .MuiOutlinedInput-root": {
               "& fieldset": { borderColor: errors.vehicle ? "#d32f2f" : "#2D3748" },
               "&:hover fieldset": { borderColor: errors.vehicle ? "#d32f2f" : "#3182CE" },
@@ -249,12 +250,12 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
               setCheckOutTime(time12);
               validateField("checkOutTime", time12);
             }}
-            sx={{ mb: 2 }}
             error={!!errors.checkOutTime}
             helperText={errors.checkOutTime}
             InputLabelProps={{ shrink: true, style: { color: errors.checkOutTime ? "#d32f2f" : "#2D3748" } }}
             inputProps={{ step: 300 }}
             sx={{
+              mb: 2,
               "& .MuiOutlinedInput-root": {
                 "& fieldset": { borderColor: errors.checkOutTime ? "#d32f2f" : "#2D3748" },
                 "&:hover fieldset": { borderColor: errors.checkOutTime ? "#d32f2f" : "#3182CE" },

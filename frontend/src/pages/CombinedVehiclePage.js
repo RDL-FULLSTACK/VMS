@@ -3,7 +3,6 @@ import axios from "axios";
 import {
   Box,
   Paper,
-  Typography,
   TextField,
   MenuItem,
   Select,
@@ -73,7 +72,7 @@ const CombinedVehiclePage = () => {
 
   const handleCheckoutVehicle = async (vehicleNumber, checkOutTime) => {
     try {
-      const response = await axios.put("http://localhost:5000/api/vehicles/checkout", {
+      await axios.put("http://localhost:5000/api/vehicles/checkout", {
         vehicleNumber,
         checkOutTime,
       });

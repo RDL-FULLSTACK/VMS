@@ -8,7 +8,8 @@ const preScheduleSchema = new mongoose.Schema({
   date: { type: String, required: true },
   purpose: { type: String, required: true },
   host: { type: String, required: true },
-  email: { type: String, required: true }, // Added email field
+  email: { type: String, required: true },
+  department: { type: String, required: true }, // Added department field
   Time: { type: String, required: true }, // Ensure Time is defined
   status: { type: String, default: "Pending" },
 });

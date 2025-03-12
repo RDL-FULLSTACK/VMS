@@ -1,7 +1,5 @@
 
 
-
-
 const express = require("express");
 const router = express.Router();
 const PreSchedule = require("../models/PreSchedule");
@@ -53,11 +51,13 @@ const sendEmail = (mailOptions) => {
 // POST /api/preschedule - Save pre-scheduling data
 router.post("/preschedule", async (req, res) => {
   try {
-    const { name, date, purpose, host, email } = req.body;
-  
+    const { name, date, purpose, host, email, department } = req.body;
 
-    if (!name || !date || !purpose || !host || !email) {
-      return res.status(400).json({ message: "All fields (name, date, purpose, host, email) are required" });
+    // Validate all required fields
+    if (!name || !date || !purpose || !host || !email || !department) {
+      return res.status(400).json({ 
+        message: "All fields (name, date, purpose, host, email, department) are required" 
+      });
     }
 
     const preSchedule = new PreSchedule({
@@ -66,6 +66,7 @@ router.post("/preschedule", async (req, res) => {
       purpose,
       host,
       email,
+      department, // Added department
       Time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     });
 
@@ -104,17 +105,15 @@ router.put("/preschedules/:id/approve", async (req, res) => {
     }
 
     preSchedule.status = "Approved";
-    // const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP for email
     await preSchedule.save();
 
     const approvalMailOptions = {
       from: process.env.EMAIL_USER,
       to: preSchedule.email,
       subject: "Visit Request Approved",
-      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been approved by ${preSchedule.host}.\n\nRegards,\nTeam`,
+      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been approved by ${preSchedule.host}.\n\nDepartment: ${preSchedule.department}\n\nRegards,\nTeam`,
     };
 
-  
     await sendEmail(approvalMailOptions);
 
     res.status(200).json({ message: "Pre-schedule approved, email sent.", preSchedule });
@@ -135,16 +134,16 @@ router.put("/preschedules/:id/reject", async (req, res) => {
 
     preSchedule.status = "Rejected";
     await preSchedule.save();
-    console.log("Pre-schedule rejected and retained in DB:", preSchedule);
+    // console.log("Pre-schedule rejected and retained in DB:", preSchedule);
 
     const rejectionMailOptions = {
       from: process.env.EMAIL_USER,
       to: preSchedule.email,
       subject: "Visit Request Rejected",
-      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been rejected by ${preSchedule.host}.\n\nRegards,\nTeam`,
+      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been rejected by ${preSchedule.host}.\n\nDepartment: ${preSchedule.department}\n\nRegards,\nTeam`,
     };
 
-    console.log("Sending rejection email to:", preSchedule.email);
+    // console.log("Sending rejection email to:", preSchedule.email);
     await sendEmail(rejectionMailOptions);
 
     res.status(200).json({ message: "Pre-schedule rejected, email sent, and record retained in DB", preSchedule });

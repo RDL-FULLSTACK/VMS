@@ -17,6 +17,7 @@ const preScheduleRoutes = require("./src/routes/preScheduleRoutes");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const userRoutes = require("./src/routes/userRoutes");
+const reportRoutes = require("./src/routes/reportRoutes");
 
 // Initialize Express App
 const app = express();
@@ -50,6 +51,8 @@ app.use(
 // Serve static files (for uploaded photos)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+
+
 // Connect to Database
 connectDB();
 
@@ -59,6 +62,7 @@ app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/visitors", visitorRoutes);
 app.use("/api", preScheduleRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/reports", reportRoutes);
 
 // Health Check Endpoint (optional but useful)
 app.get("/health", (req, res) => {

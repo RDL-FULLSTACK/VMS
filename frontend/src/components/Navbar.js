@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery } from "@mui/material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -69,31 +67,13 @@ const Navbar = () => {
             { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
-        {
-          type: "button",
-          label: "Vehicle Management", path:"/vehicles"
-      
-        },
-        {
-          type: "button",
-          label: "HOST",path:"/HostDashboard"
-        },
+        { type: "button", label: "Vehicle Management", path: "/vehicles" },
+        { type: "button", label: "HOST", path: "/HostDashboard" },
+        { type: "button", label: "ADMIN", path: "/userlist" },
         
+        // **Reports Section Added**
+        { type: "button", label: "Reports", path: "/reports" },
 
-
-
-        {
-          type: "button",
-          label: "ADMIN", path:"/userlist"
-        
-        },
-        
-
-
-
-
-
-        // { type: "button", label: "Admin", path: "/companylogin" },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
       receptionist: [
@@ -122,7 +102,6 @@ const Navbar = () => {
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
-  
       guest: [
         { type: "button", label: "Login", path: "/" },
         { type: "button", label: "Register", path: "/companyregister" },

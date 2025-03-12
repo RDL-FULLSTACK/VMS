@@ -1258,8 +1258,8 @@ const Checkin = () => {
       toast.error("Please verify OTP before submitting!");
       return;
     }
-
-    try {
+    
+  try {
       const visitorData = new FormData();
       visitorData.append("fullName", formData.fullName);
       visitorData.append("email", formData.email);
@@ -1303,7 +1303,42 @@ const Checkin = () => {
     } catch (error) {
       toast.error(error.message || "Submission error");
     }
-  };
+    // try{
+
+    //   console.log("adding...")
+    //   const report=new FormData();
+    //   report.append("fullName", formData.fullName);
+    //   report.append("personToVisit", formData.personToVisit);
+    //   report.append("reasonForVisit", formData.reasonForVisit);
+    //   report.append("visit_date","12.02.2025")
+    //   // report.append(
+    //     //   "expectedDuration",
+    //     //   JSON.stringify({
+    //       //     hours: parseInt(formData.expectedDurationHours),
+    //       //     minutes: parseInt(formData.expectedDurationMinutes),
+    //       //   })
+    //       // );
+    //       // report.append("teamMembers", JSON.stringify(teamMembers));
+          
+    //       const formDataObj = {};
+    //       report.forEach((value, key) => {
+    //         formDataObj[key] = value;
+    //       });
+    //       console.log("report (JSON format):", formDataObj);
+    //       const response = await fetch("http://localhost:5000/api/reports/add", {
+    //         method: "POST",
+    //         body: report,
+    //       });
+    //       const data = await response.json();
+          
+    //       if (!response.ok) throw new Error(data.message || "Report Submission failed");
+          
+    //       toast.success("report submission successful!");
+          
+    //     }catch(err){
+    //       console.log(err)
+    //     }
+      };
 
   return (
     <>

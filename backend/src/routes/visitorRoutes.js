@@ -42,6 +42,7 @@ const {
     deleteVisitor,
     updateVisitor,
     verifyEmailOtp,
+    getVisitors
 } = require("../controllers/visitorController");
 const multer = require("multer");
 const path = require("path");
@@ -72,6 +73,7 @@ const upload = multer({
 
 // Routes
 router.get("/", getAllVisitors);
+router.get("/report", getVisitors);
 router.get("/latest", getLatestVisitor);
 router.get("/:id", getVisitorById);
 router.post("/checkin", upload.single("photo"), addVisitor); // Add multer middleware for photo upload

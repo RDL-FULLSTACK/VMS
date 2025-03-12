@@ -21,6 +21,7 @@ import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
 import Receptionist from "./pages/UserList";
 import CombinedVehiclePage from "./pages/CombinedVehiclePage";
 import HomeVisitorFormCheckIn from "./pages/HostVisitorFromCheckIn";
+import Reports from "./pages/Reports"; // ✅ Import Reports page
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -30,146 +31,46 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <>
+  
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Home />
-            </PrivateRoute>
-          }
-        />
-         
-        <Route
-          path="/checkout"
-          element={
-            <PrivateRoute>
-              <Checkout />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/checkin"
-          element={
-            <PrivateRoute>
-              <Checkin />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/editcheckin/:id"
-          element={
-            <PrivateRoute>
-              <EditCheckin />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/admin"
-          element={
-            <PrivateRoute>
-              <Admin />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/admin2"
-          element={
-            <PrivateRoute>
-              <Admin2 />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/visitorcard"
-          element={
-            <PrivateRoute>
-              <VisitorCard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/visitorcard/:visitorId"
-          element={
-            <PrivateRoute>
-              <VisitorCard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/visitorlist"
-          element={
-            <PrivateRoute>
-              <VisitorList />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/HostDashboard"
-          element={
-            <PrivateRoute>
-              <HostDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/update-status/:id"
-          element={
-            <PrivateRoute>
-              <UpdateStatus />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/presheduling"
-          element={
-            <PrivateRoute>
-              <PreScheduling />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/success"
-          element={
-            <PrivateRoute>
-              <SuccessPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/vehicles"
-          element={
-            <PrivateRoute>
-              <CombinedVehiclePage />
-            </PrivateRoute>
-          }
-        />
-        <Route path="/companylogin/"  element={ <PrivateRoute> <CompanyLogin />  </PrivateRoute> } /> 
-
-        <Route path="/HostVisitorFormCheckIn/"  element={  <PrivateRoute>  <HomeVisitorFormCheckIn /> </PrivateRoute> } /> 
-
+        <Route path="/dashboard" element={<PrivateRoute><Home /></PrivateRoute>} />
+        <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+        <Route path="/checkin" element={<PrivateRoute><Checkin /></PrivateRoute>} />
+        <Route path="/editcheckin/:id" element={<PrivateRoute><EditCheckin /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute><Admin /></PrivateRoute>} />
+        <Route path="/admin2" element={<PrivateRoute><Admin2 /></PrivateRoute>} />
+        <Route path="/visitorcard" element={<PrivateRoute><VisitorCard /></PrivateRoute>} />
+        <Route path="/visitorcard/:visitorId" element={<PrivateRoute><VisitorCard /></PrivateRoute>} />
+        <Route path="/visitorlist" element={<PrivateRoute><VisitorList /></PrivateRoute>} />
+        <Route path="/HostDashboard" element={<PrivateRoute><HostDashboard /></PrivateRoute>} />
+        <Route path="/update-status/:id" element={<PrivateRoute><UpdateStatus /></PrivateRoute>} />
+        <Route path="/presheduling" element={<PrivateRoute><PreScheduling /></PrivateRoute>} />
+        <Route path="/success" element={<PrivateRoute><SuccessPage /></PrivateRoute>} />
+        <Route path="/vehicles" element={<PrivateRoute><CombinedVehiclePage /></PrivateRoute>} />
+        <Route path="/companylogin/" element={<PrivateRoute><CompanyLogin /></PrivateRoute>} /> 
+        <Route path="/HostVisitorFormCheckIn/" element={<PrivateRoute><HomeVisitorFormCheckIn /></PrivateRoute>} /> 
         <Route path="/userlist" element={<Receptionist />} />
+        
+        {/* ✅ Add Reports Page Route */}
+        <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
+
         <Route path="*" element={<Navigate to="/" />} />
-       
       </Routes>
+
       <ToastContainer
         position="top-right"
-        autoClose={3000} // 3 seconds default duration
+        autoClose={3000}
         hideProgressBar={false}
-        newestOnTop={true} // New toasts appear on top
+        newestOnTop
         closeOnClick
         pauseOnHover
         draggable
-        limit={3} // Limits to 3 visible toasts at once
-        style={{ zIndex: 9999 }} // Ensure toasts appear above other elements
-        toastClassName="custom-toast" // Optional: for custom styling if needed
-        onOpen={() => console.log("Toast opened")} // Debug: Log when a toast opens
-        onClose={() => console.log("Toast closed")} // Debug: Log when a toast closes
+        limit={3}
+        style={{ zIndex: 9999 }}
+        toastClassName="custom-toast"
+        onOpen={() => console.log("Toast opened")}
+        onClose={() => console.log("Toast closed")}
       />
     </>
   );

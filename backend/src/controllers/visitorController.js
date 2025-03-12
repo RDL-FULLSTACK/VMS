@@ -451,3 +451,48 @@ exports.verifyEmailOtp = async (req, res) => {
     });
   }
 };
+
+exports.getVisitors = async (req, res) => {
+  try {
+    let query = {}; // Default: fetch all visitors
+
+    // Filter by check-in date range (optional)
+    if (req.query.startDate && req.query.endDate) {
+      query.checkInTime = {
+        $gte: new Date(req.query.startDate),
+        $lte: new Date(req.query.endDate+"T23:59:59.999Z"),
+      };
+    }
+
+    // Select required fields (excluding teamMembers length calculation)
+    const fields = "_id fullName checkInTime reasonForVisit personToVisit teamMembers";
+
+    const visitors = await Visitor.find(query)
+      .select(fields)
+      .sort({ checkInTime: -1 }) // Sort by latest check-in
+      .limit(10)
+      .skip((req.query.page - 1) * 10 || 0); // Pagination
+
+    if (!visitors.length) {
+      return res.status(404).json({ message: "No visitors found" });
+    }
+
+    // Map results to include teamMembers length
+    const formattedVisitors = visitors.map(visitor => ({
+      _id: visitor._id,
+      name: visitor.fullName, // Updated from "name" to "fullName" (as per your schema)
+      checkInTime: visitor.checkInTime,
+      reasonForVisit: visitor.reasonForVisit,
+      personToVisit: visitor.personToVisit,
+      teamMembersCount: visitor.teamMembers ? visitor.teamMembers.length : 0, // Get teamMembers length
+    }));
+
+    res.status(200).json({
+      visitors: formattedVisitors,
+      totalPages: Math.ceil(visitors.length / 10),
+    });
+  } catch (error) {
+    console.error("Error fetching visitors:", error);
+    res.status(500).json({ message: "Error fetching visitors", error: error.message });
+  }
+};

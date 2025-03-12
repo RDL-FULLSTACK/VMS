@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Box, Container, Grid, Card, CardContent, Typography, IconButton, 
-  Button, Popover 
+  Box, Container, Grid, Card, CardContent, Typography, Button 
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axios from "axios";
@@ -15,7 +12,6 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 const HostVisitorFromCheckIn = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const visitorsPerPage = 10;
@@ -96,21 +92,10 @@ const HostVisitorFromCheckIn = () => {
     }
   };
 
-  const handleNotificationClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const handleToggleChange = () => {
     setToggleVisitor(false);
     navigate("/HostDashboard");
   };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? "notification-popover" : undefined;
 
   const indexOfLastVisitor = currentPage * visitorsPerPage;
   const indexOfFirstVisitor = indexOfLastVisitor - visitorsPerPage;
@@ -139,7 +124,7 @@ const HostVisitorFromCheckIn = () => {
                 mb: { xs: 2, sm: 0 }
               }}
             >
-              Host Panel
+              Visitors
             </Typography>
             <Box
               sx={{
@@ -150,32 +135,6 @@ const HostVisitorFromCheckIn = () => {
                 width: { xs: "100%", sm: "auto" },
               }}
             >
-              <IconButton onClick={handleNotificationClick} sx={{ position: "relative" }}>
-                <NotificationsIcon sx={{ fontSize: { xs: 24, sm: 30 }, color: "#5F3B91" }} />
-                {visitors.filter(v => v.status === "Pending").length > 0 && (
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      transform: "translate(40%, -40%)",
-                      borderRadius: "50%",
-                      width: { xs: 14, sm: 16 },
-                      height: { xs: 14, sm: 16 },
-                      bgcolor: "red",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      color: "white",
-                      fontSize: { xs: "8px", sm: "10px" },
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {visitors.filter(v => v.status === "Pending").length}
-                  </Box>
-                )}
-              </IconButton>
-
               <Switch
                 checked={toggleVisitor}
                 onChange={handleToggleChange}
@@ -304,6 +263,34 @@ const HostVisitorFromCheckIn = () => {
                           }}
                         >
                           Generate OTP
+                        </Button>
+                        <Button 
+                          variant="contained" 
+                          color="success" 
+                          size="small" 
+                          onClick={() => handleApproval(visitor.id)}
+                          disabled={visitor.status === "Approved"}
+                          sx={{ 
+                            fontSize: { xs: "0.7rem", sm: "0.875rem" }, 
+                            py: 0.5, 
+                            px: { xs: 1, sm: 2 } 
+                          }}
+                        >
+                          Approve
+                        </Button>
+                        <Button 
+                          variant="contained" 
+                          color="error" 
+                          size="small" 
+                          onClick={() => handleRejection(visitor.id)}
+                          disabled={visitor.status === "Rejected"}
+                          sx={{ 
+                            fontSize: { xs: "0.7rem", sm: "0.875rem" }, 
+                            py: 0.5, 
+                            px: { xs: 1, sm: 2 } 
+                          }}
+                        >
+                          Reject
                         </Button>
                       </Box>
                     </Grid>

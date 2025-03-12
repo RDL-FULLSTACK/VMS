@@ -166,8 +166,7 @@ const HostDashboard = () => {
               variant="h5"
               sx={{ fontWeight: "bold", textAlign: "center", fontSize: { xs: "1.5rem", sm: "1.75rem" } }}
             >
-              Host Panel
-            </Typography>
+Pre-Schedules            </Typography>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <IconButton onClick={handleNotificationClick}>

@@ -23,7 +23,7 @@ const VisitorCheckout = () => {
   const [visitors, setVisitors] = useState([]);
   const [otpInputs, setOtpInputs] = useState({});
   const [generatedOtps, setGeneratedOtps] = useState({});
-  const [selectedVisitor, setSelectedVisitor] = useState(null);
+  const [selectedVisitor] = useState(null);
   const [openModal, setOpenModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -189,10 +189,10 @@ const VisitorCheckout = () => {
     }
   };
 
-  const handleViewAssets = (visitor) => {
-    setSelectedVisitor(visitor);
-    setOpenModal(true);
-  };
+  // const handleViewAssets = (visitor) => {
+  //   setSelectedVisitor(visitor);
+  //   setOpenModal(true);
+  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -416,7 +416,7 @@ const VisitorCheckout = () => {
                       >
                         Checkout
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="contained"
                         size="small"
                         sx={{
@@ -428,7 +428,7 @@ const VisitorCheckout = () => {
                         onClick={() => handleViewAssets(visitor)}
                       >
                         View Assets
-                      </Button>
+                      </Button> */}
                     </Box>
                   </Box>
                 </Box>

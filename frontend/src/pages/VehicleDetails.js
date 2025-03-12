@@ -19,6 +19,8 @@ import {
   Paper,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import VisibilityIcon from "@mui/icons-material/Visibility"; // Icon for "View Ticket"
+import DeleteIcon from "@mui/icons-material/Delete"; // Icon for "Delete"
 import axios from "axios";
 import VehicleTicket from "../components/VehicleTicket";
 import { toast } from "react-toastify";
@@ -139,10 +141,22 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
     setPage(newPage);
   };
 
+  // Sort vehicles by creation date or a combined date-time field, falling back to date and checkInTime
   const sortedVehicles = [...vehicles].sort((a, b) => {
-    const dateA = new Date(`${a.date} ${a.checkInTime}`);
-    const dateB = new Date(`${b.date} ${b.checkInTime}`);
-    return dateB - dateA;
+    // Use createdAt if available (assuming backend might provide it), otherwise combine date and checkInTime
+    const timeA = a.createdAt
+      ? new Date(a.createdAt)
+      : new Date(`${a.date} ${a.checkInTime}`);
+    const timeB = b.createdAt
+      ? new Date(b.createdAt)
+      : new Date(`${b.date} ${b.checkInTime}`);
+
+    // Log for debugging
+    console.log("Sorting - Vehicle A:", a.vehicleNumber, timeA.toISOString());
+    console.log("Sorting - Vehicle B:", b.vehicleNumber, timeB.toISOString());
+
+    // Sort in descending order (latest first)
+    return timeB - timeA;
   });
 
   const paginatedVehicles = sortedVehicles.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
@@ -237,8 +251,12 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
       </Paper>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={handleViewTicket}>View Ticket</MenuItem>
+        <MenuItem onClick={handleViewTicket}>
+          <VisibilityIcon sx={{ mr: 1, fontSize: "20px" }} />
+          View Ticket
+        </MenuItem>
         <MenuItem onClick={handleDeleteClick} disabled={!selectedVehicle} sx={{ color: "red" }}>
+          <DeleteIcon sx={{ mr: 1, fontSize: "20px" }} />
           Delete
         </MenuItem>
       </Menu>

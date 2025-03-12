@@ -50,6 +50,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     let isValid = true;
     const newErrors = { vehicleNumber: "", purpose: "" };
 
+    console.log("Validating:", { vehicleNumber, purpose });
     if (!vehicleNumber.trim()) {
       newErrors.vehicleNumber = "Vehicle number is required";
       isValid = false;
@@ -61,12 +62,14 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     }
 
     setErrors(newErrors);
+    console.log("Validation result:", isValid, newErrors);
     return isValid;
   };
 
   const handleGenerateTicket = async () => {
+    console.log("handleGenerateTicket: Starting");
     if (!validateForm()) {
-      toast.dismiss("register-error");
+      console.log("Validation failed");
       toast.error("Please fill in all required fields!", {
         toastId: "register-error",
         autoClose: 3000,
@@ -94,18 +97,13 @@ const VehicleRegistration = ({ onAddVehicle }) => {
       await onAddVehicle(newVehicle);
       setTicketData({ vehicleNumber, purpose, checkInTime });
       setOpenDialog(true);
-
-      toast.dismiss("register-success");
+      console.log("Ticket generated successfully");
       toast.success("E-Ticket generated successfully!", {
         toastId: "register-success",
         autoClose: 3000,
-        onOpen: () => console.log("Success toast opened"),
-        onClose: () => console.log("Success toast closed"),
       });
     } catch (error) {
       console.error("Error in handleGenerateTicket:", error.response ? error.response.data : error);
-      toast.dismiss("register-error");
-      
       if (error.response?.data?.message === "Vehicle is already checked in and hasn't checked out yet") {
         toast.error("This vehicle is already checked in. Please check it out first.", {
           toastId: "register-error",

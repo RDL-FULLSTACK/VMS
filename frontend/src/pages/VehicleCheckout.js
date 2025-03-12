@@ -54,13 +54,12 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
   };
 
   const handleCheckout = async () => {
-    console.log("handleCheckout called");
+    console.log("handleCheckout: Starting");
     const isValid = validateForm();
     console.log("isValid:", isValid, "selectedVehicle:", selectedVehicle, "checkOutTime:", checkOutTime);
 
     if (!isValid) {
       console.log("Validation failed, errors:", errors);
-      toast.dismiss("checkout-error");
       toast.error("Please fill in all required fields!", {
         toastId: "checkout-error",
         autoClose: 3000,
@@ -75,7 +74,6 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
       await onCheckoutVehicle(selectedVehicle.vehicleNumber, checkOutTime);
 
       console.log("Checkout successful");
-      toast.dismiss("checkout-success");
       toast.success("Vehicle checked out successfully!", {
         toastId: "checkout-success",
         autoClose: 3000,
@@ -91,7 +89,6 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
       setIsListOpen(false);
     } catch (error) {
       console.error("Error in handleCheckout:", error);
-      toast.dismiss("checkout-error");
       toast.error("Failed to check out vehicle. Please try again.", {
         toastId: "checkout-error",
         autoClose: 3000,
@@ -127,6 +124,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     let isValid = true;
     const newErrors = { vehicle: "", checkOutTime: "" };
 
+    console.log("Validating:", { selectedVehicle, checkOutTime });
     if (!selectedVehicle) {
       newErrors.vehicle = "Vehicle is required";
       isValid = false;
@@ -138,6 +136,7 @@ const VehicleCheckout = ({ vehicles, onCheckoutVehicle }) => {
     }
 
     setErrors(newErrors);
+    console.log("Validation result:", isValid, newErrors);
     return isValid;
   };
 

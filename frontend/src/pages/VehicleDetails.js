@@ -28,41 +28,27 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [ticketData, setTicketData] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(7); // Already set to 7
+  const [rowsPerPage, setRowsPerPage] = useState(7);
   const [openTicketDialog, setOpenTicketDialog] = useState(false);
   const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
 
-  // Calculate rowsPerPage dynamically based on screen size
   useEffect(() => {
     const calculateRowsPerPage = () => {
-      // Approximate heights in pixels
-      const rowHeight = 50; // Height of each table row (as defined in sx={{ height: 50 }})
-      const headerHeight = 56; // Approximate height of the table header
-      const paginationHeight = 52; // Approximate height of the pagination component
-      const otherElementsHeight = 230; // Reduced from 300 to 230 to allow more space for rows (navbar: 70px, filters: 50px, margins/padding: 110px)
-
-      // Calculate available height for the table body
+      const rowHeight = 50;
+      const headerHeight = 56;
+      const paginationHeight = 52;
+      const otherElementsHeight = 230;
       const windowHeight = window.innerHeight;
       const availableHeight = windowHeight - headerHeight - paginationHeight - otherElementsHeight;
-
-      // Calculate how many rows can fit in the available height
       let calculatedRows = Math.floor(availableHeight / rowHeight);
-
-      // Set minimum and maximum rows for usability
-      const minRows = 7; // Minimum rows to show
-      const maxRows = 20; // Maximum rows to show
+      const minRows = 7;
+      const maxRows = 20;
       calculatedRows = Math.max(minRows, Math.min(maxRows, calculatedRows));
-
       setRowsPerPage(calculatedRows);
     };
 
-    // Calculate on mount
     calculateRowsPerPage();
-
-    // Recalculate on window resize
     window.addEventListener("resize", calculateRowsPerPage);
-
-    // Cleanup the event listener on component unmount
     return () => {
       window.removeEventListener("resize", calculateRowsPerPage);
     };
@@ -88,7 +74,6 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         checkOutTime: selectedVehicle.checkOutTime,
       });
       setOpenTicketDialog(true);
-      toast.dismiss();
       toast.success("Viewing ticket for the selected vehicle!", { toastId: "view-ticket" });
     } else {
       toast.error("No vehicle selected for viewing!", { toastId: "view-error" });
@@ -125,13 +110,11 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
 
     try {
       await axios.delete(`http://localhost:5000/api/vehicles/${vehicleId}`);
-      toast.dismiss();
       toast.success("Vehicle deleted successfully!", { toastId: "delete-success" });
       if (onDeleteVehicle) {
         onDeleteVehicle(vehicleId);
       }
     } catch (error) {
-      toast.dismiss();
       toast.error(error.response?.data?.message || "Failed to delete vehicle. Please try again.", {
         toastId: "delete-error",
       });
@@ -156,11 +139,10 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
     setPage(newPage);
   };
 
-  // Sort vehicles by date and checkInTime in descending order (latest first)
   const sortedVehicles = [...vehicles].sort((a, b) => {
     const dateA = new Date(`${a.date} ${a.checkInTime}`);
     const dateB = new Date(`${b.date} ${b.checkInTime}`);
-    return dateB - dateA; // Descending order
+    return dateB - dateA;
   });
 
   const paginatedVehicles = sortedVehicles.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
@@ -173,18 +155,18 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
           borderRadius: 0,
           boxShadow: 0,
           bgcolor: "transparent",
-          height: "auto", // Allow Paper to adjust to content
-          maxHeight: "100vh", // Constrain to viewport height
+          height: "auto",
+          maxHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          overflow: "hidden", // Prevent page scrolling
+          overflow: "hidden",
         }}
       >
         <TableContainer
           sx={{
-            flex: 1, // Take available space
-            maxHeight: `calc(100vh - ${52 + 70 + 50 + 30}px)`, // Adjusted: Subtract pagination (52px), navbar (70px), filters (50px), and reduced buffer (30px)
-            overflowY: "auto", // Allow scrolling if content overflows
+            flex: 1,
+            maxHeight: `calc(100vh - ${52 + 70 + 50 + 30}px)`,
+            overflowY: "auto",
           }}
         >
           <Table size="small" stickyHeader>
@@ -254,7 +236,6 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         />
       </Paper>
 
-      {/* Menu for actions */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
         <MenuItem onClick={handleViewTicket}>View Ticket</MenuItem>
         <MenuItem onClick={handleDeleteClick} disabled={!selectedVehicle} sx={{ color: "red" }}>
@@ -262,7 +243,6 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         </MenuItem>
       </Menu>
 
-      {/* Ticket Dialog */}
       <Dialog open={openTicketDialog} onClose={handleCloseTicketDialog} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ bgcolor: "#3182CE", color: "#FFFFFF", fontWeight: 600 }}>
           Vehicle Ticket
@@ -272,7 +252,6 @@ const VehicleDetails = ({ vehicles = [], onDeleteVehicle }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Dialog for Deletion */}
       <Dialog open={openConfirmDialog} onClose={handleDeleteCancel} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ bgcolor: "#f44336", color: "#FFFFFF", fontWeight: 600 }}>
           Confirm Deletion

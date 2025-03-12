@@ -1,7 +1,5 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Home from "./pages/Home";
 import Checkout from "./pages/checkout";
 import Checkin from "./pages/checkin";
@@ -40,7 +38,6 @@ function App() {
             </PrivateRoute>
           }
         />
-         
         <Route
           path="/checkout"
           element={
@@ -49,7 +46,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/checkin"
           element={
@@ -58,7 +54,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/editcheckin/:id"
           element={
@@ -67,7 +62,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/admin"
           element={
@@ -76,7 +70,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/admin2"
           element={
@@ -149,28 +142,11 @@ function App() {
             </PrivateRoute>
           }
         />
-        <Route path="/companylogin/"  element={ <PrivateRoute> <CompanyLogin />  </PrivateRoute> } /> 
-
-        <Route path="/HostVisitorFormCheckIn/"  element={  <PrivateRoute>  <HomeVisitorFormCheckIn /> </PrivateRoute> } /> 
-
+        <Route path="/companylogin/" element={<PrivateRoute><CompanyLogin /></PrivateRoute>} />
+        <Route path="/HostVisitorFormCheckIn/" element={<PrivateRoute><HomeVisitorFormCheckIn /></PrivateRoute>} />
         <Route path="/userlist" element={<Receptionist />} />
         <Route path="*" element={<Navigate to="/" />} />
-       
       </Routes>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000} // 3 seconds default duration
-        hideProgressBar={false}
-        newestOnTop={true} // New toasts appear on top
-        closeOnClick
-        pauseOnHover
-        draggable
-        limit={3} // Limits to 3 visible toasts at once
-        style={{ zIndex: 9999 }} // Ensure toasts appear above other elements
-        toastClassName="custom-toast" // Optional: for custom styling if needed
-        onOpen={() => console.log("Toast opened")} // Debug: Log when a toast opens
-        onClose={() => console.log("Toast closed")} // Debug: Log when a toast closes
-      />
     </>
   );
 }

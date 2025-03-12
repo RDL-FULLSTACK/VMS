@@ -38,13 +38,11 @@ const UserList = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [openCompanyLoginDialog, setOpenCompanyLoginDialog] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [passwordVisibility, setPasswordVisibility] = useState({});
   const [passwords, setPasswords] = useState({ newPassword: "", confirmPassword: "" });
-const [isMatching, setIsMatching] = useState(null); // null: initial, false: mismatch, true: match
+  const [isMatching, setIsMatching] = useState(null); // null: initial, false: mismatch, true: match
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -110,23 +108,16 @@ const [isMatching, setIsMatching] = useState(null); // null: initial, false: mis
   const handleEdit = () => {
     setOpenEditDialog(true);
     handleMenuClose();
-    
   };
 
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
   };
 
-  // const handleEditChange = (event) => {
-  //   // setSelectedUser({ ...selectedUser, [event.target.name]: event.target.value });
-  // };
-
-
-const handleEditChange = (event) => {
+  const handleEditChange = (event) => {
     const { name, value } = event.target;
     setPasswords((prev) => ({ ...prev, [name]: value }));
   
-    // Check if both fields have values before validating
     if (name === "confirmPassword" || name === "newPassword") {
       const newPassword = name === "newPassword" ? value : passwords.newPassword;
       const confirmPassword = name === "confirmPassword" ? value : passwords.confirmPassword;
@@ -134,7 +125,7 @@ const handleEditChange = (event) => {
       if (newPassword && confirmPassword) {
         setIsMatching(newPassword === confirmPassword);
       } else {
-        setIsMatching(null); // No validation message when fields are empty
+        setIsMatching(null);
       }
     }
   };
@@ -146,7 +137,7 @@ const handleEditChange = (event) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(selectedUser),
+        body: JSON.stringify({ ...selectedUser, password: passwords.newPassword }),
       });
 
       if (!response.ok) {
@@ -154,9 +145,11 @@ const handleEditChange = (event) => {
       }
 
       setUsers((prevUsers) =>
-        prevUsers.map((user) => (user._id === selectedUser._id ? selectedUser : user))
+        prevUsers.map((user) => (user._id === selectedUser._id ? { ...user, password: passwords.newPassword } : user))
       );
       setOpenEditDialog(false);
+      setPasswords({ newPassword: "", confirmPassword: "" }); // Reset password fields
+      setIsMatching(null); // Reset matching status
       setSnackbar({ 
         open: true, 
         message: "User updated successfully!", 
@@ -217,13 +210,6 @@ const handleEditChange = (event) => {
     setShowPassword(!showPassword);
   };
 
-  // const togglePasswordVisibility = (userId) => {
-  //   setPasswordVisibility((prev) => ({
-  //     ...prev,
-  //     [userId]: !prev[userId],
-  //   }));
-  // };
-
   return (
     <>
       {!openCompanyLoginDialog && <Navbar />}
@@ -259,23 +245,19 @@ const handleEditChange = (event) => {
         </div>
 
         <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
-
           <Table>
             <TableHead sx={{ backgroundColor: "#5a3d91" }}>
               <TableRow>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Username</TableCell>
-                {/* <TableCell sx={{ color: "white", fontWeight: "bold" }}>Password</TableCell> */}
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Role</TableCell>
                 <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
               </TableRow>
             </TableHead>
-            
             <TableBody>
-
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={5} sx={{ textAlign: "center" }}>
+                  <TableCell colSpan={4} sx={{ textAlign: "center" }}>
                     Loading...
                   </TableCell>
                 </TableRow>
@@ -284,19 +266,6 @@ const handleEditChange = (event) => {
                   <TableRow key={user._id || "unknown"}>
                     <TableCell>{getLastFourDigits(user._id)}</TableCell>
                     <TableCell>{formatValue(user.username)}</TableCell>
-                    {/* <TableCell>
-                      {passwordVisibility[user._id] 
-                        ? formatValue(user.password) 
-                        : "*".repeat(formatValue(user.password).length)}
-                      <IconButton
-                        onClick={() => togglePasswordVisibility(user._id)}
-                        edge="end"
-                        size="small"
-                        sx={{ ml: 1 }}
-                      >
-                        {passwordVisibility[user._id] ? <VisibilityOff /> : <Visibility />}
-                      </IconButton> 
-                    </TableCell> */}
                     <TableCell>{formatValue(user.role)}</TableCell>
                     <TableCell>
                       <IconButton onClick={(event) => handleMenuOpen(event, user)}>
@@ -307,7 +276,7 @@ const handleEditChange = (event) => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} sx={{ textAlign: "center", fontSize: "1.2rem", fontWeight: "bold", color: "gray" }}>
+                  <TableCell colSpan={4} sx={{ textAlign: "center", fontSize: "1.2rem", fontWeight: "bold", color: "gray" }}>
                     No User Found
                   </TableCell>
                 </TableRow>
@@ -325,8 +294,8 @@ const handleEditChange = (event) => {
             sx: { minWidth: 150 }
           }}
         >
-          <MenuItem onClick={handleEdit} sx={{ color: "#5a3d91", "&:hover": { backgroundColor: "#f5f5f5" } , }}>
-            <EditIcon fontSize="small" sx={{ mr: 1 ,  }} />
+          <MenuItem onClick={handleEdit} sx={{ color: "#5a3d91", "&:hover": { backgroundColor: "#f5f5f5" } }}>
+            <EditIcon fontSize="small" sx={{ mr: 1 }} />
             Edit
           </MenuItem>
           <MenuItem onClick={handleDelete} sx={{ color: "#d32f2f" }}>
@@ -335,7 +304,7 @@ const handleEditChange = (event) => {
           </MenuItem>
         </Menu>
 
-        {/* <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
+        <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
           <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
             Edit User (ID: {getLastFourDigits(selectedUser?._id)})
           </DialogTitle>
@@ -343,29 +312,32 @@ const handleEditChange = (event) => {
             {selectedUser && (
               <>
                 <TextField
-                  label="ID (Last 4)"
-                  name="_id"
-                  fullWidth
-                  margin="normal"
-                  value={getLastFourDigits(selectedUser._id)}
-                  disabled
-                />
-                <TextField
                   label="Username"
                   name="username"
                   fullWidth
                   margin="normal"
                   value={formatValue(selectedUser.username)}
-                  onChange={handleEditChange}
+                  disabled
                 />
                 <TextField
-                  label="Password"
-                  name="password"
+                  label="New Password"
+                  name="newPassword"
                   fullWidth
                   margin="normal"
                   type={showPassword ? "text" : "password"}
-                  value={formatValue(selectedUser.password)}
+                  value={passwords.newPassword}
                   onChange={handleEditChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      "&:hover fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                    },
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -376,190 +348,56 @@ const handleEditChange = (event) => {
                     ),
                   }}
                 />
-                <Select
-                  name="role"
-                  value={formatValue(selectedUser.role)}
-                  onChange={handleEditChange}
+                <TextField
+                  label="Confirm Password"
+                  name="confirmPassword"
                   fullWidth
-                  margin="dense"
-                  sx={{ mt: 2 }}
-                >
-                  <MenuItem value="Admin">Admin</MenuItem>
-                  <MenuItem value="Host">Host</MenuItem>
-                  <MenuItem value="Security">Security</MenuItem>
-                  <MenuItem value="Receptionist">Receptionist</MenuItem>
-                </Select>
+                  margin="normal"
+                  type={showPassword ? "text" : "password"}
+                  value={passwords.confirmPassword}
+                  onChange={handleEditChange}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      "&:hover fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                    },
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={handleTogglePassword} edge="end">
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                {isMatching === false && passwords.newPassword && passwords.confirmPassword && (
+                  <p style={{ color: "red", marginTop: "5px" }}>Passwords do not match</p>
+                )}
+                {isMatching === true && passwords.newPassword && passwords.confirmPassword && (
+                  <p style={{ color: "green", marginTop: "5px" }}>Password match successfully</p>
+                )}
               </>
             )}
           </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={handleCloseEditDialog} sx={{ color: "#5a3d91" }}>Cancel</Button>
+          <DialogActions>
+            <Button onClick={handleCloseEditDialog} color="error">Cancel</Button>
             <Button 
               onClick={handleSaveChanges} 
+              color="primary" 
               variant="contained" 
-              sx={{ bgcolor: "#5a3d91", "&:hover": { bgcolor: "#4a2f77" } }}
+              disabled={isMatching === false || isMatching === null}
             >
               Save Changes
             </Button>
           </DialogActions>
-        </Dialog> */}
-
-{/* <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-  <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
-    Edit User (ID: {getLastFourDigits(selectedUser?._id)})
-  </DialogTitle>
-  <DialogContent sx={{ mt: 2 }}>
-    {selectedUser && (
-      <>
-        <TextField
-          label="Username"
-          name="username"
-          fullWidth
-          margin="normal"
-          value={formatValue(selectedUser.username)}
-          disabled
-        />
-        <TextField
-          label="New Password"
-          name="newPassword"
-          fullWidth
-          margin="normal"
-          type={showPassword ? "text" : "password"}
-          onChange={handleEditChange}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={handleTogglePassword} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-        <TextField
-          label="Confirm Password"
-          name="confirmPassword"
-          fullWidth
-          margin="normal"
-          type={showPassword ? "text" : "password"}
-          onChange={handleEditChange}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={handleTogglePassword} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCloseEditDialog} color="error">Cancel</Button>
-    <Button onClick={handleSaveChanges} color="primary" variant="contained">
-      Save Changes
-    </Button>
-  </DialogActions>
-</Dialog> */}
-
-
-<Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-  <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
-    Edit User (ID: {getLastFourDigits(selectedUser?._id)})
-  </DialogTitle>
-  <DialogContent sx={{ mt: 2 }}>
-    {selectedUser && (
-      <>
-        <TextField
-          label="Username"
-          name="username"
-          fullWidth
-          margin="normal"
-          value={formatValue(selectedUser.username)}
-          disabled
-        />
-        
-        <TextField
-          label="New Password"
-          name="newPassword"
-          fullWidth
-          margin="normal"
-          type={showPassword ? "text" : "password"}
-          value={passwords.newPassword}
-          onChange={handleEditChange}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-              "&:hover fieldset": {
-                borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-              },
-            },
-          }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={handleTogglePassword} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        <TextField
-          label="Confirm Password"
-          name="confirmPassword"
-          fullWidth
-          margin="normal"
-          type={showPassword ? "text" : "password"}
-          value={passwords.confirmPassword}
-          onChange={handleEditChange}
-          sx={{
-            "& .MuiOutlinedInput-root": {
-              borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-              "&:hover fieldset": {
-                borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-              },
-              "&.Mui-focused fieldset": {
-                borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-              },
-            },
-          }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton onClick={handleTogglePassword} edge="end">
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* ✅ Show validation message only when both fields have values */}
-        {isMatching === false && passwords.newPassword && passwords.confirmPassword && (
-          <p style={{ color: "red", marginTop: "5px" }}>Passwords do not match</p>
-        )}
-        {isMatching === true && passwords.newPassword && passwords.confirmPassword && (
-          <p style={{ color: "green", marginTop: "5px" }}>Password match successfully</p>
-        )}
-      </>
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={handleCloseEditDialog} color="error">Cancel</Button>
-    <Button onClick={handleSaveChanges} color="primary" variant="contained" disabled={isMatching === false || isMatching === null}>
-      Save Changes
-    </Button>
-  </DialogActions>
-</Dialog>
-
-
+        </Dialog>
 
         <Dialog 
           open={openCompanyLoginDialog} 

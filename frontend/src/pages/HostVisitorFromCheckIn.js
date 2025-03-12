@@ -68,30 +68,6 @@ const HostVisitorFromCheckIn = () => {
     setVisitors(updatedVisitors);
   };
 
-  const handleApproval = async (id) => {
-    try {
-      const updatedVisitors = visitors.map(visitor =>
-        visitor.id === id ? { ...visitor, status: "Approved" } : visitor
-      );
-      setVisitors(updatedVisitors);
-      await axios.put(`http://localhost:5000/api/visitors/${id}`, { status: "Approved" });
-    } catch (error) {
-      console.error("Error approving visitor:", error);
-    }
-  };
-
-  const handleRejection = async (id) => {
-    try {
-      const updatedVisitors = visitors.map(visitor =>
-        visitor.id === id ? { ...visitor, status: "Rejected" } : visitor
-      );
-      setVisitors(updatedVisitors);
-      await axios.put(`http://localhost:5000/api/visitors/${id}`, { status: "Rejected" });
-    } catch (error) {
-      console.error("Error rejecting visitor:", error);
-    }
-  };
-
   const handleToggleChange = () => {
     setToggleVisitor(false);
     navigate("/HostDashboard");
@@ -264,34 +240,8 @@ const HostVisitorFromCheckIn = () => {
                         >
                           Generate OTP
                         </Button>
-                        <Button 
-                          variant="contained" 
-                          color="success" 
-                          size="small" 
-                          onClick={() => handleApproval(visitor.id)}
-                          disabled={visitor.status === "Approved"}
-                          sx={{ 
-                            fontSize: { xs: "0.7rem", sm: "0.875rem" }, 
-                            py: 0.5, 
-                            px: { xs: 1, sm: 2 } 
-                          }}
-                        >
-                          Approve
-                        </Button>
-                        <Button 
-                          variant="contained" 
-                          color="error" 
-                          size="small" 
-                          onClick={() => handleRejection(visitor.id)}
-                          disabled={visitor.status === "Rejected"}
-                          sx={{ 
-                            fontSize: { xs: "0.7rem", sm: "0.875rem" }, 
-                            py: 0.5, 
-                            px: { xs: 1, sm: 2 } 
-                          }}
-                        >
-                          Reject
-                        </Button>
+                    
+                      
                       </Box>
                     </Grid>
                   </Grid>

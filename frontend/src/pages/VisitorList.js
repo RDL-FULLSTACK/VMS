@@ -38,19 +38,45 @@ const VisitorList = () => {
           throw new Error("Unexpected data format from backend");
         }
 
-        const transformedVisitors = data.map(visitor => ({
-          id: visitor._id,
-          name: visitor.fullName || "",
-          email: visitor.email || "",
-          phone: visitor.phoneNumber || "",
-          checkIn: visitor.checkInTime ? new Date(visitor.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : visitor.time || "",
-          checkOut: visitor.checkOutTime ? new Date(visitor.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "",
-          host: visitor.personToVisit || "",
-          designation: visitor.designation || "",
-          date: visitor.checkInTime ? new Date(visitor.checkInTime).toISOString().split('T')[0] : visitor.date || "",
-          assets: visitor.assets || [],
-          visitorCompany: visitor.visitorCompany || "", // Added visitorCompany
-        }));
+        const currentTime = new Date();
+        const currentDate = currentTime.toISOString().split('T')[0];
+
+        const transformedVisitors = data.map(visitor => {
+          const checkInTime = visitor.checkInTime ? new Date(visitor.checkInTime) : null;
+          const checkOutTime = visitor.checkOutTime ? new Date(visitor.checkOutTime) : null;
+          const checkInDate = checkInTime ? checkInTime.toISOString().split('T')[0] : null;
+
+          // Calculate actual duration (in milliseconds)
+          let actualDuration = 0;
+          if (checkInTime && checkInDate === currentDate) {
+            actualDuration = checkOutTime 
+              ? checkOutTime - checkInTime 
+              : currentTime - checkInTime;
+          }
+
+          // Convert expectedDuration to milliseconds
+          const expectedDurationMs = (visitor.expectedDuration?.hours || 0) * 60 * 60 * 1000 + 
+                                   (visitor.expectedDuration?.minutes || 0) * 60 * 1000;
+
+          return {
+            id: visitor._id,
+            name: visitor.fullName || "",
+            email: visitor.email || "",
+            phone: visitor.phoneNumber || "",
+            checkIn: checkInTime ? checkInTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "",
+            checkOut: checkOutTime ? checkOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }) : "",
+            host: visitor.personToVisit || "",
+            designation: visitor.designation || "",
+            date: checkInTime ? checkInTime.toISOString().split('T')[0] : "",
+            assets: visitor.assets || [],
+            visitorCompany: visitor.visitorCompany || "",
+            expectedDuration: visitor.expectedDuration || { hours: 0, minutes: 0 },
+            actualDuration,
+            isOverDuration: actualDuration > expectedDurationMs,
+            checkInTimeRaw: checkInTime, // Store raw Date object for interval updates
+            checkOutTimeRaw: checkOutTime, // Store raw Date object for interval updates
+          };
+        });
 
         setVisitors(transformedVisitors);
       } catch (err) {
@@ -61,6 +87,30 @@ const VisitorList = () => {
     };
 
     fetchVisitors();
+
+    // Set up an interval to update the actual duration every minute
+    const interval = setInterval(() => {
+      setVisitors(prevVisitors => prevVisitors.map(visitor => {
+        if (!visitor.checkOutTimeRaw && visitor.checkInTimeRaw) {
+          const currentTime = new Date();
+          const checkInDate = new Date(visitor.checkInTimeRaw).toISOString().split('T')[0];
+          const currentDate = currentTime.toISOString().split('T')[0];
+          if (checkInDate === currentDate) {
+            const newActualDuration = currentTime - new Date(visitor.checkInTimeRaw);
+            const expectedDurationMs = (visitor.expectedDuration?.hours || 0) * 60 * 60 * 1000 + 
+                                     (visitor.expectedDuration?.minutes || 0) * 60 * 1000;
+            return { 
+              ...visitor, 
+              actualDuration: newActualDuration,
+              isOverDuration: newActualDuration > expectedDurationMs
+            };
+          }
+        }
+        return visitor;
+      }));
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleViewClick = (visitor) => {
@@ -75,7 +125,7 @@ const VisitorList = () => {
   const filteredVisitors = visitors.filter((visitor) => {
     const matchesSearch = `${visitor.name} ${visitor.email} ${visitor.phone} ${visitor.host} ${visitor.designation} ${visitor.visitorCompany}`
       .toLowerCase()
-      .includes(searchTerm.toLowerCase()); // Updated to include visitorCompany in search
+      .includes(searchTerm.toLowerCase());
     const matchesDate = selectedDate ? visitor.date === selectedDate : true;
     return matchesSearch && matchesDate;
   });
@@ -85,11 +135,10 @@ const VisitorList = () => {
     page * rowsPerPage
   );
 
-  // Define common styles for buttons to ensure consistency
   const buttonStyles = {
     py: 0.3,
     fontSize: '0.75rem',
-    minWidth: '80px', // Fixed width for all buttons
+    minWidth: '80px',
     textAlign: 'center',
   };
 
@@ -138,15 +187,13 @@ const VisitorList = () => {
                 />
               </Box>
 
-              {/* Grid Container */}
               <Box sx={{ overflowX: 'auto' }}>
-                {/* Grid Header */}
                 <Box
                   sx={{
                     display: 'grid',
                     gridTemplateColumns: {
-                      xs: 'repeat(12, minmax(100px, 1fr))', // Adjusted for mobile
-                      sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 150px 100px 180px', // Added 150px for visitorCompany
+                      xs: 'repeat(12, minmax(100px, 1fr))',
+                      sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 150px 100px 180px',
                     },
                     gap: 1,
                     bgcolor: '#e0e0e0',
@@ -154,7 +201,7 @@ const VisitorList = () => {
                     borderRadius: 1,
                     fontWeight: 'bold',
                     alignItems: 'center',
-                    minWidth: '1390px', // Updated sum of pixel widths (1240 + 150)
+                    minWidth: '1390px',
                   }}
                 >
                   <Box>ID</Box>
@@ -166,12 +213,11 @@ const VisitorList = () => {
                   <Box>Host</Box>
                   <Box>Designation</Box>
                   <Box>Date</Box>
-                  <Box>Company</Box> {/* Added visitorCompany header */}
+                  <Box>Company</Box>
                   <Box>Assets</Box>
                   <Box textAlign="center">Actions</Box>
                 </Box>
 
-                {/* Grid Body */}
                 {paginatedVisitors.map((visitor) => (
                   <Box
                     key={visitor.id}
@@ -179,13 +225,14 @@ const VisitorList = () => {
                       display: 'grid',
                       gridTemplateColumns: {
                         xs: 'repeat(12, minmax(100px, 1fr))',
-                        sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 150px 100px 180px', // Same as header
+                        sm: '40px 150px 200px 150px 100px 100px 120px 100px 100px 150px 100px 180px',
                       },
                       gap: 1,
                       p: 1,
                       borderBottom: '1px solid #e0e0e0',
                       alignItems: 'center',
-                      minWidth: '1390px', // Updated to match header
+                      minWidth: '1390px',
+                      bgcolor: visitor.isOverDuration ? '#ffcccc' : 'inherit', // Highlight red if over duration
                     }}
                   >
                     <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -216,7 +263,7 @@ const VisitorList = () => {
                       {visitor.date}
                     </Box>
                     <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {visitor.visitorCompany} {/* Added visitorCompany data */}
+                      {visitor.visitorCompany}
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'center' }}>
                       {visitor.assets.length > 0 ? (
@@ -247,7 +294,7 @@ const VisitorList = () => {
                           display: 'flex', 
                           flexDirection: { xs: 'column', sm: 'row' }, 
                           gap: 0.5,
-                          justifyContent: 'center', // Center buttons in the column
+                          justifyContent: 'center',
                         }}
                       >
                         <Button

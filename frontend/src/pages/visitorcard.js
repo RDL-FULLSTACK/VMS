@@ -1,8 +1,3 @@
-
-
-
-
-
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -27,7 +22,6 @@ const VisitorCard = () => {
   const [visitor, setVisitor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [qrCodeImage, setQrCodeImage] = useState("");
 
   useEffect(() => {
     const fetchVisitorData = async () => {
@@ -152,11 +146,6 @@ const VisitorCard = () => {
     `);
     printWindow.document.close();
   };
-  
-  
-  
-  
-  
 
   if (loading) {
     return (
@@ -227,7 +216,7 @@ const VisitorCard = () => {
               sx={{ display: "flex", alignItems: "center", gap: 2 }}
             >
               <Avatar
-                src={visitor.photoUrl || "/default-avatar.png"} // Updated to photoUrl
+                src={visitor.photoUrl || "/default-avatar.png"}
                 sx={{ width: 100, height: 100 }}
               />
               <Box>
@@ -235,7 +224,7 @@ const VisitorCard = () => {
                   {visitor.fullName}
                 </Typography>
                 <Typography variant="body2" sx={{ fontWeight: "bold" }}>
-                  {formatTime(visitor.checkInTime || visitor.createdAt)} {/* Updated time */}
+                  {formatTime(visitor.checkInTime || visitor.createdAt)}
                 </Typography>
                 <Typography variant="body2">ID: {visitorIdStr}</Typography>
               </Box>

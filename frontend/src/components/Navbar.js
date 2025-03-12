@@ -67,11 +67,6 @@ const Navbar = () => {
             // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
-<<<<<<< HEAD
-        { type: "button", label: "Vehicle Management", path: "/vehicles" },
-        { type: "button", label: "HOST", path: "/HostDashboard" },
-        { type: "button", label: "ADMIN", path: "/userlist" },
-=======
         {
           type: "button",
           label: "Vehicle Management", path:"/vehicles"
@@ -82,7 +77,6 @@ const Navbar = () => {
         //   type: "button",
         //   label: "HOST",path:"/HostDashboard"
         // },
->>>>>>> ee2681facd2a095452f4aa7c2ba6d89bb0d165d9
         
         // **Reports Section Added**
         { type: "button", label: "Reports", path: "/reports" },
@@ -115,8 +109,6 @@ const Navbar = () => {
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
-<<<<<<< HEAD
-=======
   
 
       host: [
@@ -126,7 +118,6 @@ const Navbar = () => {
       ],
 
 
->>>>>>> ee2681facd2a095452f4aa7c2ba6d89bb0d165d9
       guest: [
         { type: "button", label: "Login", path: "/" },
         { type: "button", label: "Register", path: "/companyregister" },

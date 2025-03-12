@@ -9,17 +9,15 @@ import CompanyLogin from "./pages/companylogin";
 import VisitorCard from "./pages/visitorcard";
 import Login from "./pages/Login";
 import VisitorList from "./pages/VisitorList";
-import Navbar from "./components/Navbar";
 import Admin2 from "./pages/admin2";
 import HostDashboard from "./pages/HostDashboard";
 import UpdateStatus from "./pages/UpdateStatus";
 import PreScheduling from "./pages/PreScheduling";
 import { SuccessPage } from "./pages/checkout";
-import VehicleCheckoutRoutes from "./pages/VehicleCheckout";
-import Receptionist from "./pages/UserList";
 import CombinedVehiclePage from "./pages/CombinedVehiclePage";
 import HomeVisitorFormCheckIn from "./pages/HostVisitorFromCheckIn";
-import Reports from "./pages/Reports"; // ✅ Import Reports page
+import Receptionist from "./pages/UserList";
+import Reports from "./pages/Reports";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -29,7 +27,6 @@ const PrivateRoute = ({ children }) => {
 function App() {
   return (
     <>
-  
       <Routes>
         <Route path="/" element={<Login />} />
         <Route
@@ -147,10 +144,7 @@ function App() {
         <Route path="/companylogin/" element={<PrivateRoute><CompanyLogin /></PrivateRoute>} />
         <Route path="/HostVisitorFormCheckIn/" element={<PrivateRoute><HomeVisitorFormCheckIn /></PrivateRoute>} />
         <Route path="/userlist" element={<Receptionist />} />
-        
-        {/* ✅ Add Reports Page Route */}
         <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
-
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>

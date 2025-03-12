@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState } from "react";
 import {
   Box,
@@ -13,7 +9,6 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
-import Navbar from "../components/Navbar"; // Adjust path as needed
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -85,7 +80,6 @@ const CompanyRegister = () => {
 
   return (
     <>
-    
       <Box
         sx={{
           display: "flex",

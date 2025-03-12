@@ -113,13 +113,13 @@ const Navbar = () => {
       ],
       security: [
         {
-          type: "dropdown",
-          label: "Vehicle Management",
-          items: [
-            { label: "Vehicle Details", path: "/vehicle-details" },
-            { label: "Vehicle Registration", path: "/vehicle-registration" },
-            { label: "Vehicle Checkout", path: "/vehicle-checkout" },
-          ],
+          type: "button",
+          label: "Vehicle Management", path:"/vehicles"
+          // items: [
+          //   { label: "Vehicle Details", path: "/vehicle-details" },
+          //   { label: "Vehicle Registration", path: "/vehicle-registration" },
+          //   { label: "Vehicle Checkout", path: "/vehicle-checkout" },
+          // ],
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],

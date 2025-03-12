@@ -27,6 +27,7 @@ const VisitorCard = () => {
   const [visitor, setVisitor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [qrCodeImage, setQrCodeImage] = useState("");
 
   useEffect(() => {
     const fetchVisitorData = async () => {
@@ -81,18 +82,43 @@ const VisitorCard = () => {
   // Print E-Pass (include full card content)
   const printEPass = () => {
     if (!visitor) return;
-
+  
+    // Get the QR code canvas and convert it to an image
+    const qrCanvas = document.querySelector("canvas"); // Select the QR Code Canvas
+    if (!qrCanvas) {
+      alert("QR Code not found!");
+      return;
+    }
+    const qrDataUrl = qrCanvas.toDataURL("image/png"); // Convert QR Code to an image
+  
     const printWindow = window.open("", "_blank");
     printWindow.document.write(`
       <html>
         <head>
           <title>Print Visitor E-Pass</title>
           <style>
-            body { font-family: Arial, sans-serif; text-align: center; }
-            .e-pass { max-width: 800px; margin: auto; padding: 20px; background-color: #EDE7F6; border-radius: 8px; }
+            body { font-family: Arial, sans-serif; text-align: center; background-color: #EDE7F6; }
+            .e-pass { max-width: 800px; margin: auto; padding: 20px; background-color: #fff; border-radius: 8px; }
             .header { background-color: #D1C4E9; padding: 10px; border-radius: 4px; }
             img { border-radius: 50%; }
-            .qr-code { margin: 10px 0; }
+            .qr-code-container {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 15px auto;
+            }
+            .qr-code-container img {
+              width: 130px;  /* Adjusted size */
+              height: 130px;
+              padding: 10px;
+              background: white;
+              border-radius: 8px;
+            }
+            .qr-label {
+              font-size: 14px;
+              color: #333;
+              font-weight: bold;
+            }
           </style>
         </head>
         <body>
@@ -102,21 +128,22 @@ const VisitorCard = () => {
               <img src="${visitor.photoUrl || "/default-avatar.png"}" alt="Visitor Photo" width="100" height="100" />
               <div style="text-align: left;">
                 <h3>${visitor.fullName}</h3>
-                <p><strong>ID:</strong> ${getLastFourDigits(visitor._id)}</p>
-                <p><strong>Time:</strong> ${formatTime(visitor.checkInTime || visitor.createdAt)}</p>
+                <p><strong>ID:</strong> ${visitor._id}</p>
+                <p><strong>Time:</strong> ${new Date(visitor.checkInTime).toLocaleString()}</p>
               </div>
             </div>
+  
             <p><strong>Purpose:</strong> ${visitor.reasonForVisit}</p>
             <p><strong>Visitor Designation:</strong> ${visitor.designation}</p>
             <p><strong>Company:</strong> ${visitor.visitorCompany}</p>
             <p><strong>Host:</strong> ${visitor.personToVisit}</p>
-            <p><strong>Host Designation:</strong> ${visitor.designation}</p>
-            <p><strong>Mobile:</strong> ${visitor.phoneNumber}</p>
-            <p><strong>Email:</strong> ${visitor.email}</p>
-            <div class="qr-code">
-              <img src="${document.querySelector("canvas").toDataURL("image/png")}" alt="QR Code" />
-              <p>Scan QR CODE to verify E-pass</p>
+  
+            <!-- ✅ QR Code Display (Like in the Image) -->
+            <div class="qr-code-container">
+              <img src="${qrDataUrl}" alt="QR Code" />
             </div>
+            <p class="qr-label">Scan QR CODE to verify E-pass</p>
+  
             <p style="color: #5F3B91; font-weight: bold;">This E-pass is valid for one-time entry only</p>
           </div>
           <script>window.print(); window.close();</script>
@@ -125,6 +152,11 @@ const VisitorCard = () => {
     `);
     printWindow.document.close();
   };
+  
+  
+  
+  
+  
 
   if (loading) {
     return (

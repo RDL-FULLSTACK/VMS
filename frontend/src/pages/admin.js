@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Container,
   Paper,
@@ -24,6 +22,7 @@ import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
+// Rest of the code remains unchanged
 const StyledContainer = styled(Container)(({ theme }) => ({
   backgroundColor: "#fbf6f6",
   color: "rgb(21, 20, 20)",

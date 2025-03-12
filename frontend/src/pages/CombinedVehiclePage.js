@@ -3,7 +3,6 @@ import axios from "axios";
 import {
   Box,
   Paper,
-  Typography,
   TextField,
   MenuItem,
   Select,
@@ -16,7 +15,8 @@ import Navbar from "../components/Navbar";
 import VehicleDetails from "./VehicleDetails";
 import VehicleRegistration from "./VehicleRegistration";
 import VehicleCheckout from "./VehicleCheckout";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const CombinedVehiclePage = () => {
   const [view, setView] = useState(0);
@@ -33,10 +33,9 @@ const CombinedVehiclePage = () => {
         setVehicles(response.data);
       } catch (error) {
         console.error("Error fetching vehicles:", error);
-        toast.dismiss("fetch-error");
-        toast.error("Failed to fetch vehicles. Please try again.", { 
-          toastId: "fetch-error", 
-          autoClose: 3000 
+        toast.error("Failed to fetch vehicles. Please try again.", {
+          toastId: "fetch-error",
+          autoClose: 3000,
         });
       }
     };
@@ -49,15 +48,13 @@ const CombinedVehiclePage = () => {
 
   const handleAddVehicle = async (newVehicle) => {
     try {
-      console.log("Posting vehicle data to Axios:", newVehicle); // Log the data being posted
+      console.log("Posting vehicle data to Axios:", newVehicle);
       const response = await axios.post("http://localhost:5000/api/vehicles", newVehicle);
-      console.log("Axios response:", response.data); // Log the response
+      console.log("Axios response:", response.data);
       setVehicles([...vehicles, response.data.vehicle]);
       return Promise.resolve();
     } catch (error) {
       console.error("Error adding vehicle:", error.response ? error.response.data : error);
-      toast.dismiss("register-error");
-      
       if (error.response?.data?.message === "Vehicle is already checked in and hasn't checked out yet") {
         toast.error("This vehicle is already checked in. Please check it out first.", {
           toastId: "register-error",
@@ -75,7 +72,7 @@ const CombinedVehiclePage = () => {
 
   const handleCheckoutVehicle = async (vehicleNumber, checkOutTime) => {
     try {
-      const response = await axios.put("http://localhost:5000/api/vehicles/checkout", {
+      await axios.put("http://localhost:5000/api/vehicles/checkout", {
         vehicleNumber,
         checkOutTime,
       });
@@ -89,7 +86,6 @@ const CombinedVehiclePage = () => {
       return Promise.resolve();
     } catch (error) {
       console.error("Error checking out vehicle:", error);
-      toast.dismiss("checkout-error");
       toast.error(error.response?.data?.message || "Failed to check out vehicle", {
         toastId: "checkout-error",
         autoClose: 3000,
@@ -130,7 +126,6 @@ const CombinedVehiclePage = () => {
           minHeight: "calc(100vh - 64px)",
           width: "100%",
           maxWidth: "100vw",
-          overflowX: "hidden",
           boxSizing: "border-box",
         }}
       >
@@ -286,6 +281,17 @@ const CombinedVehiclePage = () => {
           </Paper>
         </Box>
       </Box>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        pauseOnHover
+        draggable
+        limit={3}
+        style={{ zIndex: 10000, position: "fixed", top: 10, right: 10 }}
+      />
     </>
   );
 };

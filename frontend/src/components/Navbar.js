@@ -64,12 +64,25 @@ const Navbar = () => {
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
             { label: "Check-Out", path: "/checkout" },
-            { label: "Pre-Scheduling", path: "/presheduling" },
+            // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
+<<<<<<< HEAD
         { type: "button", label: "Vehicle Management", path: "/vehicles" },
         { type: "button", label: "HOST", path: "/HostDashboard" },
         { type: "button", label: "ADMIN", path: "/userlist" },
+=======
+        {
+          type: "button",
+          label: "Vehicle Management", path:"/vehicles"
+      
+        },
+
+        // {
+        //   type: "button",
+        //   label: "HOST",path:"/HostDashboard"
+        // },
+>>>>>>> ee2681facd2a095452f4aa7c2ba6d89bb0d165d9
         
         // **Reports Section Added**
         { type: "button", label: "Reports", path: "/reports" },
@@ -85,23 +98,35 @@ const Navbar = () => {
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
             { label: "Check-Out", path: "/checkout" },
-            { label: "Pre-Scheduling", path: "/presheduling" },
+            // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
       security: [
         {
-          type: "dropdown",
-          label: "Vehicle Management",
-          items: [
-            { label: "Vehicle Details", path: "/vehicle-details" },
-            { label: "Vehicle Registration", path: "/vehicle-registration" },
-            { label: "Vehicle Checkout", path: "/vehicle-checkout" },
-          ],
+          type: "button",
+          label: "Vehicle Management", path:"/vehicles"
+          // items: [
+          //   { label: "Vehicle Details", path: "/vehicle-details" },
+          //   { label: "Vehicle Registration", path: "/vehicle-registration" },
+          //   { label: "Vehicle Checkout", path: "/vehicle-checkout" },
+          // ],
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
+<<<<<<< HEAD
+=======
+  
+
+      host: [
+        {type: "button", label: "Pre-Scheduling", path : "/presheduling"},
+        { type: "button", label: "Host", path: "/HostDashboard" },
+        { type: "button", label: "Logout", path: "/" },
+      ],
+
+
+>>>>>>> ee2681facd2a095452f4aa7c2ba6d89bb0d165d9
       guest: [
         { type: "button", label: "Login", path: "/" },
         { type: "button", label: "Register", path: "/companyregister" },

@@ -48,7 +48,7 @@ const registerUser = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error('Error in registerUser:', error);
+   // console.error('Error in registerUser:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -84,7 +84,7 @@ const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error in loginUser:', error);
+   // console.error('Error in loginUser:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -103,7 +103,7 @@ const getUser = async (req, res) => {
       role: user.role,
     });
   } catch (error) {
-    console.error('Error in getUser:', error);
+   // console.error('Error in getUser:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -125,7 +125,7 @@ const forgotPassword = async (req, res) => {
     // Placeholder: Send OTP via email/SMS in production
     res.status(200).json({ message: 'OTP sent to your registered contact (placeholder)' });
   } catch (error) {
-    console.error('Error in forgotPassword:', error);
+   // console.error('Error in forgotPassword:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -147,7 +147,7 @@ const verifyOtp = async (req, res) => {
     // Placeholder: Verify OTP in production
     res.status(200).json({ message: 'OTP verified successfully (placeholder)' });
   } catch (error) {
-    console.error('Error in verifyOtp:', error);
+   // console.error('Error in verifyOtp:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -176,7 +176,7 @@ const resetPassword = async (req, res) => {
 
     res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
-    console.error('Error in resetPassword:', error);
+    //console.error('Error in resetPassword:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

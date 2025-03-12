@@ -36,10 +36,10 @@ export const verifyOtp = async (email, otp) => {
 };
 
 // Reset Password API
-export const resetPassword = async (email, newPassword, confirmPassword) => {
+export const resetPassword = async (username, newPassword, confirmPassword) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/reset-password`, {
-      email,
+      username, // Changed from email to username
       newPassword,
       confirmPassword,
     });

@@ -1,25 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { 
-  Box, Container, Grid, Card, CardContent, Typography, IconButton, 
-  Button, Popover 
+  Box, Container, Grid, Card, CardContent, Typography, Button 
 } from "@mui/material";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { Switch } from "@mui/material";
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
+const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
 const HostVisitorFromCheckIn = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const visitorsPerPage = 10; // Number of visitors per page
-  
+  const visitorsPerPage = 10;
+  const [toggleVisitor, setToggleVisitor] = useState(() => {
+    return JSON.parse(localStorage.getItem("toggleVisitor")) || false;
+  });
 
   useEffect(() => {
     const fetchVisitors = async () => {
@@ -59,6 +57,10 @@ const HostVisitorFromCheckIn = () => {
     fetchVisitors();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("toggleVisitor", JSON.stringify(toggleVisitor));
+  }, [toggleVisitor]);
+
   const regenerateOTP = (id) => {
     const updatedVisitors = visitors.map(visitor =>
       visitor.id === id ? { ...visitor, otp: generateOTP() } : visitor
@@ -66,127 +68,85 @@ const HostVisitorFromCheckIn = () => {
     setVisitors(updatedVisitors);
   };
 
-  const handleApproval = async (id) => {
-    try {
-      const updatedVisitors = visitors.map(visitor =>
-        visitor.id === id ? { ...visitor, status: "Approved" } : visitor
-      );
-      setVisitors(updatedVisitors);
-      await axios.put(`http://localhost:5000/api/visitors/${id}`, { status: "Approved" });
-    } catch (error) {
-      console.error("Error approving visitor:", error);
-    }
+  const handleToggleChange = () => {
+    setToggleVisitor(false);
+    navigate("/HostDashboard");
   };
 
-  const handleRejection = async (id) => {
-    try {
-      const updatedVisitors = visitors.map(visitor =>
-        visitor.id === id ? { ...visitor, status: "Rejected" } : visitor
-      );
-      setVisitors(updatedVisitors);
-      await axios.put(`http://localhost:5000/api/visitors/${id}`, { status: "Rejected" });
-    } catch (error) {
-      console.error("Error rejecting visitor:", error);
-    }
-  };
-
-  const handleNotificationClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
-  const id = open ? "notification-popover" : undefined;
-
-  // Pagination Logic
   const indexOfLastVisitor = currentPage * visitorsPerPage;
   const indexOfFirstVisitor = indexOfLastVisitor - visitorsPerPage;
   const currentVisitors = visitors.slice(indexOfFirstVisitor, indexOfLastVisitor);
 
-// toggling logic
-  const [toggleVisitor, setToggleVisitor] = useState(false);
-
-  // handeling the toggle 
-  const handleToggleChange = () => {
-    setToggleVisitor(!toggleVisitor);
-    navigate("/HostDashboard");// Navigate when toggled
-  };
-  
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", display: "flex", flexDirection: "column" }}>
       <Navbar />
-      <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 3 } }}>
-        <Container>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-            <Typography variant="h5" sx={{ fontWeight: "bold", textAlign: "center" }}>
-              Host Panel
+      <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 2, md: 3 } }}>
+        <Container maxWidth="lg">
+          <Box 
+            sx={{ 
+              display: "flex", 
+              flexDirection: { xs: "column", sm: "row" }, 
+              justifyContent: "space-between", 
+              alignItems: { xs: "flex-start", sm: "center" }, 
+              mb: 3 
+            }}
+          >
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                fontWeight: "bold", 
+                textAlign: { xs: "left", sm: "center" }, 
+                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                mb: { xs: 2, sm: 0 }
+              }}
+            >
+              Visitors
             </Typography>
-            
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 1, sm: 2 },
+                justifyContent: "flex-end",
+                width: { xs: "100%", sm: "auto" },
+              }}
+            >
+              <Switch
+                checked={toggleVisitor}
+                onChange={handleToggleChange}
+                sx={{
+                  "& .MuiSwitch-switchBase.Mui-checked": {
+                    color: "#5F3B91",
+                  },
+                  "& .MuiSwitch-track": {
+                    bgcolor: toggleVisitor ? "#5F3B91" : "lightgray",
+                  },
+                }}
+              />
+            </Box>
           </Box>
-          <Box
-  sx={{
-    display: "flex",
-    alignItems: "center",
-    gap: 2, // Spacing between items
-    justifyContent: "flex-end", // Align items to the right
-    width: "100%", // Make sure it spans full width
-  }}
->
-  {/* Notification Icon */}
-  <IconButton onClick={handleNotificationClick} sx={{ position: "relative" }}>
-    <NotificationsIcon sx={{ fontSize: 30, color: "#5F3B91" }} />
 
-    {/* Notification Badge */}
-    {visitors.filter(v => v.status === "Pending").length > 0 && (
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          transform: "translate(40%, -40%)",
-          borderRadius: "50%",
-          width: 16,
-          height: 16,
-          bgcolor: "red",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "white",
-          fontSize: "10px",
-          fontWeight: "bold",
-        }}
-      >
-        {visitors.filter(v => v.status === "Pending").length}
-      </Box>
-    )}
-  </IconButton>
-
-  {/* Toggle Switch */}
-
-  <Switch
-    checked={toggleVisitor}
-    onChange={handleToggleChange}
-    sx={{
-      "& .MuiSwitch-switchBase.Mui-checked": {
-        color: "#5F3B91", // Active color
-      },
-      "& .MuiSwitch-track": {
-        bgcolor: toggleVisitor ? "#5F3B91" : "lightgray", // Track color change
-      },
-    }}
-  />
-</Box>
-
-
-
-          {error && <Typography color="error" sx={{ mb: 2, textAlign: "center" }}>{error}</Typography>}
+          {error && (
+            <Typography 
+              color="error" 
+              sx={{ 
+                mb: 2, 
+                textAlign: "center", 
+                fontSize: { xs: "0.9rem", sm: "1rem" } 
+              }}
+            >
+              {error}
+            </Typography>
+          )}
         
-          <Card sx={{ mb: 2, bgcolor: "#5F3B91", color: "white", p: 1 }}>
+          <Card sx={{ mb: 2, bgcolor: "#5F3B91", color: "white", p: { xs: 0.5, sm: 1 } }}>
             <CardContent>
-              <Grid container spacing={1} alignItems="center">
+              <Grid 
+                container 
+                spacing={1} 
+                alignItems="center" 
+                sx={{ display: { xs: "none", sm: "flex" } }}
+              >
                 <Grid item xs={2}><Typography fontWeight="bold">Name</Typography></Grid>
                 <Grid item xs={2}><Typography fontWeight="bold">Company</Typography></Grid>
                 <Grid item xs={2}><Typography fontWeight="bold">Phone</Typography></Grid>
@@ -200,41 +160,136 @@ const HostVisitorFromCheckIn = () => {
 
           {currentVisitors.length > 0 ? (
             currentVisitors.map((visitor) => (
-              <Card key={visitor.id} sx={{ mb: 2, bgcolor: "white" }}>
-                <CardContent>
+              <Card 
+                key={visitor.id} 
+                sx={{ 
+                  mb: 2, 
+                  bgcolor: "white", 
+                  overflow: "hidden" 
+                }}
+              >
+                <CardContent 
+                  sx={{ 
+                    p: { xs: 1, sm: 2 }, 
+                    display: "flex", 
+                    flexDirection: { xs: "column", sm: "row" }, 
+                    gap: { xs: 1, sm: 0 } 
+                  }}
+                >
                   <Grid container spacing={1} alignItems="center">
-                    <Grid item xs={2}><Typography>{visitor.name}</Typography></Grid>
-                    <Grid item xs={2}><Typography>{visitor.company}</Typography></Grid>
-                    <Grid item xs={2}><Typography>{visitor.phone}</Typography></Grid>
-                    <Grid item xs={1}><Typography>{visitor.Time}</Typography></Grid>
-                    <Grid item xs={2}><Typography>{visitor.purpose}</Typography></Grid>
-                    <Grid item xs={1}>
-                      <Typography sx={{ fontWeight: "bold", color: "#D32F2F" }}>{visitor.otp}</Typography>
+                    <Grid item xs={12} sm={2}>
+                      <Typography 
+                        sx={{ 
+                          fontSize: { xs: "0.9rem", sm: "1rem" }, 
+                          fontWeight: { xs: "bold", sm: "normal" } 
+                        }}
+                      >
+                        {visitor.name}
+                      </Typography>
                     </Grid>
-                    <Grid item xs={2}>
-                      <Button variant="contained" color="primary" size="small" onClick={() => regenerateOTP(visitor.id)}>
-                        Generate OTP
-                      </Button>
+                    <Grid item xs={12} sm={2}>
+                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                        {visitor.company}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                        {visitor.phone}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={1}>
+                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                        {visitor.Time}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                        {visitor.purpose}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={1}>
+                      <Typography 
+                        sx={{ 
+                          fontWeight: "bold", 
+                          color: "#D32F2F", 
+                          fontSize: { xs: "1rem", sm: "1.1rem" } 
+                        }}
+                      >
+                        {visitor.otp}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={2}>
+                      <Box 
+                        sx={{ 
+                          display: "flex", 
+                          justifyContent: { xs: "flex-start", sm: "flex-end" }, 
+                          flexWrap: "wrap", 
+                          gap: 1 
+                        }}
+                      >
+                        <Button 
+                          variant="contained" 
+                          color="primary" 
+                          size="small" 
+                          onClick={() => regenerateOTP(visitor.id)}
+                          sx={{ 
+                            fontSize: { xs: "0.7rem", sm: "0.875rem" }, 
+                            py: 0.5, 
+                            px: { xs: 1, sm: 2 } 
+                          }}
+                        >
+                          Generate OTP
+                        </Button>
+                    
+                      
+                      </Box>
                     </Grid>
                   </Grid>
                 </CardContent>
               </Card>
             ))
           ) : (
-            <Typography sx={{ textAlign: "center", color: "gray" }}>No visitors found.</Typography>
+            <Typography 
+              sx={{ 
+                textAlign: "center", 
+                color: "gray", 
+                fontSize: { xs: "0.9rem", sm: "1rem" }, 
+                mt: 2 
+              }}
+            >
+              No visitors found.
+            </Typography>
           )}
 
-          {/* Pagination Controls */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+          <Box 
+            sx={{ 
+              display: "flex", 
+              flexDirection: { xs: "column", sm: "row" }, 
+              justifyContent: "center", 
+              alignItems: "center", 
+              mt: 2, 
+              gap: { xs: 1, sm: 2 } 
+            }}
+          >
             <Button 
               variant="contained" 
               disabled={currentPage === 1} 
               onClick={() => setCurrentPage(currentPage - 1)}
+              sx={{ 
+                fontSize: { xs: "0.8rem", sm: "0.875rem" }, 
+                minWidth: { xs: "100px", sm: "120px" } 
+              }}
             >
               Previous
             </Button>
 
-            <Typography sx={{ mx: 2, display: "flex", alignItems: "center" }}>
+            <Typography 
+              sx={{ 
+                mx: { xs: 0, sm: 2 }, 
+                fontSize: { xs: "0.9rem", sm: "1rem" }, 
+                textAlign: "center" 
+              }}
+            >
               Page {currentPage} of {Math.ceil(visitors.length / visitorsPerPage)}
             </Typography>
 
@@ -242,6 +297,10 @@ const HostVisitorFromCheckIn = () => {
               variant="contained" 
               disabled={indexOfLastVisitor >= visitors.length} 
               onClick={() => setCurrentPage(currentPage + 1)}
+              sx={{ 
+                fontSize: { xs: "0.8rem", sm: "0.875rem" }, 
+                minWidth: { xs: "100px", sm: "120px" } 
+              }}
             >
               Next
             </Button>

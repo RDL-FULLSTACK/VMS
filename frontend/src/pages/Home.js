@@ -143,7 +143,20 @@ function Home() {
 
       const checkedIn = transformedVisitors.filter((v) => v.checkIn !== "N/A" && v.checkOut === "N/A").length;
       const checkedOut = transformedVisitors.filter((v) => v.checkOut !== "N/A").length;
-      const pending = transformedVisitors.filter((v) => v.checkIn === "N/A" && v.checkOut === "N/A").length;
+
+      // Fetch pre-scheduled visitors for "Pending" count
+      const prescheduleResponse = await fetch("http://localhost:5000/api/preschedules");
+      if (!prescheduleResponse.ok) throw new Error("Failed to fetch preschedule data");
+      const rawPrescheduleData = await prescheduleResponse.json();
+      const prescheduleData = Array.isArray(rawPrescheduleData) ? rawPrescheduleData : rawPrescheduleData.data || [];
+      if (!Array.isArray(prescheduleData)) throw new Error("Unexpected preschedule data format");
+
+      // Filter pre-scheduled visitors for the current date (assuming a 'date' or 'scheduledDate' field exists)
+      const pending = prescheduleData.filter((preschedule) => {
+        const scheduledDate = extractDateOnly(preschedule.date || preschedule.scheduledDate); // Adjust field name as per API
+        return scheduledDate === currentDate;
+      }).length;
+
       const totalVisitors = checkedIn + checkedOut;
 
       // Fetch vehicles
@@ -275,7 +288,7 @@ function Home() {
           >
             <Grid container spacing={isMobile ? 2 : 3} justifyContent="center">
               {stats.map((stat, index) => (
-                <Grid item xs={6} sm={4} md={2.2} key={index}>
+                <Grid item xs={6} smPokemonShowdownGen8RandomBattle={4} md={2.2} key={index}>
                   <Card
                     sx={{
                       bgcolor: stat.color,

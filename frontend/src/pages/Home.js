@@ -24,16 +24,16 @@ import {
   DirectionsCar,
 } from "@mui/icons-material";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
+  PieChart,
+  Pie,
+  Cell,
   Tooltip,
-  CartesianGrid,
   ResponsiveContainer,
   BarChart,
   Bar,
-  Cell,
+  CartesianGrid,
+  XAxis,
+  YAxis,
 } from "recharts";
 
 // Custom TabPanel component
@@ -124,7 +124,6 @@ function Home() {
 
       const transformedVisitors = filteredVisitors.map((visitor) => ({
         id: visitor._id,
-        // Accessing 'photo' field from API response here to set 'img' for the DataGrid
         img: visitor.photoUrl,
         firstName: visitor.fullName?.split(" ")[0] || "",
         lastName: visitor.fullName?.split(" ")[1] || "",
@@ -242,12 +241,10 @@ function Home() {
   }, [fetchVisitors]);
 
   const visitorColumns = [
-    // Removed 'id' column
     {
       field: "img",
       headerName: "Image",
       width: isMobile ? 70 : 100,
-      // Accessing 'img' (set from 'photo') here to render the Avatar in the DataGrid
       renderCell: (params) => <Avatar src={params.value} sx={{ width: isMobile ? 40 : 50, height: isMobile ? 40 : 50 }} />,
     },
     { field: "firstName", headerName: "Name", flex: 1, minWidth: isMobile ? 100 : 120 },
@@ -261,7 +258,6 @@ function Home() {
   ];
 
   const vehicleColumns = [
-    // Removed 'id' column
     { field: "vehicleNumber", headerName: "Vehicle Number", flex: 1, minWidth: 120 },
     { field: "purpose", headerName: "Purpose", flex: 1, minWidth: 120 },
     { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
@@ -288,7 +284,7 @@ function Home() {
           >
             <Grid container spacing={isMobile ? 2 : 3} justifyContent="center">
               {stats.map((stat, index) => (
-                <Grid item xs={6} smPokemonShowdownGen8RandomBattle={4} md={2.2} key={index}>
+                <Grid item xs={6} sm={4} md={2.2} key={index}>
                   <Card
                     sx={{
                       bgcolor: stat.color,
@@ -384,10 +380,22 @@ function Home() {
                 Activity Chart
               </Typography>
               <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" tick={{ fontSize: isMobile ? 12 : 14 }} />
-                  <YAxis tick={{ fontSize: isMobile ? 12 : 14 }} />
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    dataKey="visits"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={isMobile ? 70 : 100}
+                    fill="#8884d8"
+                    label={({ name, visits }) => `${name}: ${visits}`}
+                    labelLine={true}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d", "#ffc107"][index % 7]} />
+                    ))}
+                  </Pie>
                   <Tooltip
                     contentStyle={{
                       fontSize: isMobile ? 12 : 14,
@@ -397,11 +405,9 @@ function Home() {
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                     }}
                   />
-                  <Line type="monotone" dataKey="visits" stroke="#8884d8" strokeWidth={isMobile ? 1 : 2} />
-                </LineChart>
+                </PieChart>
               </ResponsiveContainer>
             </Paper>
-
             <Paper elevation={8} sx={{ p: isMobile ? 2 : 4, borderRadius: "10px", bgcolor: "#fff", boxShadow: 4, height: isMobile ? 280 : 320 }}>
               <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ textAlign: "center", fontWeight: "bold", color: "#333", mb: 2 }}>
                 Visitor Status Overview

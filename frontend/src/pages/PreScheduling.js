@@ -18,6 +18,19 @@ const toastStyles = `
   }
 `;
 
+const departments = [
+  "Human Resources (HR)",
+  "Finance & Accounting",
+  "Sales & Marketing",
+  "IT (Information Technology)",
+  "Operations",
+  "Customer Service",
+  "Research & Development (R&D)",
+  "Procurement & Supply Chain",
+  "Legal",
+];
+
+
 const PreScheduling = () => {
   const [formData, setFormData] = useState({
     fullName: "",
@@ -25,6 +38,7 @@ const PreScheduling = () => {
     purpose: "",
     host: "",
     email: "",
+    department: "",
   });
   const [loading, setLoading] = useState(false);
   const [fetchingHosts, setFetchingHosts] = useState(true);
@@ -76,6 +90,8 @@ const PreScheduling = () => {
       error = "Invalid email format";
     } else if (name === "email" && !value) {
       error = "Email is required";
+    }else if (name === "department" && !value) {
+      error = "Department is required";
     }
     setErrors((prev) => ({ ...prev, [name]: error }));
   };
@@ -91,6 +107,7 @@ const PreScheduling = () => {
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = "Invalid email format";
+    if (!formData.department) newErrors.department = "Department is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -112,6 +129,7 @@ const PreScheduling = () => {
         purpose: formData.purpose,
         host: selectedHost,
         email: formData.email,
+        department: formData.department,
       });
 
       const response = await axios.post(
@@ -122,6 +140,7 @@ const PreScheduling = () => {
           purpose: formData.purpose,
           host: selectedHost,
           email: formData.email,
+          department: formData.department,
         },
         {
           withCredentials: true,
@@ -133,7 +152,7 @@ const PreScheduling = () => {
 
       console.log("Form submission response:", response.data);
       toast.success(
-        `Form submitted!\nName: ${formData.fullName}\nDate: ${formData.date}\nPurpose: ${formData.purpose}\nHost: ${selectedHost}\nEmail: ${formData.email}`,
+        `Form submitted!\nName: ${formData.fullName}\nDate: ${formData.date}\nPurpose: ${formData.purpose}\nHost: ${selectedHost}\nEmail: ${formData.email}\nDepartment: ${formData.department}`,
         {
           position: "top-right",
           autoClose: 5000,
@@ -144,7 +163,7 @@ const PreScheduling = () => {
           className: "custom-toast", // Apply custom class
         }
       );
-      setFormData({ fullName: "", date: "", purpose: "", host: "", email: "" });
+      setFormData({ fullName: "", date: "", purpose: "", host: "", email: "", department: "" });
       setErrors({});
     } catch (error) {
       console.error("Error submitting form:", {
@@ -225,7 +244,7 @@ const PreScheduling = () => {
                     fontSize: "20px",
                     borderRadius: "8px",
                     border: errors.fullName ? "1px solid red" : "1px solid #ccc",
-                    width: "100%",
+                    width: "566px",
                   }}
                 />
                 {errors.fullName && (
@@ -248,7 +267,7 @@ const PreScheduling = () => {
                     fontSize: "20px",
                     borderRadius: "8px",
                     border: errors.date ? "1px solid red" : "1px solid #ccc",
-                    width: "100%",
+                    width: "566px",
                   }}
                 />
                 {errors.date && (
@@ -269,7 +288,7 @@ const PreScheduling = () => {
                     fontSize: "20px",
                     borderRadius: "8px",
                     border: errors.purpose ? "1px solid red" : "1px solid #ccc",
-                    width: "100%",
+                    width: "566px",
                   }}
                 />
                 {errors.purpose && (
@@ -320,11 +339,39 @@ const PreScheduling = () => {
                     fontSize: "20px",
                     borderRadius: "8px",
                     border: errors.email ? "1px solid red" : "1px solid #ccc",
-                    width: "100%",
+                    width: "566px",
                   }}
                 />
                 {errors.email && (
                   <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{errors.email}</p>
+                )}
+              </div>
+              <div>
+                <select
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  required
+                  disabled={loading || hosts.length === 0}
+                  style={{
+                    padding: "16px",
+                    fontSize: "20px",
+                    borderRadius: "8px",
+                    border: errors.department ? "1px solid red" : "1px solid #ccc",
+                    width: "100%",
+                  }}
+                >
+                  <option value="" disabled>
+                    Select Department*
+                  </option>
+                  {departments.map((dept) => (
+                    <option key={dept} value={dept}>
+                      {dept}
+                    </option>
+                  ))}
+                </select>
+                {errors.host && (
+                  <p style={{ color: "red", fontSize: "14px", marginTop: "5px" }}>{errors.host}</p>
                 )}
               </div>
               <button
@@ -374,4 +421,4 @@ const PreScheduling = () => {
   );
 };
 
-export default PreScheduling;
+export default PreScheduling; 

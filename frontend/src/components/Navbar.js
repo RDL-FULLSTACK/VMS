@@ -66,7 +66,7 @@ const Navbar = () => {
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
             { label: "Check-Out", path: "/checkout" },
-            { label: "Pre-Scheduling", path: "/presheduling" },
+            // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
         {
@@ -74,10 +74,11 @@ const Navbar = () => {
           label: "Vehicle Management", path:"/vehicles"
       
         },
-        {
-          type: "button",
-          label: "HOST",path:"/HostDashboard"
-        },
+
+        // {
+        //   type: "button",
+        //   label: "HOST",path:"/HostDashboard"
+        // },
         
 
 
@@ -105,7 +106,7 @@ const Navbar = () => {
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
             { label: "Check-Out", path: "/checkout" },
-            { label: "Pre-Scheduling", path: "/presheduling" },
+            // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
@@ -123,6 +124,14 @@ const Navbar = () => {
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
   
+
+      host: [
+        {type: "button", label: "Pre-Scheduling", path : "/presheduling"},
+        { type: "button", label: "Host", path: "/HostDashboard" },
+        { type: "button", label: "Logout", path: "/" },
+      ],
+
+
       guest: [
         { type: "button", label: "Login", path: "/" },
         { type: "button", label: "Register", path: "/companyregister" },

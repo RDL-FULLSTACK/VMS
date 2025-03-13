@@ -23,7 +23,9 @@ const EditCheckin = () => {
   const navigate = useNavigate();
   const visitorId = location.pathname.split("/").pop(); // Get the visitor ID from the URL
 
-  const [photoFileName, setPhotoFileName] = useState(location.state?.photo || "No file chosen");
+  const [photoFileName, setPhotoFileName] = useState(
+    location.state?.photo || "No file chosen"
+  );
   const [formData, setFormData] = useState({
     fullName: location.state?.fullName || "",
     email: location.state?.email || "",
@@ -40,7 +42,7 @@ const EditCheckin = () => {
     submittedDocument: location.state?.submittedDocument || "",
     hasAssets: location.state?.hasAssets || "",
     assets: location.state?.assets || [], // Array for multiple assets
-    teamMembers: location.state?.teamMembers || [] // Ensure this is always an array
+    teamMembers: location.state?.teamMembers || [], // Ensure this is always an array
   });
   const [errors, setErrors] = useState({});
   const [openTeamPopup, setOpenTeamPopup] = useState(false);
@@ -50,7 +52,9 @@ const EditCheckin = () => {
   useEffect(() => {
     const fetchVisitorData = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/visitors/${visitorId}`);
+        const response = await fetch(
+          `http://localhost:5000/api/visitors/${visitorId}`
+        );
         if (!response.ok) throw new Error("Failed to fetch visitor data");
         const data = await response.json();
         setFormData(data.data); // Set the form data with fetched visitor data
@@ -71,7 +75,8 @@ const EditCheckin = () => {
       case "fullName":
         if (!value) error = "Full Name is required";
         else if (value.length > 50) error = "Maximum 50 characters allowed";
-        else if (!/^[A-Za-z\s]+$/.test(value)) error = "Only letters and spaces allowed";
+        else if (!/^[A-Za-z\s]+$/.test(value))
+          error = "Only letters and spaces allowed";
         break;
       case "email":
         if (!value) error = "Email is required";
@@ -94,12 +99,20 @@ const EditCheckin = () => {
         break;
       case "expectedDurationHours":
         if (!value) error = "Hours required";
-        else if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 23)
+        else if (
+          !/^\d+$/.test(value) ||
+          parseInt(value) < 0 ||
+          parseInt(value) > 23
+        )
           error = "Must be between 0 and 23";
         break;
       case "expectedDurationMinutes":
         if (!value) error = "Minutes required";
-        else if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 59)
+        else if (
+          !/^\d+$/.test(value) ||
+          parseInt(value) < 0 ||
+          parseInt(value) > 59
+        )
           error = "Must be between 0 and 59";
         break;
       case "otp":
@@ -145,29 +158,30 @@ const EditCheckin = () => {
     setFormData({ ...formData, [field]: sanitizedValue });
 
     const error = validateField(field, sanitizedValue);
-    setErrors(prev => ({
+    setErrors((prev) => ({
       ...prev,
-      [field]: error
+      [field]: error,
     }));
   };
 
   const handleAssetChange = (index, field, value) => {
     const updatedAssets = [...formData.assets];
-    updatedAssets[index][field] = field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
-    setFormData(prev => ({ ...prev, assets: updatedAssets }));
+    updatedAssets[index][field] =
+      field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
+    setFormData((prev) => ({ ...prev, assets: updatedAssets }));
   };
 
   const handleAddAsset = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      assets: [...prev.assets, { quantity: "", type: "", serialNumber: "" }]
+      assets: [...prev.assets, { quantity: "", type: "", serialNumber: "" }],
     }));
   };
 
   const handleRemoveAsset = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      assets: prev.assets.filter((_, i) => i !== index)
+      assets: prev.assets.filter((_, i) => i !== index),
     }));
   };
 
@@ -197,23 +211,32 @@ const EditCheckin = () => {
     setFormData({ ...formData, teamMembers: updatedMembers });
   };
 
-  const handleTeamMemberAssetChange = (memberIndex, assetIndex, field, value) => {
+  const handleTeamMemberAssetChange = (
+    memberIndex,
+    assetIndex,
+    field,
+    value
+  ) => {
     const updatedMembers = [...formData.teamMembers];
-    updatedMembers[memberIndex].assets[assetIndex][field] = field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
+    updatedMembers[memberIndex].assets[assetIndex][field] =
+      field === "quantity" ? value.replace(/[^0-9]/g, "") : value;
     setFormData({ ...formData, teamMembers: updatedMembers });
   };
 
   const handleAddTeamMember = () => {
     setFormData({
       ...formData,
-      teamMembers: [...formData.teamMembers, {
-        name: "",
-        email: "",
-        documentDetail: "",
-        document: null,
-        hasAssets: "",
-        assets: [] // Array for multiple assets
-      }]
+      teamMembers: [
+        ...formData.teamMembers,
+        {
+          name: "",
+          email: "",
+          documentDetail: "",
+          document: null,
+          hasAssets: "",
+          assets: [], // Array for multiple assets
+        },
+      ],
     });
     toast.success("Team Member Added!");
   };
@@ -227,40 +250,46 @@ const EditCheckin = () => {
 
   const handleAddTeamMemberAsset = (index) => {
     const updatedMembers = [...formData.teamMembers];
-    updatedMembers[index].assets.push({ quantity: "", type: "", serialNumber: "" });
+    updatedMembers[index].assets.push({
+      quantity: "",
+      type: "",
+      serialNumber: "",
+    });
     setFormData({ ...formData, teamMembers: updatedMembers });
   };
 
   const handleRemoveTeamMemberAsset = (memberIndex, assetIndex) => {
     const updatedMembers = [...formData.teamMembers];
-    updatedMembers[memberIndex].assets = updatedMembers[memberIndex].assets.filter((_, i) => i !== assetIndex);
+    updatedMembers[memberIndex].assets = updatedMembers[
+      memberIndex
+    ].assets.filter((_, i) => i !== assetIndex);
     setFormData({ ...formData, teamMembers: updatedMembers });
   };
 
-  const handleSendEmailOtp = async () => {
-    if (!formData.email) {
-      toast.error("Please enter an email first!");
-      return;
-    }
-    if (errors.email) {
-      toast.error("Please enter a valid email address!");
-      return;
-    }
+  // const handleSendEmailOtp = async () => {
+  //   if (!formData.email) {
+  //     toast.error("Please enter an email first!");
+  //     return;
+  //   }
+  //   if (errors.email) {
+  //     toast.error("Please enter a valid email address!");
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch('http://localhost:5000/api/visitors/send-email-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email })
-      });
+  //   try {
+  //     const response = await fetch('http://localhost:5000/api/visitors/send-email-otp', {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({ email: formData.email })
+  //     });
 
-      if (!response.ok) throw new Error('Failed to send OTP');
+  //     if (!response.ok) throw new Error('Failed to send OTP');
 
-      toast.success(`OTP sent to ${formData.email}!`);
-    } catch (error) {
-      toast.error(error.message || "Error sending OTP");
-    }
-  };
+  //     toast.success(`OTP sent to ${formData.email}!`);
+  //   } catch (error) {
+  //     toast.error(error.message || "Error sending OTP");
+  //   }
+  // };
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files?.[0];
@@ -275,16 +304,22 @@ const EditCheckin = () => {
 
   const handleSaveChanges = async () => {
     const newErrors = {};
-    Object.keys(formData).forEach(field => {
-      if (field !== "teamMembers" && field !== "assets") { // Skip arrays
+    Object.keys(formData).forEach((field) => {
+      if (field !== "teamMembers" && field !== "assets") {
+        // Skip arrays
         const error = validateField(field, formData[field]);
         if (error) newErrors[field] = error;
       }
     });
 
-    if (!newErrors.expectedDurationHours && !newErrors.expectedDurationMinutes) {
-      if (parseInt(formData.expectedDurationHours) === 0 &&
-        parseInt(formData.expectedDurationMinutes) === 0) {
+    if (
+      !newErrors.expectedDurationHours &&
+      !newErrors.expectedDurationMinutes
+    ) {
+      if (
+        parseInt(formData.expectedDurationHours) === 0 &&
+        parseInt(formData.expectedDurationMinutes) === 0
+      ) {
         newErrors.expectedDurationHours = "Duration must be greater than 0";
         newErrors.expectedDurationMinutes = "Duration must be greater than 0";
       }
@@ -294,7 +329,7 @@ const EditCheckin = () => {
       newErrors.assets = "At least one asset is required";
     } else if (formData.hasAssets === "yes") {
       formData.assets.forEach((asset, index) => {
-        ["quantity", "type", "serialNumber"].forEach(field => {
+        ["quantity", "type", "serialNumber"].forEach((field) => {
           const error = validateAssetField(asset, field);
           if (error) newErrors[`asset_${index}_${field}`] = error;
         });
@@ -303,12 +338,16 @@ const EditCheckin = () => {
 
     formData.teamMembers.forEach((member, memberIndex) => {
       if (member.hasAssets === "yes" && member.assets.length === 0) {
-        newErrors[`teamMember_${memberIndex}_assets`] = "At least one asset is required";
+        newErrors[`teamMember_${memberIndex}_assets`] =
+          "At least one asset is required";
       } else if (member.hasAssets === "yes") {
         member.assets.forEach((asset, assetIndex) => {
-          ["quantity", "type", "serialNumber"].forEach(field => {
+          ["quantity", "type", "serialNumber"].forEach((field) => {
             const error = validateAssetField(asset, field);
-            if (error) newErrors[`teamMember_${memberIndex}_asset_${assetIndex}_${field}`] = error;
+            if (error)
+              newErrors[
+                `teamMember_${memberIndex}_asset_${assetIndex}_${field}`
+              ] = error;
           });
         });
       }
@@ -322,13 +361,16 @@ const EditCheckin = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/visitors/${visitorId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `http://localhost:5000/api/visitors/${visitorId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to update visitor");
 
@@ -434,7 +476,9 @@ const EditCheckin = () => {
                   margin="dense"
                   required
                   value={formData.expectedDurationHours}
-                  onChange={(e) => handleChange("expectedDurationHours", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("expectedDurationHours", e.target.value)
+                  }
                   error={!!errors.expectedDurationHours}
                   helperText={errors.expectedDurationHours}
                 />
@@ -447,7 +491,9 @@ const EditCheckin = () => {
                   margin="dense"
                   required
                   value={formData.expectedDurationMinutes}
-                  onChange={(e) => handleChange("expectedDurationMinutes", e.target.value)}
+                  onChange={(e) =>
+                    handleChange("expectedDurationMinutes", e.target.value)
+                  }
                   error={!!errors.expectedDurationMinutes}
                   helperText={errors.expectedDurationMinutes}
                 />
@@ -550,7 +596,9 @@ const EditCheckin = () => {
               margin="dense"
               required
               value={formData.submittedDocument}
-              onChange={(e) => handleChange("submittedDocument", e.target.value)}
+              onChange={(e) =>
+                handleChange("submittedDocument", e.target.value)
+              }
               error={!!errors.submittedDocument}
               helperText={errors.submittedDocument}
             >
@@ -558,17 +606,36 @@ const EditCheckin = () => {
               <MenuItem value="Passport">Passport</MenuItem>
             </TextField>
             <Box>
-              <Box mt={2} display="flex" justifyContent="flex-start" alignItems="center" gap={4} mb={5}>
-                <Button startIcon={<AddCircle />} variant="contained" onClick={() => setOpenTeamPopup(true)}>
+              <Box
+                mt={2}
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="center"
+                gap={4}
+                mb={5}
+              >
+                <Button
+                  startIcon={<AddCircle />}
+                  variant="contained"
+                  onClick={() => setOpenTeamPopup(true)}
+                >
                   Add Member
                 </Button>
-                <Button variant="contained" onClick={() => setOpenAssetsPopup(true)}>
+                <Button
+                  variant="contained"
+                  onClick={() => setOpenAssetsPopup(true)}
+                >
                   Manage Assets
                 </Button>
               </Box>
 
               {/* Add Member Dialog */}
-              <Dialog open={openTeamPopup} onClose={() => setOpenTeamPopup(false)} fullWidth maxWidth="md">
+              <Dialog
+                open={openTeamPopup}
+                onClose={() => setOpenTeamPopup(false)}
+                fullWidth
+                maxWidth="md"
+              >
                 <DialogTitle>Add Team Member</DialogTitle>
                 <DialogContent>
                   {formData.teamMembers.map((member, index) => (
@@ -579,7 +646,13 @@ const EditCheckin = () => {
                             fullWidth
                             label="Name*"
                             value={member.name}
-                            onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
+                            onChange={(e) =>
+                              handleTeamMemberChange(
+                                index,
+                                "name",
+                                e.target.value
+                              )
+                            }
                             required
                           />
                         </Grid>
@@ -588,7 +661,13 @@ const EditCheckin = () => {
                             fullWidth
                             label="Email*"
                             value={member.email}
-                            onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
+                            onChange={(e) =>
+                              handleTeamMemberChange(
+                                index,
+                                "email",
+                                e.target.value
+                              )
+                            }
                             required
                           />
                         </Grid>
@@ -597,7 +676,13 @@ const EditCheckin = () => {
                             fullWidth
                             label="Document*"
                             value={member.documentDetail}
-                            onChange={(e) => handleTeamMemberChange(index, "documentDetail", e.target.value)}
+                            onChange={(e) =>
+                              handleTeamMemberChange(
+                                index,
+                                "documentDetail",
+                                e.target.value
+                              )
+                            }
                             required
                           />
                         </Grid>
@@ -612,13 +697,22 @@ const EditCheckin = () => {
                             <input
                               type="file"
                               hidden
-                              onChange={(e) => handleTeamMemberChange(index, "document", e.target.files[0])}
+                              onChange={(e) =>
+                                handleTeamMemberChange(
+                                  index,
+                                  "document",
+                                  e.target.files[0]
+                                )
+                              }
                               accept="image/*"
                             />
                           </Button>
                         </Grid>
                         <Grid item xs={12} sm={1}>
-                          <IconButton color="error" onClick={() => handleRemoveTeamMember(index)}>
+                          <IconButton
+                            color="error"
+                            onClick={() => handleRemoveTeamMember(index)}
+                          >
                             <RemoveCircle />
                           </IconButton>
                         </Grid>
@@ -634,7 +728,13 @@ const EditCheckin = () => {
                           margin="dense"
                           required
                           value={member.hasAssets}
-                          onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
+                          onChange={(e) =>
+                            handleTeamMemberChange(
+                              index,
+                              "hasAssets",
+                              e.target.value
+                            )
+                          }
                           sx={{ maxWidth: 200 }}
                         >
                           <MenuItem value="yes">Yes</MenuItem>
@@ -644,7 +744,13 @@ const EditCheckin = () => {
                         {member.hasAssets === "yes" && (
                           <Box mt={2}>
                             {member.assets.map((asset, assetIndex) => (
-                              <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
+                              <Grid
+                                container
+                                spacing={2}
+                                key={assetIndex}
+                                mt={1}
+                                alignItems="center"
+                              >
                                 <Grid item xs={12} sm={4}>
                                   <TextField
                                     fullWidth
@@ -653,9 +759,24 @@ const EditCheckin = () => {
                                     margin="dense"
                                     required
                                     value={asset.quantity}
-                                    onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "quantity", e.target.value)}
-                                    error={!!errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
-                                    helperText={errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
+                                    onChange={(e) =>
+                                      handleTeamMemberAssetChange(
+                                        index,
+                                        assetIndex,
+                                        "quantity",
+                                        e.target.value
+                                      )
+                                    }
+                                    error={
+                                      !!errors[
+                                        `teamMember_${index}_asset_${assetIndex}_quantity`
+                                      ]
+                                    }
+                                    helperText={
+                                      errors[
+                                        `teamMember_${index}_asset_${assetIndex}_quantity`
+                                      ]
+                                    }
                                   />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -666,9 +787,24 @@ const EditCheckin = () => {
                                     margin="dense"
                                     required
                                     value={asset.type}
-                                    onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "type", e.target.value)}
-                                    error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
-                                    helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                                    onChange={(e) =>
+                                      handleTeamMemberAssetChange(
+                                        index,
+                                        assetIndex,
+                                        "type",
+                                        e.target.value
+                                      )
+                                    }
+                                    error={
+                                      !!errors[
+                                        `teamMember_${index}_asset_${assetIndex}_type`
+                                      ]
+                                    }
+                                    helperText={
+                                      errors[
+                                        `teamMember_${index}_asset_${assetIndex}_type`
+                                      ]
+                                    }
                                   />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -679,13 +815,36 @@ const EditCheckin = () => {
                                     margin="dense"
                                     required
                                     value={asset.serialNumber}
-                                    onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "serialNumber", e.target.value)}
-                                    error={!!errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
-                                    helperText={errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
+                                    onChange={(e) =>
+                                      handleTeamMemberAssetChange(
+                                        index,
+                                        assetIndex,
+                                        "serialNumber",
+                                        e.target.value
+                                      )
+                                    }
+                                    error={
+                                      !!errors[
+                                        `teamMember_${index}_asset_${assetIndex}_serialNumber`
+                                      ]
+                                    }
+                                    helperText={
+                                      errors[
+                                        `teamMember_${index}_asset_${assetIndex}_serialNumber`
+                                      ]
+                                    }
                                   />
                                 </Grid>
                                 <Grid item xs={12} sm={1}>
-                                  <IconButton color="error" onClick={() => handleRemoveTeamMemberAsset(index, assetIndex)}>
+                                  <IconButton
+                                    color="error"
+                                    onClick={() =>
+                                      handleRemoveTeamMemberAsset(
+                                        index,
+                                        assetIndex
+                                      )
+                                    }
+                                  >
                                     <RemoveCircle />
                                   </IconButton>
                                 </Grid>
@@ -707,12 +866,19 @@ const EditCheckin = () => {
                 </DialogContent>
                 <DialogActions>
                   <Button onClick={() => setOpenTeamPopup(false)}>Close</Button>
-                  <Button onClick={handleAddTeamMember} variant="contained">Add Member</Button>
+                  <Button onClick={handleAddTeamMember} variant="contained">
+                    Add Member
+                  </Button>
                 </DialogActions>
               </Dialog>
 
               {/* Manage Assets Dialog */}
-              <Dialog open={openAssetsPopup} onClose={() => setOpenAssetsPopup(false)} fullWidth maxWidth="md">
+              <Dialog
+                open={openAssetsPopup}
+                onClose={() => setOpenAssetsPopup(false)}
+                fullWidth
+                maxWidth="md"
+              >
                 <DialogTitle>Manage Assets</DialogTitle>
                 <DialogContent>
                   <TextField
@@ -732,13 +898,25 @@ const EditCheckin = () => {
                   {formData.hasAssets === "yes" && (
                     <Box>
                       {formData.assets.map((asset, index) => (
-                        <Grid container spacing={3} key={index} mt={1} alignItems="center">
+                        <Grid
+                          container
+                          spacing={3}
+                          key={index}
+                          mt={1}
+                          alignItems="center"
+                        >
                           <Grid item xs={12} sm={4}>
                             <TextField
                               fullWidth
                               label="Quantity*"
                               value={asset.quantity}
-                              onChange={(e) => handleAssetChange(index, "quantity", e.target.value)}
+                              onChange={(e) =>
+                                handleAssetChange(
+                                  index,
+                                  "quantity",
+                                  e.target.value
+                                )
+                              }
                               required
                               error={!!errors[`asset_${index}_quantity`]}
                               helperText={errors[`asset_${index}_quantity`]}
@@ -749,7 +927,9 @@ const EditCheckin = () => {
                               fullWidth
                               label="Type*"
                               value={asset.type}
-                              onChange={(e) => handleAssetChange(index, "type", e.target.value)}
+                              onChange={(e) =>
+                                handleAssetChange(index, "type", e.target.value)
+                              }
                               required
                               error={!!errors[`asset_${index}_type`]}
                               helperText={errors[`asset_${index}_type`]}
@@ -760,14 +940,23 @@ const EditCheckin = () => {
                               fullWidth
                               label="Serial*"
                               value={asset.serialNumber}
-                              onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)}
+                              onChange={(e) =>
+                                handleAssetChange(
+                                  index,
+                                  "serialNumber",
+                                  e.target.value
+                                )
+                              }
                               required
                               error={!!errors[`asset_${index}_serialNumber`]}
                               helperText={errors[`asset_${index}_serialNumber`]}
                             />
                           </Grid>
                           <Grid item xs={12} sm={1}>
-                            <IconButton color="error" onClick={() => handleRemoveAsset(index)}>
+                            <IconButton
+                              color="error"
+                              onClick={() => handleRemoveAsset(index)}
+                            >
                               <RemoveCircle />
                             </IconButton>
                           </Grid>
@@ -785,7 +974,9 @@ const EditCheckin = () => {
                   )}
                 </DialogContent>
                 <DialogActions>
-                  <Button onClick={() => setOpenAssetsPopup(false)}>Close</Button>
+                  <Button onClick={() => setOpenAssetsPopup(false)}>
+                    Close
+                  </Button>
                 </DialogActions>
               </Dialog>
             </Box>

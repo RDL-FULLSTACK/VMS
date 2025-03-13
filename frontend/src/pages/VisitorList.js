@@ -122,10 +122,14 @@ const VisitorList = () => {
     setPage(newPage);
   };
 
+  // Reset page to 1 when searchTerm or selectedDate changes
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, selectedDate]);
+
+  // Filter based only on name
   const filteredVisitors = visitors.filter((visitor) => {
-    const matchesSearch = `${visitor.name} ${visitor.email} ${visitor.phone} ${visitor.host} ${visitor.designation} ${visitor.visitorCompany}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+    const matchesSearch = visitor.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDate = selectedDate ? visitor.date === selectedDate : true;
     return matchesSearch && matchesDate;
   });

@@ -4,10 +4,6 @@ import {
   Paper,
   Typography,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Pagination,
   CircularProgress,
@@ -22,9 +18,7 @@ const VisitorCheckout = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
   const [otpInputs, setOtpInputs] = useState({});
-  const [generatedOtps, setGeneratedOtps] = useState({});
-  const [selectedVisitor] = useState(null);
-  const [openModal, setOpenModal] = useState(false);
+  const [verifiedOtps, setVerifiedOtps] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
@@ -70,7 +64,7 @@ const VisitorCheckout = () => {
               host: visitor.personToVisit || "",
               company: visitor.visitorCompany || "",
               date: checkInDate,
-              assets: visitor.assets || [],
+              otp: visitor.otp || "N/A",
               checkInTimeRaw: checkInTime,
             };
           });
@@ -92,42 +86,46 @@ const VisitorCheckout = () => {
     setOtpInputs((prev) => ({ ...prev, [id]: value }));
   };
 
-  const handleGenerateOtp = async (visitor) => {
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/visitors/send-email-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: visitor.email }),
-        }
-      );
+  const handleVerifyOtp = (id) => {
+    const visitor = visitors.find((v) => v.id === id);
+    const enteredOtp = otpInputs[id];
 
-      if (!response.ok) {
-        throw new Error("Failed to generate OTP");
-      }
-
-      toast.success(`OTP sent to ${visitor.email}`, {
+    if (!visitor.otp || visitor.otp === "N/A") {
+      toast.error("No OTP available for this visitor.", {
         position: "top-right",
         autoClose: 3000,
       });
-      setGeneratedOtps((prev) => ({ ...prev, [visitor.id]: true }));
-    } catch (error) {
-      toast.error("Failed to generate OTP: " + error.message, {
+      return;
+    }
+
+    if (!enteredOtp) {
+      toast.error("Please enter the OTP.", {
         position: "top-right",
         autoClose: 3000,
       });
+      return;
+    }
+
+    if (enteredOtp === visitor.otp) {
+      toast.success("OTP verified successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setVerifiedOtps((prev) => ({ ...prev, [id]: true }));
+    } else {
+      toast.error("Invalid OTP. Please try again.", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setVerifiedOtps((prev) => ({ ...prev, [id]: false }));
     }
   };
 
   const handleCheckout = async (id) => {
-    const visitor = visitors.find((v) => v.id === id);
     const enteredOtp = otpInputs[id];
 
-    if (!generatedOtps[id]) {
-      toast.error("Please generate an OTP first.", {
+    if (!verifiedOtps[id]) {
+      toast.error("Please verify the OTP first.", {
         position: "top-right",
         autoClose: 3000,
       });
@@ -143,22 +141,6 @@ const VisitorCheckout = () => {
     }
 
     try {
-      const verifyResponse = await fetch(
-        "http://localhost:5000/api/visitors/verify-email-otp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: visitor.email, otp: enteredOtp }),
-        }
-      );
-
-      const verifyData = await verifyResponse.json();
-      if (!verifyResponse.ok || !verifyData.success) {
-        throw new Error(verifyData.message || "OTP verification failed");
-      }
-
       const checkoutResponse = await fetch(
         `http://localhost:5000/api/visitors/checkout/${id}`,
         {
@@ -173,12 +155,12 @@ const VisitorCheckout = () => {
         throw new Error("Failed to check out visitor");
       }
 
-      toast.success("OTP verified! Checking out...", {
+      toast.success("Checking out...", {
         position: "top-right",
         autoClose: 2000,
       });
       setVisitors((prev) => prev.filter((v) => v.id !== id));
-      setGeneratedOtps((prev) => {
+      setVerifiedOtps((prev) => {
         const newOtps = { ...prev };
         delete newOtps[id];
         return newOtps;
@@ -188,11 +170,6 @@ const VisitorCheckout = () => {
       toast.error(error.message, { position: "top-right", autoClose: 3000 });
     }
   };
-
-  // const handleViewAssets = (visitor) => {
-  //   setSelectedVisitor(visitor);
-  //   setOpenModal(true);
-  // };
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -270,7 +247,7 @@ const VisitorCheckout = () => {
                   display: "grid",
                   gridTemplateColumns: {
                     xs: "repeat(8, minmax(100px, 1fr))",
-                    sm: "40px 150px 200px 150px 100px 120px 150px 300px", // Adjusted for extra button
+                    sm: "40px 150px 200px 150px 100px 120px 150px 300px",
                   },
                   gap: 1,
                   bgcolor: "#e0e0e0",
@@ -278,7 +255,7 @@ const VisitorCheckout = () => {
                   borderRadius: 1,
                   fontWeight: "bold",
                   alignItems: "center",
-                  minWidth: "1270px", // Adjusted for wider column
+                  minWidth: "1270px",
                 }}
               >
                 <Box>ID</Box>
@@ -298,20 +275,20 @@ const VisitorCheckout = () => {
                     display: "grid",
                     gridTemplateColumns: {
                       xs: "repeat(8, minmax(100px, 1fr))",
-                      sm: "40px 150px 200px 150px 100px 120px 150px 300px", // Adjusted for extra button
+                      sm: "40px 150px 200px 150px 100px 120px 150px 300px",
                     },
                     gap: 1,
                     p: 1,
                     borderBottom: "1px solid #e0e0e0",
                     alignItems: "center",
-                    minWidth: "1270px", // Adjusted for wider column
+                    minWidth: "1270px",
                   }}
                 >
                   <Box
                     sx={{
                       overflow: "hidden",
                       textOverflow: "ellipsis",
-                      whiteSpace: "nowrap falso",
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {visitor.id.slice(-4)}
@@ -386,7 +363,7 @@ const VisitorCheckout = () => {
                         onChange={(e) =>
                           handleOtpChange(visitor.id, e.target.value)
                         }
-                        placeholder="OTP"
+                        placeholder="Enter OTP"
                         sx={{ width: { xs: "150px", sm: "150px" } }}
                         inputProps={{ maxLength: 6 }}
                       />
@@ -399,9 +376,9 @@ const VisitorCheckout = () => {
                           color: "white",
                           "&:hover": { bgcolor: "darkblue" },
                         }}
-                        onClick={() => handleGenerateOtp(visitor)}
+                        onClick={() => handleVerifyOtp(visitor.id)}
                       >
-                        Generate OTP
+                        Verify
                       </Button>
                       <Button
                         variant="contained"
@@ -416,19 +393,6 @@ const VisitorCheckout = () => {
                       >
                         Checkout
                       </Button>
-                      {/* <Button
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          ...buttonStyles,
-                          bgcolor: "purple",
-                          color: "white",
-                          "&:hover": { bgcolor: "darkpurple" },
-                        }}
-                        onClick={() => handleViewAssets(visitor)}
-                      >
-                        View Assets
-                      </Button> */}
                     </Box>
                   </Box>
                 </Box>
@@ -447,53 +411,6 @@ const VisitorCheckout = () => {
           </>
         )}
       </Paper>
-
-      <Dialog
-        open={openModal}
-        onClose={() => setOpenModal(false)}
-        fullWidth
-        maxWidth="sm"
-        sx={{ "& .MuiDialog-paper": { width: { xs: "90%", sm: "auto" } } }}
-      >
-        <DialogTitle>Asset Details</DialogTitle>
-        <DialogContent>
-          {selectedVisitor && selectedVisitor.assets.length > 0 ? (
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                gap: 1,
-                mt: 2,
-              }}
-            >
-              <Typography variant="subtitle1">
-                <strong>Type</strong>
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                sx={{ display: { xs: "none", sm: "block" } }}
-              >
-                <strong>Serial Number</strong>
-              </Typography>
-              {selectedVisitor.assets.map((asset, index) => (
-                <React.Fragment key={index}>
-                  <Box>{asset.type}</Box>
-                  <Box>{asset.serialNumber}</Box>
-                </React.Fragment>
-              ))}
-            </Box>
-          ) : (
-            <Typography color="error" sx={{ textAlign: "center", mt: 2 }}>
-              No assets available
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenModal(false)} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
       <ToastContainer />
     </Box>
   );

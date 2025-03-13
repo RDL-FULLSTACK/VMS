@@ -1,6 +1,14 @@
+
+
 import React, { useState, useEffect } from "react";
-import { 
-  Box, Container, Grid, Card, CardContent, Typography, Button 
+import {
+  Box,
+  Container,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  Button,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -28,19 +36,25 @@ const HostVisitorFromCheckIn = () => {
 
         const visitorsArray = response.data.data || [];
         if (!Array.isArray(visitorsArray)) {
-          throw new Error("Expected an array in response.data.data, but got: " + typeof visitorsArray);
+          throw new Error(
+            "Expected an array in response.data.data, but got: " +
+              typeof visitorsArray
+          );
         }
 
-        const visitorsData = visitorsArray.map(visitor => ({
+        const visitorsData = visitorsArray.map((visitor) => ({
           id: visitor._id || "Unknown ID",
           name: visitor.fullName || visitor.name || "N/A",
           company: visitor.visitorCompany || "N/A",
           phone: visitor.phoneNumber || visitor.phone || "N/A",
           Time: visitor.checkInTime
-            ? new Date(visitor.checkInTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            ? new Date(visitor.checkInTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
             : "N/A",
           purpose: visitor.reasonForVisit || "N/A",
-          otp: visitor.otp || generateOTP(),
+          otp: visitor.otp || generateOTP(), // Generate OTP if not present
           status: visitor.status || "Pending",
         }));
 
@@ -61,11 +75,19 @@ const HostVisitorFromCheckIn = () => {
     localStorage.setItem("toggleVisitor", JSON.stringify(toggleVisitor));
   }, [toggleVisitor]);
 
-  const regenerateOTP = (id) => {
-    const updatedVisitors = visitors.map(visitor =>
-      visitor.id === id ? { ...visitor, otp: generateOTP() } : visitor
-    );
-    setVisitors(updatedVisitors);
+  const regenerateOTP = async (id) => {
+    const newOtp = generateOTP();
+    try {
+      // Update the OTP in the backend
+      await axios.put(`http://localhost:5000/api/visitors/${id}`, { otp: newOtp });
+      const updatedVisitors = visitors.map((visitor) =>
+        visitor.id === id ? { ...visitor, otp: newOtp } : visitor
+      );
+      setVisitors(updatedVisitors);
+    } catch (error) {
+      console.error("Failed to regenerate OTP:", error);
+      setError("Failed to regenerate OTP");
+    }
   };
 
   const handleToggleChange = () => {
@@ -82,22 +104,22 @@ const HostVisitorFromCheckIn = () => {
       <Navbar />
       <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 2, md: 3 } }}>
         <Container maxWidth="lg">
-          <Box 
-            sx={{ 
-              display: "flex", 
-              flexDirection: { xs: "column", sm: "row" }, 
-              justifyContent: "space-between", 
-              alignItems: { xs: "flex-start", sm: "center" }, 
-              mb: 3 
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "center" },
+              mb: 3,
             }}
           >
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                fontWeight: "bold", 
-                textAlign: { xs: "left", sm: "center" }, 
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: "bold",
+                textAlign: { xs: "left", sm: "center" },
                 fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                mb: { xs: 2, sm: 0 }
+                mb: { xs: 2, sm: 0 },
               }}
             >
               Visitors
@@ -127,24 +149,24 @@ const HostVisitorFromCheckIn = () => {
           </Box>
 
           {error && (
-            <Typography 
-              color="error" 
-              sx={{ 
-                mb: 2, 
-                textAlign: "center", 
-                fontSize: { xs: "0.9rem", sm: "1rem" } 
+            <Typography
+              color="error"
+              sx={{
+                mb: 2,
+                textAlign: "center",
+                fontSize: { xs: "0.9rem", sm: "1rem" },
               }}
             >
               {error}
             </Typography>
           )}
-        
+
           <Card sx={{ mb: 2, bgcolor: "#5F3B91", color: "white", p: { xs: 0.5, sm: 1 } }}>
             <CardContent>
-              <Grid 
-                container 
-                spacing={1} 
-                alignItems="center" 
+              <Grid
+                container
+                spacing={1}
+                alignItems="center"
                 sx={{ display: { xs: "none", sm: "flex" } }}
               >
                 <Grid item xs={2}><Typography fontWeight="bold">Name</Typography></Grid>
@@ -160,28 +182,28 @@ const HostVisitorFromCheckIn = () => {
 
           {currentVisitors.length > 0 ? (
             currentVisitors.map((visitor) => (
-              <Card 
-                key={visitor.id} 
-                sx={{ 
-                  mb: 2, 
-                  bgcolor: "white", 
-                  overflow: "hidden" 
+              <Card
+                key={visitor.id}
+                sx={{
+                  mb: 2,
+                  bgcolor: "white",
+                  overflow: "hidden",
                 }}
               >
-                <CardContent 
-                  sx={{ 
-                    p: { xs: 1, sm: 2 }, 
-                    display: "flex", 
-                    flexDirection: { xs: "column", sm: "row" }, 
-                    gap: { xs: 1, sm: 0 } 
+                <CardContent
+                  sx={{
+                    p: { xs: 1, sm: 2 },
+                    display: "flex",
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: { xs: 1, sm: 0 },
                   }}
                 >
                   <Grid container spacing={1} alignItems="center">
                     <Grid item xs={12} sm={2}>
-                      <Typography 
-                        sx={{ 
-                          fontSize: { xs: "0.9rem", sm: "1rem" }, 
-                          fontWeight: { xs: "bold", sm: "normal" } 
+                      <Typography
+                        sx={{
+                          fontSize: { xs: "0.9rem", sm: "1rem" },
+                          fontWeight: { xs: "bold", sm: "normal" },
                         }}
                       >
                         {visitor.name}
@@ -208,40 +230,38 @@ const HostVisitorFromCheckIn = () => {
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={1}>
-                      <Typography 
-                        sx={{ 
-                          fontWeight: "bold", 
-                          color: "#D32F2F", 
-                          fontSize: { xs: "1rem", sm: "1.1rem" } 
+                      <Typography
+                        sx={{
+                          fontWeight: "bold",
+                          color: "#D32F2F",
+                          fontSize: { xs: "1rem", sm: "1.1rem" },
                         }}
                       >
                         {visitor.otp}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <Box 
-                        sx={{ 
-                          display: "flex", 
-                          justifyContent: { xs: "flex-start", sm: "flex-end" }, 
-                          flexWrap: "wrap", 
-                          gap: 1 
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: { xs: "flex-start", sm: "flex-end" },
+                          flexWrap: "wrap",
+                          gap: 1,
                         }}
                       >
-                        <Button 
-                          variant="contained" 
-                          color="primary" 
-                          size="small" 
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
                           onClick={() => regenerateOTP(visitor.id)}
-                          sx={{ 
-                            fontSize: { xs: "0.7rem", sm: "0.875rem" }, 
-                            py: 0.5, 
-                            px: { xs: 1, sm: 2 } 
+                          sx={{
+                            fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                            py: 0.5,
+                            px: { xs: 1, sm: 2 },
                           }}
                         >
                           Generate OTP
                         </Button>
-                    
-                      
                       </Box>
                     </Grid>
                   </Grid>
@@ -249,57 +269,57 @@ const HostVisitorFromCheckIn = () => {
               </Card>
             ))
           ) : (
-            <Typography 
-              sx={{ 
-                textAlign: "center", 
-                color: "gray", 
-                fontSize: { xs: "0.9rem", sm: "1rem" }, 
-                mt: 2 
+            <Typography
+              sx={{
+                textAlign: "center",
+                color: "gray",
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                mt: 2,
               }}
             >
               No visitors found.
             </Typography>
           )}
 
-          <Box 
-            sx={{ 
-              display: "flex", 
-              flexDirection: { xs: "column", sm: "row" }, 
-              justifyContent: "center", 
-              alignItems: "center", 
-              mt: 2, 
-              gap: { xs: 1, sm: 2 } 
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              gap: { xs: 1, sm: 2 },
             }}
           >
-            <Button 
-              variant="contained" 
-              disabled={currentPage === 1} 
+            <Button
+              variant="contained"
+              disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
-              sx={{ 
-                fontSize: { xs: "0.8rem", sm: "0.875rem" }, 
-                minWidth: { xs: "100px", sm: "120px" } 
+              sx={{
+                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                minWidth: { xs: "100px", sm: "120px" },
               }}
             >
               Previous
             </Button>
 
-            <Typography 
-              sx={{ 
-                mx: { xs: 0, sm: 2 }, 
-                fontSize: { xs: "0.9rem", sm: "1rem" }, 
-                textAlign: "center" 
+            <Typography
+              sx={{
+                mx: { xs: 0, sm: 2 },
+                fontSize: { xs: "0.9rem", sm: "1rem" },
+                textAlign: "center",
               }}
             >
               Page {currentPage} of {Math.ceil(visitors.length / visitorsPerPage)}
             </Typography>
 
-            <Button 
-              variant="contained" 
-              disabled={indexOfLastVisitor >= visitors.length} 
+            <Button
+              variant="contained"
+              disabled={indexOfLastVisitor >= visitors.length}
               onClick={() => setCurrentPage(currentPage + 1)}
-              sx={{ 
-                fontSize: { xs: "0.8rem", sm: "0.875rem" }, 
-                minWidth: { xs: "100px", sm: "120px" } 
+              sx={{
+                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                minWidth: { xs: "100px", sm: "120px" },
               }}
             >
               Next

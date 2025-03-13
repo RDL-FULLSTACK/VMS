@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import { AppBar, Toolbar, Typography, Button, Box, IconButton, useMediaQuery } from "@mui/material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -80,21 +78,9 @@ const Navbar = () => {
         //   label: "HOST",path:"/HostDashboard"
         // },
         
+        // **Reports Section Added**
+        { type: "button", label: "Reports", path: "/reports" },
 
-
-
-        {
-          type: "button",
-          label: "ADMIN", path:"/userlist"
-        
-        },
-        
-
-
-
-
-
-        // { type: "button", label: "Admin", path: "/companylogin" },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
       receptionist: [

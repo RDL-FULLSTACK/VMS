@@ -67,7 +67,12 @@ function Home() {
     { title: "Checked-In", value: 0, icon: <CheckCircle />, color: "#4caf50" },
     { title: "Checked-Out", value: 0, icon: <Cancel />, color: "#f44336" },
     { title: "Pending", value: 0, icon: <TrendingUp />, color: "#ff9800" },
-    { title: "Vehicle Checked-In", value: 0, icon: <DirectionsCar />, color: "#3f51b5" },
+    {
+      title: "Vehicle Checked-In",
+      value: 0,
+      icon: <DirectionsCar />,
+      color: "#3f51b5",
+    },
   ]);
 
   const theme = useTheme();
@@ -114,8 +119,11 @@ function Home() {
       const visitorResponse = await fetch("http://localhost:5000/api/visitors");
       if (!visitorResponse.ok) throw new Error("Failed to fetch visitor data");
       const rawVisitorData = await visitorResponse.json();
-      const visitorData = Array.isArray(rawVisitorData) ? rawVisitorData : rawVisitorData.data || [];
-      if (!Array.isArray(visitorData)) throw new Error("Unexpected visitor data format");
+      const visitorData = Array.isArray(rawVisitorData)
+        ? rawVisitorData
+        : rawVisitorData.data || [];
+      if (!Array.isArray(visitorData))
+        throw new Error("Unexpected visitor data format");
 
       const filteredVisitors = visitorData.filter((visitor) => {
         const checkInDate = extractDateOnly(visitor.checkInTime);
@@ -140,19 +148,31 @@ function Home() {
 
       setVisitors(transformedVisitors);
 
-      const checkedIn = transformedVisitors.filter((v) => v.checkIn !== "N/A" && v.checkOut === "N/A").length;
-      const checkedOut = transformedVisitors.filter((v) => v.checkOut !== "N/A").length;
+      const checkedIn = transformedVisitors.filter(
+        (v) => v.checkIn !== "N/A" && v.checkOut === "N/A"
+      ).length;
+      const checkedOut = transformedVisitors.filter(
+        (v) => v.checkOut !== "N/A"
+      ).length;
 
       // Fetch pre-scheduled visitors for "Pending" count
-      const prescheduleResponse = await fetch("http://localhost:5000/api/preschedules");
-      if (!prescheduleResponse.ok) throw new Error("Failed to fetch preschedule data");
+      const prescheduleResponse = await fetch(
+        "http://localhost:5000/api/preschedules"
+      );
+      if (!prescheduleResponse.ok)
+        throw new Error("Failed to fetch preschedule data");
       const rawPrescheduleData = await prescheduleResponse.json();
-      const prescheduleData = Array.isArray(rawPrescheduleData) ? rawPrescheduleData : rawPrescheduleData.data || [];
-      if (!Array.isArray(prescheduleData)) throw new Error("Unexpected preschedule data format");
+      const prescheduleData = Array.isArray(rawPrescheduleData)
+        ? rawPrescheduleData
+        : rawPrescheduleData.data || [];
+      if (!Array.isArray(prescheduleData))
+        throw new Error("Unexpected preschedule data format");
 
       // Filter pre-scheduled visitors for the current date (assuming a 'date' or 'scheduledDate' field exists)
       const pending = prescheduleData.filter((preschedule) => {
-        const scheduledDate = extractDateOnly(preschedule.date || preschedule.scheduledDate); // Adjust field name as per API
+        const scheduledDate = extractDateOnly(
+          preschedule.date || preschedule.scheduledDate
+        ); // Adjust field name as per API
         return scheduledDate === currentDate;
       }).length;
 
@@ -162,7 +182,9 @@ function Home() {
       const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
       if (!vehicleResponse.ok) throw new Error("Failed to fetch vehicle data");
       const vehicleData = await vehicleResponse.json();
-      const currentDateVehicles = (Array.isArray(vehicleData) ? vehicleData : []).filter((vehicle) => {
+      const currentDateVehicles = (
+        Array.isArray(vehicleData) ? vehicleData : []
+      ).filter((vehicle) => {
         const vehicleDate = extractDateOnly(vehicle.date);
         const isCheckedIn = vehicle.checkInTime && !vehicle.checkOutTime;
         return vehicleDate === currentDate && isCheckedIn;
@@ -203,7 +225,10 @@ function Home() {
       }, {});
       setChartData(
         dateRange.map((date) => ({
-          name: new Date(date).toLocaleDateString("en-US", { day: "numeric", month: "short" }),
+          name: new Date(date).toLocaleDateString("en-US", {
+            day: "numeric",
+            month: "short",
+          }),
           visits: dailyVisits[date] || 0,
         }))
       );
@@ -245,24 +270,80 @@ function Home() {
       field: "img",
       headerName: "Image",
       width: isMobile ? 70 : 100,
-      renderCell: (params) => <Avatar src={params.value} sx={{ width: isMobile ? 40 : 50, height: isMobile ? 40 : 50 }} />,
+      renderCell: (params) => (
+        <Avatar
+          src={params.value}
+          sx={{ width: isMobile ? 40 : 50, height: isMobile ? 40 : 50 }}
+        />
+      ),
     },
-    { field: "firstName", headerName: "Name", flex: 1, minWidth: isMobile ? 100 : 120 },
-    { field: "email", headerName: "Email", flex: 1.5, minWidth: 150, hide: isMobile },
+    {
+      field: "firstName",
+      headerName: "Name",
+      flex: 1,
+      minWidth: isMobile ? 100 : 120,
+    },
+    {
+      field: "email",
+      headerName: "Email",
+      flex: 1.5,
+      minWidth: 150,
+      hide: isMobile,
+    },
     { field: "company", headerName: "Company", flex: 1, minWidth: 120 },
-    { field: "phone", headerName: "Phone", flex: 1, minWidth: 120, hide: isTablet },
+    {
+      field: "phone",
+      headerName: "Phone",
+      flex: 1,
+      minWidth: 120,
+      hide: isTablet,
+    },
     { field: "checkIn", headerName: "Check-In", flex: 1, minWidth: 120 },
-    { field: "reasonForVisit", headerName: "Purpose", flex: 1, minWidth: 120, hide: isTablet },
-    { field: "personToVisit", headerName: "Host", flex: 1, minWidth: 120, hide: isTablet },
-    { field: "designation", headerName: "Designation", flex: 1, minWidth: 120, hide: isTablet },
+    {
+      field: "reasonForVisit",
+      headerName: "Purpose",
+      flex: 1,
+      minWidth: 120,
+      hide: isTablet,
+    },
+    {
+      field: "personToVisit",
+      headerName: "Host",
+      flex: 1,
+      minWidth: 120,
+      hide: isTablet,
+    },
+    {
+      field: "designation",
+      headerName: "Designation",
+      flex: 1,
+      minWidth: 120,
+      hide: isTablet,
+    },
   ];
 
   const vehicleColumns = [
-    { field: "vehicleNumber", headerName: "Vehicle Number", flex: 1, minWidth: 120 },
+    {
+      field: "vehicleNumber",
+      headerName: "Vehicle Number",
+      flex: 1,
+      minWidth: 120,
+    },
     { field: "purpose", headerName: "Purpose", flex: 1, minWidth: 120 },
     { field: "date", headerName: "Date", flex: 1, minWidth: 100 },
-    { field: "checkInTime", headerName: "Check-In Time", flex: 1, minWidth: 120 },
-    { field: "checkOutTime", headerName: "Check-Out Time", flex: 1, minWidth: 120, hide: isMobile },
+    {
+      field: "checkInTime",
+      headerName: "Check-In Time",
+      flex: 1,
+      minWidth: 120,
+    },
+    {
+      field: "checkOutTime",
+      headerName: "Check-Out Time",
+      flex: 1,
+      minWidth: 120,
+      hide: isMobile,
+    },
   ];
 
   const handleTabChange = (event, newValue) => setActiveTab(newValue);
@@ -270,8 +351,14 @@ function Home() {
   return (
     <>
       <Navbar />
-      <Grid container spacing={isMobile ? 1 : 2} mt={isMobile ? 1 : 2} px={isMobile ? 1 : 2}>
+      <Grid
+        container
+        spacing={isMobile ? 1 : 2}
+        mt={isMobile ? 1 : 2}
+        px={isMobile ? 1 : 2}
+      >
         <Grid item xs={12} md={8}>
+          {/* Cards Container */}
           <Container
             sx={{
               bgcolor: "#f8f9fa",
@@ -279,7 +366,7 @@ function Home() {
               px: isMobile ? 2 : 3,
               borderRadius: "20px",
               boxShadow: 3,
-              height: isMobile ? "auto" : "800px",
+              mb: isMobile ? 2 : 3, // Margin bottom to separate from the table container
             }}
           >
             <Grid container spacing={isMobile ? 2 : 3} justifyContent="center">
@@ -296,12 +383,22 @@ function Home() {
                     }}
                   >
                     <CardContent>
-                      <Box display="flex" flexDirection="column" alignItems="center">
+                      <Box
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center"
+                      >
                         {stat.icon}
-                        <Typography variant={isMobile ? "body2" : "body1"} sx={{ fontSize: isMobile ? "0.8rem" : "1rem" }}>
+                        <Typography
+                          variant={isMobile ? "body2" : "body1"}
+                          sx={{ fontSize: isMobile ? "0.8rem" : "1rem" }}
+                        >
                           {stat.title}
                         </Typography>
-                        <Typography variant={isMobile ? "h6" : "h5"} sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}>
+                        <Typography
+                          variant={isMobile ? "h6" : "h5"}
+                          sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}
+                        >
                           {stat.value}
                         </Typography>
                       </Box>
@@ -310,59 +407,88 @@ function Home() {
                 </Grid>
               ))}
             </Grid>
+          </Container>
 
-            <Box mt={isMobile ? 6 : 8}>
-              <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}>
-                <Tabs value={activeTab} onChange={handleTabChange} centered>
-                  <Tab label="Visitors" id="tab-0" aria-controls="tabpanel-0" />
-                  <Tab label="Vehicles" id="tab-1" aria-controls="tabpanel-1" />
-                </Tabs>
-                <TabPanel value={activeTab} index={0}>
-                  {loading ? (
-                    <Box display="flex" justifyContent="center" alignItems="center" py={4}>
-                      <CircularProgress />
-                    </Box>
-                  ) : error ? (
-                    <Typography variant="body1" color="error" align="center">
-                      {error}
-                    </Typography>
-                  ) : (
-                    <DataGrid
-                      rows={visitors}
-                      columns={visitorColumns}
-                      getRowId={(row) => row.id}
-                      autoHeight
-                      disableColumnMenu
-                      pageSizeOptions={[5]}
-                      initialState={{ pagination: { paginationModel: { pageSize: isMobile ? 5 : 5 } } }}
-                    />
-                  )}
-                </TabPanel>
-                <TabPanel value={activeTab} index={1}>
-                  {loading ? (
-                    <Box display="flex" justifyContent="center" alignItems="center" py={4}>
-                      <CircularProgress />
-                    </Box>
-                  ) : error ? (
-                    <Typography variant="body1" color="error" align="center">
-                      {error}
-                    </Typography>
-                  ) : (
-                    <DataGrid
-                      rows={vehicles}
-                      columns={vehicleColumns}
-                      getRowId={(row) => row.id}
-                      autoHeight
-                      disableColumnMenu
-                      pageSizeOptions={[5]}
-                      initialState={{ pagination: { paginationModel: { pageSize: isMobile ? 5 : 5 } } }}
-                    />
-                  )}
-                </TabPanel>
-              </Paper>
-            </Box>
+          {/* Table Container */}
+          <Container
+            sx={{
+              bgcolor: "#f8f9fa",
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
+              borderRadius: "20px",
+              boxShadow: 3,
+              height: isMobile ? "auto" : "600px", // Adjusted height for table container
+            }}
+          >
+            <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}>
+              <Tabs value={activeTab} onChange={handleTabChange} centered>
+                <Tab label="Visitors" id="tab-0" aria-controls="tabpanel-0" />
+                <Tab label="Vehicles" id="tab-1" aria-controls="tabpanel-1" />
+              </Tabs>
+              <TabPanel value={activeTab} index={0}>
+                {loading ? (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    py={4}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : error ? (
+                  <Typography variant="body1" color="error" align="center">
+                    {error}
+                  </Typography>
+                ) : (
+                  <DataGrid
+                    rows={visitors}
+                    columns={visitorColumns}
+                    getRowId={(row) => row.id}
+                    autoHeight
+                    disableColumnMenu
+                    pageSizeOptions={[5]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { pageSize: isMobile ? 5 : 5 },
+                      },
+                    }}
+                  />
+                )}
+              </TabPanel>
+              <TabPanel value={activeTab} index={1}>
+                {loading ? (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    py={4}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : error ? (
+                  <Typography variant="body1" color="error" align="center">
+                    {error}
+                  </Typography>
+                ) : (
+                  <DataGrid
+                    rows={vehicles}
+                    columns={vehicleColumns}
+                    getRowId={(row) => row.id}
+                    autoHeight
+                    disableColumnMenu
+                    pageSizeOptions={[5]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { pageSize: isMobile ? 5 : 5 },
+                      },
+                    }}
+                  />
+                )}
+              </TabPanel>
+            </Paper>
           </Container>
         </Grid>
+        {/* ... (rest of the Grid container, e.g., the charts column, remains unchanged) */}
 
         <Grid item xs={12} md={4}>
           <Container
@@ -375,8 +501,20 @@ function Home() {
               height: isMobile ? "auto" : "800px",
             }}
           >
-            <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}>
-              <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ textAlign: "center", fontWeight: "bold", color: "#333", mb: 2 }}>
+            <Paper
+              elevation={4}
+              sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}
+            >
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
+                gutterBottom
+                sx={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                }}
+              >
                 Activity Chart
               </Typography>
               <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
@@ -393,7 +531,20 @@ function Home() {
                     labelLine={true}
                   >
                     {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d", "#ffc107"][index % 7]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          [
+                            "#0088FE",
+                            "#00C49F",
+                            "#FFBB28",
+                            "#FF8042",
+                            "#8884d8",
+                            "#82ca9d",
+                            "#ffc107",
+                          ][index % 7]
+                        }
+                      />
                     ))}
                   </Pie>
                   <Tooltip
@@ -408,29 +559,90 @@ function Home() {
                 </PieChart>
               </ResponsiveContainer>
             </Paper>
-            <Paper elevation={8} sx={{ p: isMobile ? 2 : 4, borderRadius: "10px", bgcolor: "#fff", boxShadow: 4, height: isMobile ? 280 : 320 }}>
-              <Typography variant={isMobile ? "h6" : "h5"} gutterBottom sx={{ textAlign: "center", fontWeight: "bold", color: "#333", mb: 2 }}>
+            <Paper
+              elevation={8}
+              sx={{
+                p: isMobile ? 2 : 4,
+                borderRadius: "10px",
+                bgcolor: "#fff",
+                boxShadow: 4,
+                height: isMobile ? 280 : 320,
+              }}
+            >
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
+                gutterBottom
+                sx={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                }}
+              >
                 Visitor Status Overview
               </Typography>
               <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-                <BarChart data={meterData} margin={{ top: 20, right: isMobile ? 10 : 20, left: 0, bottom: 20 }}>
+                <BarChart
+                  data={meterData}
+                  margin={{
+                    top: 20,
+                    right: isMobile ? 10 : 20,
+                    left: 0,
+                    bottom: 20,
+                  }}
+                >
                   <defs>
-                    <linearGradient id="colorCheckedIn" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorCheckedIn"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#0088FE" stopOpacity={0.3} />
+                      <stop
+                        offset="95%"
+                        stopColor="#0088FE"
+                        stopOpacity={0.3}
+                      />
                     </linearGradient>
-                    <linearGradient id="colorCheckedOut" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorCheckedOut"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#00C49F" stopOpacity={0.3} />
+                      <stop
+                        offset="95%"
+                        stopColor="#00C49F"
+                        stopOpacity={0.3}
+                      />
                     </linearGradient>
-                    <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="colorPending"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="5%" stopColor="#FFBB28" stopOpacity={0.8} />
-                      <stop offset="95%" stopColor="#FFBB28" stopOpacity={0.3} />
+                      <stop
+                        offset="95%"
+                        stopColor="#FFBB28"
+                        stopOpacity={0.3}
+                      />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-                  <XAxis dataKey="name" tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }} />
-                  <YAxis tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
+                  />
+                  <YAxis
+                    tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
+                  />
                   <Tooltip
                     contentStyle={{
                       fontSize: isMobile ? 12 : 14,
@@ -442,7 +654,10 @@ function Home() {
                   />
                   <Bar dataKey="value" radius={[10, 10, 0, 0]}>
                     {meterData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={`url(#color${entry.name.replace("-", "")})`} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={`url(#color${entry.name.replace("-", "")})`}
+                      />
                     ))}
                   </Bar>
                 </BarChart>

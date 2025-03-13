@@ -1,16 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { 
-  TextField, Button, Grid, Typography, MenuItem, Box, IconButton 
+import {
+  TextField,
+  Button,
+  Grid,
+  Typography,
+  MenuItem,
+  Box,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from "@mui/material";
 import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "../components/Navbar"; 
+import Navbar from "../components/Navbar";
 
 const EditCheckin = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const visitorId = location.pathname.split("/").pop(); // Get the visitor ID from the URL
 
   const [photoFileName, setPhotoFileName] = useState(location.state?.photo || "No file chosen");
   const [formData, setFormData] = useState({
@@ -22,7 +33,6 @@ const EditCheckin = () => {
     expectedDurationHours: location.state?.expectedDurationHours || "",
     expectedDurationMinutes: location.state?.expectedDurationMinutes || "",
     documentDetails: location.state?.documentDetails || "",
-    photo: location.state?.photo || "",
     reasonForVisit: location.state?.reasonForVisit || "",
     otp: location.state?.otp || "",
     visitorCompany: location.state?.visitorCompany || "",
@@ -33,11 +43,30 @@ const EditCheckin = () => {
     teamMembers: location.state?.teamMembers || [] // Ensure this is always an array
   });
   const [errors, setErrors] = useState({});
+  const [openTeamPopup, setOpenTeamPopup] = useState(false);
+  const [openAssetsPopup, setOpenAssetsPopup] = useState(false);
+
+  // Fetch visitor data
+  useEffect(() => {
+    const fetchVisitorData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/visitors/${visitorId}`);
+        if (!response.ok) throw new Error("Failed to fetch visitor data");
+        const data = await response.json();
+        setFormData(data.data); // Set the form data with fetched visitor data
+        setPhotoFileName(data.data.photoUrl || "No file chosen"); // Set photo file name if available
+      } catch (error) {
+        console.error("Error fetching visitor data:", error);
+        toast.error("Failed to load visitor data.");
+      }
+    };
+
+    fetchVisitorData();
+  }, [visitorId]);
 
   // Validation rules
   const validateField = (name, value) => {
     let error = "";
-    
     switch (name) {
       case "fullName":
         if (!value) error = "Full Name is required";
@@ -46,7 +75,7 @@ const EditCheckin = () => {
         break;
       case "email":
         if (!value) error = "Email is required";
-        else if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value)) 
+        else if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value))
           error = "Invalid email format";
         break;
       case "phoneNumber":
@@ -54,49 +83,28 @@ const EditCheckin = () => {
         else if (!/^\d{10}$/.test(value)) error = "Must be 10 digits";
         break;
       case "designation":
-        if (!value) error = "Designation is required";
-        break;
       case "visitType":
-        if (!value) error = "Visit Type is required";
+      case "documentDetails":
+      case "reasonForVisit":
+      case "visitorCompany":
+      case "personToVisit":
+      case "submittedDocument":
+      case "hasAssets":
+        if (!value) error = "Required";
         break;
       case "expectedDurationHours":
         if (!value) error = "Hours required";
-        else if (!/^\d+$/.test(value)) error = "Numbers only";
-        else if (parseInt(value) < 0) error = "Cannot be negative";
-        else if (parseInt(value) > 23) error = "Max 23 hours";
+        else if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 23)
+          error = "Must be between 0 and 23";
         break;
       case "expectedDurationMinutes":
         if (!value) error = "Minutes required";
-        else if (!/^\d+$/.test(value)) error = "Numbers only";
-        else if (parseInt(value) < 0) error = "Cannot be negative";
-        else if (parseInt(value) > 59) error = "Max 59 minutes";
-        break;
-      case "documentDetails":
-        if (!value) error = "Document Details required";
-        else if (value.length > 100) error = "Maximum 100 characters";
-        break;
-      case "reasonForVisit":
-        if (!value) error = "Reason is required";
-        else if (value.length > 200) error = "Maximum 200 characters";
+        else if (!/^\d+$/.test(value) || parseInt(value) < 0 || parseInt(value) > 59)
+          error = "Must be between 0 and 59";
         break;
       case "otp":
         if (!value) error = "OTP is required";
         else if (!/^\d{6}$/.test(value)) error = "Must be 6 digits";
-        break;
-      case "visitorCompany":
-        if (!value) error = "Company name is required";
-        else if (value.length > 100) error = "Maximum 100 characters";
-        break;
-      case "personToVisit":
-        if (!value) error = "Person name is required";
-        else if (value.length > 50) error = "Maximum 50 characters";
-        else if (!/^[A-Za-z\s]+$/.test(value)) error = "Only letters and spaces allowed";
-        break;
-      case "submittedDocument":
-        if (!value) error = "Document type is required";
-        break;
-      case "hasAssets":
-        if (!value) error = "Please select an option";
         break;
       default:
         break;
@@ -198,10 +206,10 @@ const EditCheckin = () => {
   const handleAddTeamMember = () => {
     setFormData({
       ...formData,
-      teamMembers: [...formData.teamMembers, { 
-        name: "", 
-        email: "", 
-        documentDetail: "", 
+      teamMembers: [...formData.teamMembers, {
+        name: "",
+        email: "",
+        documentDetail: "",
         document: null,
         hasAssets: "",
         assets: [] // Array for multiple assets
@@ -247,7 +255,7 @@ const EditCheckin = () => {
       });
 
       if (!response.ok) throw new Error('Failed to send OTP');
-      
+
       toast.success(`OTP sent to ${formData.email}!`);
     } catch (error) {
       toast.error(error.message || "Error sending OTP");
@@ -265,14 +273,7 @@ const EditCheckin = () => {
     }
   };
 
-  const handleUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      toast.success(`File ${file.name} uploaded successfully!`);
-    }
-  };
-
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
     const newErrors = {};
     Object.keys(formData).forEach(field => {
       if (field !== "teamMembers" && field !== "assets") { // Skip arrays
@@ -282,8 +283,8 @@ const EditCheckin = () => {
     });
 
     if (!newErrors.expectedDurationHours && !newErrors.expectedDurationMinutes) {
-      if (parseInt(formData.expectedDurationHours) === 0 && 
-          parseInt(formData.expectedDurationMinutes) === 0) {
+      if (parseInt(formData.expectedDurationHours) === 0 &&
+        parseInt(formData.expectedDurationMinutes) === 0) {
         newErrors.expectedDurationHours = "Duration must be greater than 0";
         newErrors.expectedDurationMinutes = "Duration must be greater than 0";
       }
@@ -320,8 +321,22 @@ const EditCheckin = () => {
       return;
     }
 
-    toast.success("Changes saved successfully!");
-    setTimeout(() => navigate("/visitorcard"), 1500); // Redirect to /visitorcard
+    try {
+      const response = await fetch(`http://localhost:5000/api/visitors/${visitorId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error("Failed to update visitor");
+
+      toast.success("Visitor details updated successfully!");
+      navigate("/visitorlist"); // Redirect to visitor list after successful update
+    } catch (error) {
+      toast.error(error.message || "Error updating visitor");
+    }
   };
 
   return (
@@ -338,78 +353,55 @@ const EditCheckin = () => {
           backgroundColor: "#f8f9fa",
         }}
       >
-        <ToastContainer 
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          pauseOnHover
-        />
-
+        <ToastContainer position="top-right" autoClose={3000} />
         <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
           Edit Visitor Check-In
         </Typography>
 
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <TextField 
-              fullWidth 
-              label="Full Name*" 
-              variant="outlined" 
-              margin="dense" 
+            <TextField
+              fullWidth
+              label="Full Name*"
+              variant="outlined"
+              margin="dense"
               required
-              value={formData.fullName} 
+              value={formData.fullName}
               onChange={(e) => handleChange("fullName", e.target.value)}
               error={!!errors.fullName}
               helperText={errors.fullName}
             />
-            <Grid container spacing={1} alignItems="center">
-              <Grid item xs={8}>
-                <TextField 
-                  fullWidth 
-                  label="Email*" 
-                  variant="outlined" 
-                  margin="dense" 
-                  required
-                  value={formData.email} 
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  error={!!errors.email}
-                  helperText={errors.email || "example@domain.com"}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <Button 
-                  fullWidth 
-                  variant="contained" 
-                  color="success" 
-                  sx={{ height: "100%" }} 
-                  onClick={handleSendEmailOtp}
-                >
-                  Send OTP
-                </Button>
-              </Grid>
-            </Grid>
-            <TextField 
-              fullWidth 
-              label="Phone Number*" 
-              variant="outlined" 
-              margin="dense" 
-              required
-              value={formData.phoneNumber} 
-              onChange={(e) => handleChange("phoneNumber", e.target.value)}
-              error={!!errors.phoneNumber}
-              helperText={errors.phoneNumber || "10 digits required"}
-              inputProps={{ maxLength: 10 }}
-            />
-            <TextField 
-              fullWidth 
-              select 
-              label="Designation*" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              label="Email*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.designation} 
+              value={formData.email}
+              onChange={(e) => handleChange("email", e.target.value)}
+              error={!!errors.email}
+              helperText={errors.email}
+            />
+            <TextField
+              fullWidth
+              label="Phone Number*"
+              variant="outlined"
+              margin="dense"
+              required
+              value={formData.phoneNumber}
+              onChange={(e) => handleChange("phoneNumber", e.target.value)}
+              error={!!errors.phoneNumber}
+              helperText={errors.phoneNumber}
+              inputProps={{ maxLength: 10 }}
+            />
+            <TextField
+              fullWidth
+              select
+              label="Designation*"
+              variant="outlined"
+              margin="dense"
+              required
+              value={formData.designation}
               onChange={(e) => handleChange("designation", e.target.value)}
               error={!!errors.designation}
               helperText={errors.designation}
@@ -418,14 +410,14 @@ const EditCheckin = () => {
               <MenuItem value="Employee">Employee</MenuItem>
               <MenuItem value="Visitor">Visitor</MenuItem>
             </TextField>
-            <TextField 
-              fullWidth 
-              select 
-              label="Visit Type" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              select
+              label="Visit Type*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.visitType} 
+              value={formData.visitType}
               onChange={(e) => handleChange("visitType", e.target.value)}
               error={!!errors.visitType}
               helperText={errors.visitType}
@@ -435,41 +427,39 @@ const EditCheckin = () => {
             </TextField>
             <Grid container spacing={1}>
               <Grid item xs={6}>
-                <TextField 
-                  fullWidth 
-                  label="Hours*" 
-                  variant="outlined" 
+                <TextField
+                  fullWidth
+                  label="Expected Duration Hours*"
+                  variant="outlined"
                   margin="dense"
                   required
-                  value={formData.expectedDurationHours} 
+                  value={formData.expectedDurationHours}
                   onChange={(e) => handleChange("expectedDurationHours", e.target.value)}
                   error={!!errors.expectedDurationHours}
-                  helperText={errors.expectedDurationHours || "0-23"}
-                  inputProps={{ maxLength: 2 }}
+                  helperText={errors.expectedDurationHours}
                 />
               </Grid>
               <Grid item xs={6}>
-                <TextField 
-                  fullWidth 
-                  label="Minutes*" 
-                  variant="outlined" 
+                <TextField
+                  fullWidth
+                  label="Expected Duration Minutes*"
+                  variant="outlined"
                   margin="dense"
                   required
-                  value={formData.expectedDurationMinutes} 
+                  value={formData.expectedDurationMinutes}
                   onChange={(e) => handleChange("expectedDurationMinutes", e.target.value)}
                   error={!!errors.expectedDurationMinutes}
-                  helperText={errors.expectedDurationMinutes || "0-59"}
-                  inputProps={{ maxLength: 2 }}
+                  helperText={errors.expectedDurationMinutes}
                 />
               </Grid>
             </Grid>
-            <TextField 
-              fullWidth 
-              label="Document Details" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              label="Document Details*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.documentDetails} 
+              value={formData.documentDetails}
               onChange={(e) => handleChange("documentDetails", e.target.value)}
               error={!!errors.documentDetails}
               helperText={errors.documentDetails}
@@ -491,76 +481,75 @@ const EditCheckin = () => {
                 />
               </Grid>
               <Grid item xs={4}>
-                <Button 
-                  fullWidth 
-                  variant="contained" 
-                  color="success" 
-                  sx={{ height: "100%" }} 
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  sx={{ height: "100%" }}
                   component="label"
                 >
                   Choose File
-                  <input 
-                    type="file" 
-                    hidden 
-                    accept="image/*" 
-                    onChange={handlePhotoUpload} 
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
                   />
                 </Button>
               </Grid>
             </Grid>
-            <TextField 
-              fullWidth 
-              label="Reason for Visit*" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              label="Reason for Visit*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.reasonForVisit} 
+              value={formData.reasonForVisit}
               onChange={(e) => handleChange("reasonForVisit", e.target.value)}
               error={!!errors.reasonForVisit}
               helperText={errors.reasonForVisit}
             />
-            <TextField 
-              fullWidth 
-              label="Enter OTP" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              label="Enter OTP*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.otp} 
+              value={formData.otp}
               onChange={(e) => handleChange("otp", e.target.value)}
               error={!!errors.otp}
-              helperText={errors.otp || "6 digits required"}
-              inputProps={{ maxLength: 6 }}
+              helperText={errors.otp}
             />
-            <TextField 
-              fullWidth 
-              label="Visitor Company*" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              label="Visitor Company*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.visitorCompany} 
+              value={formData.visitorCompany}
               onChange={(e) => handleChange("visitorCompany", e.target.value)}
               error={!!errors.visitorCompany}
               helperText={errors.visitorCompany}
             />
-            <TextField 
-              fullWidth 
-              label="Person to Visit" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              label="Person to Visit*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.personToVisit} 
+              value={formData.personToVisit}
               onChange={(e) => handleChange("personToVisit", e.target.value)}
               error={!!errors.personToVisit}
               helperText={errors.personToVisit}
             />
-            <TextField 
-              fullWidth 
-              select 
-              label="Submitted Document" 
-              variant="outlined" 
+            <TextField
+              fullWidth
+              select
+              label="Submitted Document*"
+              variant="outlined"
               margin="dense"
               required
-              value={formData.submittedDocument} 
+              value={formData.submittedDocument}
               onChange={(e) => handleChange("submittedDocument", e.target.value)}
               error={!!errors.submittedDocument}
               helperText={errors.submittedDocument}
@@ -568,265 +557,246 @@ const EditCheckin = () => {
               <MenuItem value="ID Proof">ID Proof</MenuItem>
               <MenuItem value="Passport">Passport</MenuItem>
             </TextField>
-          </Grid>
-        </Grid>
+            <Box>
+              <Box mt={2} display="flex" justifyContent="flex-start" alignItems="center" gap={4} mb={5}>
+                <Button startIcon={<AddCircle />} variant="contained" onClick={() => setOpenTeamPopup(true)}>
+                  Add Member
+                </Button>
+                <Button variant="contained" onClick={() => setOpenAssetsPopup(true)}>
+                  Manage Assets
+                </Button>
+              </Box>
 
-        <Box mt={3}>
-          <Typography variant="h6" fontWeight="bold" mb={1}>
-            Team Members
-          </Typography>
-
-          <Button 
-            startIcon={<AddCircle />} 
-            variant="contained" 
-            color="primary" 
-            onClick={handleAddTeamMember}
-          >
-            Add Team Member
-          </Button>
-
-          {formData.teamMembers && formData.teamMembers.map((member, index) => (
-            <Box key={index} mt={2} p={2} sx={{ border: "1px solid #ccc", borderRadius: 2 }}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={3}>
-                  <TextField 
-                    fullWidth 
-                    label="Full Name*" 
-                    variant="outlined"
-                    required
-                    value={member.name} 
-                    onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
-                    error={!member.name}
-                    helperText={!member.name && "Required"}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <TextField 
-                    fullWidth 
-                    label="Email*" 
-                    variant="outlined"
-                    required
-                    value={member.email} 
-                    onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
-                    error={!member.email || !/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(member.email)}
-                    helperText={!member.email ? "Required" : (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(member.email) && "Invalid email")}
-                  />
-                </Grid>
-                <Grid item xs={3}>
-                  <TextField 
-                    fullWidth 
-                    label="Document Details*" 
-                    variant="outlined"
-                    required
-                    value={member.documentDetail} 
-                    onChange={(e) => handleTeamMemberChange(index, "documentDetail", e.target.value)}
-                    error={!member.documentDetail}
-                    helperText={!member.documentDetail && "Required"}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <Button 
-                    variant="contained" 
-                    component="label" 
-                    fullWidth 
-                    startIcon={<UploadFile />}
-                  >
-                    Upload
-                    <input 
-                      type="file" 
-                      hidden 
-                      onChange={handleUpload} 
-                    />
-                  </Button>
-                </Grid>
-                <Grid item xs={1}>
-                  <IconButton 
-                    color="error" 
-                    onClick={() => handleRemoveTeamMember(index)}
-                  >
-                    <RemoveCircle />
-                  </IconButton>
-                </Grid>
-              </Grid>
-
-              {/* Team Member Assets Section */}
-              <Box mt={2}>
-                <TextField
-                  fullWidth
-                  select
-                  label="Bringing Assets?*"
-                  variant="outlined"
-                  margin="dense"
-                  required
-                  value={member.hasAssets}
-                  onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
-                  sx={{ maxWidth: 200 }}
-                >
-                  <MenuItem value="yes">Yes</MenuItem>
-                  <MenuItem value="no">No</MenuItem>
-                </TextField>
-
-                {member.hasAssets === "yes" && (
-                  <Box mt={2}>
-                    {member.assets.map((asset, assetIndex) => (
-                      <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
-                        <Grid item xs={12} sm={4}>
+              {/* Add Member Dialog */}
+              <Dialog open={openTeamPopup} onClose={() => setOpenTeamPopup(false)} fullWidth maxWidth="md">
+                <DialogTitle>Add Team Member</DialogTitle>
+                <DialogContent>
+                  {formData.teamMembers.map((member, index) => (
+                    <Box key={index} mt={3} p={3} border={1} borderRadius={2}>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12} sm={3}>
                           <TextField
                             fullWidth
-                            label="Quantity*"
-                            variant="outlined"
-                            margin="dense"
+                            label="Name*"
+                            value={member.name}
+                            onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
                             required
-                            value={asset.quantity}
-                            onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "quantity", e.target.value)}
-                            error={!!errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
-                            helperText={errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
                           />
                         </Grid>
                         <Grid item xs={12} sm={3}>
                           <TextField
                             fullWidth
-                            label="Asset Type*"
-                            variant="outlined"
-                            margin="dense"
+                            label="Email*"
+                            value={member.email}
+                            onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
                             required
-                            value={asset.type}
-                            onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "type", e.target.value)}
-                            error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
-                            helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
                           />
                         </Grid>
-                        <Grid item xs={12} sm={4}>
+                        <Grid item xs={12} sm={3}>
                           <TextField
                             fullWidth
-                            label="Serial Number*"
-                            variant="outlined"
-                            margin="dense"
+                            label="Document*"
+                            value={member.documentDetail}
+                            onChange={(e) => handleTeamMemberChange(index, "documentDetail", e.target.value)}
                             required
-                            value={asset.serialNumber}
-                            onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "serialNumber", e.target.value)}
-                            error={!!errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
-                            helperText={errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
                           />
                         </Grid>
-                        <Grid item xs={12} sm={1}>
-                          <IconButton 
-                            color="error" 
-                            onClick={() => handleRemoveTeamMemberAsset(index, assetIndex)}
+                        <Grid item xs={12} sm={2}>
+                          <Button
+                            variant="contained"
+                            component="label"
+                            fullWidth
+                            startIcon={<UploadFile />}
                           >
+                            Upload
+                            <input
+                              type="file"
+                              hidden
+                              onChange={(e) => handleTeamMemberChange(index, "document", e.target.files[0])}
+                              accept="image/*"
+                            />
+                          </Button>
+                        </Grid>
+                        <Grid item xs={12} sm={1}>
+                          <IconButton color="error" onClick={() => handleRemoveTeamMember(index)}>
                             <RemoveCircle />
                           </IconButton>
                         </Grid>
                       </Grid>
-                    ))}
-                    <Button 
-                      startIcon={<AddCircle />} 
-                      variant="outlined" 
-                      onClick={() => handleAddTeamMemberAsset(index)} 
-                      sx={{ mt: 2 }}
-                    >
-                      Add Asset
-                    </Button>
-                  </Box>
-                )}
-              </Box>
+
+                      {/* Team Member Assets Section */}
+                      <Box mt={2}>
+                        <TextField
+                          fullWidth
+                          select
+                          label="Bringing Assets?*"
+                          variant="outlined"
+                          margin="dense"
+                          required
+                          value={member.hasAssets}
+                          onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
+                          sx={{ maxWidth: 200 }}
+                        >
+                          <MenuItem value="yes">Yes</MenuItem>
+                          <MenuItem value="no">No</MenuItem>
+                        </TextField>
+
+                        {member.hasAssets === "yes" && (
+                          <Box mt={2}>
+                            {member.assets.map((asset, assetIndex) => (
+                              <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
+                                <Grid item xs={12} sm={4}>
+                                  <TextField
+                                    fullWidth
+                                    label="Quantity*"
+                                    variant="outlined"
+                                    margin="dense"
+                                    required
+                                    value={asset.quantity}
+                                    onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "quantity", e.target.value)}
+                                    error={!!errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
+                                    helperText={errors[`teamMember_${index}_asset_${assetIndex}_quantity`]}
+                                  />
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                  <TextField
+                                    fullWidth
+                                    label="Type*"
+                                    variant="outlined"
+                                    margin="dense"
+                                    required
+                                    value={asset.type}
+                                    onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "type", e.target.value)}
+                                    error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                                    helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                                  />
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                  <TextField
+                                    fullWidth
+                                    label="Serial Number*"
+                                    variant="outlined"
+                                    margin="dense"
+                                    required
+                                    value={asset.serialNumber}
+                                    onChange={(e) => handleTeamMemberAssetChange(index, assetIndex, "serialNumber", e.target.value)}
+                                    error={!!errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
+                                    helperText={errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]}
+                                  />
+                                </Grid>
+                                <Grid item xs={12} sm={1}>
+                                  <IconButton color="error" onClick={() => handleRemoveTeamMemberAsset(index, assetIndex)}>
+                                    <RemoveCircle />
+                                  </IconButton>
+                                </Grid>
+                              </Grid>
+                            ))}
+                            <Button
+                              startIcon={<AddCircle />}
+                              variant="outlined"
+                              onClick={() => handleAddTeamMemberAsset(index)}
+                              sx={{ mt: 2 }}
+                            >
+                              Add Asset
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
+                    </Box>
+                  ))}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenTeamPopup(false)}>Close</Button>
+                  <Button onClick={handleAddTeamMember} variant="contained">Add Member</Button>
+                </DialogActions>
+              </Dialog>
+
+              {/* Manage Assets Dialog */}
+              <Dialog open={openAssetsPopup} onClose={() => setOpenAssetsPopup(false)} fullWidth maxWidth="md">
+                <DialogTitle>Manage Assets</DialogTitle>
+                <DialogContent>
+                  <TextField
+                    fullWidth
+                    select
+                    label="Assets?*"
+                    value={formData.hasAssets}
+                    onChange={(e) => handleChange("hasAssets", e.target.value)}
+                    error={!!errors.hasAssets}
+                    helperText={errors.hasAssets}
+                    required
+                    sx={{ maxWidth: 200, mb: 2 }}
+                  >
+                    <MenuItem value="yes">Yes</MenuItem>
+                    <MenuItem value="no">No</MenuItem>
+                  </TextField>
+                  {formData.hasAssets === "yes" && (
+                    <Box>
+                      {formData.assets.map((asset, index) => (
+                        <Grid container spacing={3} key={index} mt={1} alignItems="center">
+                          <Grid item xs={12} sm={4}>
+                            <TextField
+                              fullWidth
+                              label="Quantity*"
+                              value={asset.quantity}
+                              onChange={(e) => handleAssetChange(index, "quantity", e.target.value)}
+                              required
+                              error={!!errors[`asset_${index}_quantity`]}
+                              helperText={errors[`asset_${index}_quantity`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <TextField
+                              fullWidth
+                              label="Type*"
+                              value={asset.type}
+                              onChange={(e) => handleAssetChange(index, "type", e.target.value)}
+                              required
+                              error={!!errors[`asset_${index}_type`]}
+                              helperText={errors[`asset_${index}_type`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={4}>
+                            <TextField
+                              fullWidth
+                              label="Serial*"
+                              value={asset.serialNumber}
+                              onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)}
+                              required
+                              error={!!errors[`asset_${index}_serialNumber`]}
+                              helperText={errors[`asset_${index}_serialNumber`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={1}>
+                            <IconButton color="error" onClick={() => handleRemoveAsset(index)}>
+                              <RemoveCircle />
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                      ))}
+                      <Button
+                        startIcon={<AddCircle />}
+                        variant="outlined"
+                        onClick={handleAddAsset}
+                        sx={{ mt: 2 }}
+                      >
+                        Add Asset
+                      </Button>
+                    </Box>
+                  )}
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenAssetsPopup(false)}>Close</Button>
+                </DialogActions>
+              </Dialog>
             </Box>
-          ))}
-        </Box>
+          </Grid>
+        </Grid>
 
-        {/* Main Visitor Assets Section */}
-        <Box mt={3}>
-          <Typography variant="h6" fontWeight="bold" mb={1}>
-            Assets
-          </Typography>
-          
-          <TextField
-            fullWidth
-            select
-            label="Bringing Assets?*"
-            variant="outlined"
-            margin="dense"
-            required
-            value={formData.hasAssets}
-            onChange={(e) => handleChange("hasAssets", e.target.value)}
-            error={!!errors.hasAssets}
-            helperText={errors.hasAssets}
-            sx={{ maxWidth: 200 }}
-          >
-            <MenuItem value="yes">Yes</MenuItem>
-            <MenuItem value="no">No</MenuItem>
-          </TextField>
-
-          {formData.hasAssets === "yes" && (
-            <Box mt={2}>
-              {formData.assets.map((asset, index) => (
-                <Grid container spacing={2} key={index} mt={1} alignItems="center">
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      fullWidth
-                      label="Quantity*"
-                      variant="outlined"
-                      margin="dense"
-                      required
-                      value={asset.quantity}
-                      onChange={(e) => handleAssetChange(index, "quantity", e.target.value)}
-                      error={!!errors[`asset_${index}_quantity`]}
-                      helperText={errors[`asset_${index}_quantity`]}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Asset Type*"
-                      variant="outlined"
-                      margin="dense"
-                      required
-                      value={asset.type}
-                      onChange={(e) => handleAssetChange(index, "type", e.target.value)}
-                      error={!!errors[`asset_${index}_type`]}
-                      helperText={errors[`asset_${index}_type`]}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={4}>
-                    <TextField
-                      fullWidth
-                      label="Serial Number*"
-                      variant="outlined"
-                      margin="dense"
-                      required
-                      value={asset.serialNumber}
-                      onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)}
-                      error={!!errors[`asset_${index}_serialNumber`]}
-                      helperText={errors[`asset_${index}_serialNumber`]}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={1}>
-                    <IconButton 
-                      color="error" 
-                      onClick={() => handleRemoveAsset(index)}
-                    >
-                      <RemoveCircle />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              ))}
-              <Button 
-                startIcon={<AddCircle />} 
-                variant="outlined" 
-                onClick={handleAddAsset} 
-                sx={{ mt: 2 }}
-              >
-                Add Asset
-              </Button>
-            </Box>
-          )}
-        </Box>
-
-        <Button 
-          variant="contained" 
-          color="primary" 
-          size="large" 
-          sx={{ mt: 3 }} 
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          sx={{ mt: 3 }}
           onClick={handleSaveChanges}
         >
           Save Changes

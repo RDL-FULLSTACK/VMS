@@ -1,31 +1,4 @@
-
-
-
-// const express = require("express");
-// const router = express.Router();
-// const { 
-//     getAllVisitors, 
-//     getLatestVisitor,
-//     getVisitorById, // Add this
-//     addVisitor,
-//     sendEmailOtp, 
-//     checkOutVisitor, 
-//     deleteVisitor, 
-//     updateVisitor,
-//     verifyEmailOtp
-// } = require("../controllers/visitorController");
-
-// router.get("/", getAllVisitors);
-// router.get("/latest", getLatestVisitor);
-// router.get("/:id", getVisitorById); // New route
-// router.post("/checkin", addVisitor);
-// router.put("/checkout/:id", checkOutVisitor);
-// router.put("/:id", updateVisitor);
-// router.delete("/:id", deleteVisitor);
-// router.post("/send-email-otp", sendEmailOtp);
-// router.post("/verify-email-otp", verifyEmailOtp);
-
-// module.exports = router;
+//visitorRoutes.js
 
 
 
@@ -42,7 +15,8 @@ const {
     deleteVisitor,
     updateVisitor,
     verifyEmailOtp,
-    getVisitors
+    getVisitors,
+    storeCheckoutData, // Added this
 } = require("../controllers/visitorController");
 const multer = require("multer");
 const path = require("path");
@@ -68,7 +42,7 @@ const upload = multer({
             cb(new Error("Only images are allowed!"), false);
         }
     },
-    limits: { fileSize: 10 * 1024 * 1024 }, // Limit to 5MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // Limit to 10MB
 });
 
 // Routes
@@ -76,8 +50,9 @@ router.get("/", getAllVisitors);
 router.get("/report", getVisitors);
 router.get("/latest", getLatestVisitor);
 router.get("/:id", getVisitorById);
-router.post("/checkin", upload.single("photo"), addVisitor); // Add multer middleware for photo upload
-router.put("/checkout/:id", checkOutVisitor);
+router.post("/checkin", upload.single("photo"), addVisitor); // Multer for photo upload
+router.put("/checkout/:id", checkOutVisitor); // Kept for legacy compatibility (if needed)
+router.post("/checkout/:id", storeCheckoutData); // New route for simplified checkout
 router.put("/:id", updateVisitor);
 router.delete("/:id", deleteVisitor);
 router.post("/send-email-otp", sendEmailOtp);

@@ -1,7 +1,25 @@
+
+
 //visitorController.js
+
+const mongoose = require("mongoose");
 const Visitor = require("../models/Visitor");
+const Checkout = require("../models/Checkout");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const { v4: uuidv4 } = require("uuid");
+
+// Setup Nodemailer Transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+  tls: { rejectUnauthorized: false },
+});
+
+let c_otp = null;
 
 // 🔹 Get All Visitors
 exports.getAllVisitors = async (req, res) => {
@@ -90,12 +108,10 @@ exports.addVisitor = async (req, res) => {
       teamMembers: teamMembersString,
     } = req.body;
 
-    // Construct photo URL if a file was uploaded
     const photoUrl = req.file
       ? `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`
       : null;
 
-    // Parse JSON strings
     let expectedDuration, assets, teamMembers;
     try {
       expectedDuration = expectedDurationString ? JSON.parse(expectedDurationString) : null;
@@ -109,7 +125,6 @@ exports.addVisitor = async (req, res) => {
       });
     }
 
-    // Validate required fields
     const requiredFields = {
       fullName,
       email,
@@ -137,7 +152,6 @@ exports.addVisitor = async (req, res) => {
       });
     }
 
-    // Additional validation
     if (!/^[A-Za-z\s]+$/.test(fullName) || !/^[A-Za-z\s]+$/.test(personToVisit)) {
       return res.status(400).json({
         success: false,
@@ -179,7 +193,6 @@ exports.addVisitor = async (req, res) => {
       }
     }
 
-    // Validate team members
     if (teamMembers && teamMembers.length > 0) {
       for (const member of teamMembers) {
         if (
@@ -190,8 +203,7 @@ exports.addVisitor = async (req, res) => {
         ) {
           return res.status(400).json({
             success: false,
-            message:
-              "All team member fields (name, email, documentDetail, hasAssets) are required",
+            message: "All team member fields (name, email, documentDetail, hasAssets) are required",
           });
         }
         if (member.hasAssets === "yes" && (!member.assets || member.assets.length === 0)) {
@@ -205,8 +217,7 @@ exports.addVisitor = async (req, res) => {
             if (!asset.quantity || !asset.type || !asset.serialNumber) {
               return res.status(400).json({
                 success: false,
-                message:
-                  "All team member asset fields (quantity, type, serialNumber) are required",
+                message: "All team member asset fields (quantity, type, serialNumber) are required",
               });
             }
           }
@@ -214,7 +225,6 @@ exports.addVisitor = async (req, res) => {
       }
     }
 
-    // Validate expectedDuration
     if (
       !expectedDuration ||
       typeof expectedDuration.hours !== "number" ||
@@ -246,6 +256,7 @@ exports.addVisitor = async (req, res) => {
       assets,
       teamMembers,
       photoUrl,
+      checkInTime: new Date(),
     });
 
     await newVisitor.save();
@@ -336,7 +347,6 @@ exports.updateVisitor = async (req, res) => {
       });
     }
 
-    // Prevent updating checkOutTime manually
     if (req.body.checkOutTime) {
       delete req.body.checkOutTime;
     }
@@ -358,20 +368,6 @@ exports.updateVisitor = async (req, res) => {
   }
 };
 
-// Setup Nodemailer Transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
-});
-
-let c_otp = null; // Locally storing OTP
-
 // 🔹 Send Email OTP
 exports.sendEmailOtp = async (req, res) => {
   try {
@@ -384,12 +380,11 @@ exports.sendEmailOtp = async (req, res) => {
       });
     }
 
-    // Generate a 6-digit OTP
     const otp = crypto.randomInt(100000, 999999).toString();
 
     c_otp = otp;
     setTimeout(() => {
-      c_otp = null; // Reset OTP after 5 minutes
+      c_otp = null;
     }, 300000);
 
     const mailOptions = {
@@ -420,9 +415,6 @@ exports.verifyEmailOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-   // console.log("Session OTP:", c_otp);
-   // console.log("User Input OTP:", otp);
-
     if (!email || !otp) {
       return res.status(400).json({
         success: false,
@@ -431,7 +423,7 @@ exports.verifyEmailOtp = async (req, res) => {
     }
 
     if (c_otp && c_otp === otp) {
-      c_otp = null; // Clear OTP after successful verification
+      c_otp = null;
       return res.status(200).json({
         success: true,
         message: "OTP verified successfully!",
@@ -452,47 +444,144 @@ exports.verifyEmailOtp = async (req, res) => {
   }
 };
 
+// 🔹 Get Visitors (Updated for hrs and min)
 exports.getVisitors = async (req, res) => {
   try {
-    let query = {}; // Default: fetch all visitors
+    let query = {};
 
-    // Filter by check-in date range (optional)
     if (req.query.startDate && req.query.endDate) {
       query.checkInTime = {
         $gte: new Date(req.query.startDate),
-        $lte: new Date(req.query.endDate+"T23:59:59.999Z"),
+        $lte: new Date(req.query.endDate + "T23:59:59.999Z"),
       };
     }
 
-    // Select required fields (excluding teamMembers length calculation)
-    const fields = "_id fullName checkInTime reasonForVisit personToVisit teamMembers";
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const sortBy = req.query.sortBy || "checkInTime";
+    const order = req.query.order === "asc" ? 1 : -1;
+
+    const fields = "_id fullName checkInTime checkOutTime reasonForVisit personToVisit teamMembers";
 
     const visitors = await Visitor.find(query)
       .select(fields)
-      .sort({ checkInTime: -1 }) // Sort by latest check-in
-      .limit(10)
-      .skip((req.query.page - 1) * 10 || 0); // Pagination
+      .sort({ [sortBy]: order })
+      .limit(limit)
+      .skip(skip);
+
+    const totalVisitors = await Visitor.countDocuments(query);
 
     if (!visitors.length) {
       return res.status(404).json({ message: "No visitors found" });
     }
 
-    // Map results to include teamMembers length
-    const formattedVisitors = visitors.map(visitor => ({
-      _id: visitor._id,
-      name: visitor.fullName, // Updated from "name" to "fullName" (as per your schema)
-      checkInTime: visitor.checkInTime,
-      reasonForVisit: visitor.reasonForVisit,
-      personToVisit: visitor.personToVisit,
-      teamMembersCount: visitor.teamMembers ? visitor.teamMembers.length : 0, // Get teamMembers length
-    }));
+    const formattedVisitors = visitors.map(visitor => {
+      const checkIn = new Date(visitor.checkInTime);
+      const checkOut = visitor.checkOutTime ? new Date(visitor.checkOutTime) : null;
+      let meetingDuration = null;
+
+      if (checkOut) {
+        const diffMs = checkOut - checkIn;
+        const totalMinutes = Math.round(diffMs / 60000); // Total minutes
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        meetingDuration = { hours, minutes }; // Object with hours and minutes
+      }
+
+      return {
+        _id: visitor._id,
+        name: visitor.fullName,
+        checkInTime: visitor.checkInTime,
+        checkOutTime: visitor.checkOutTime,
+        reasonForVisit: visitor.reasonForVisit,
+        personToVisit: visitor.personToVisit,
+        teamMembersCount: visitor.teamMembers ? visitor.teamMembers.length : 0,
+        meetingDuration: meetingDuration, // Now an object { hours, minutes }
+      };
+    });
 
     res.status(200).json({
       visitors: formattedVisitors,
-      totalPages: Math.ceil(visitors.length / 10),
+      totalPages: Math.ceil(totalVisitors / limit),
     });
   } catch (error) {
     console.error("Error fetching visitors:", error);
     res.status(500).json({ message: "Error fetching visitors", error: error.message });
   }
 };
+
+// 🔹 Store Checkout Data (Updated for hrs and min)
+exports.storeCheckoutData = async (req, res) => {
+  try {
+    const visitorId = req.params.id;
+
+    const visitor = await Visitor.findById(visitorId);
+    if (!visitor) {
+      return res.status(404).json({
+        success: false,
+        message: "Visitor not found",
+      });
+    }
+
+    if (visitor.checkOutTime) {
+      return res.status(400).json({
+        success: false,
+        message: "Visitor has already checked out",
+      });
+    }
+
+    const checkOutTime = new Date();
+    visitor.checkOutTime = checkOutTime;
+    await visitor.save();
+
+    const checkIn = new Date(visitor.checkInTime);
+    const diffMs = checkOutTime - checkIn;
+    const totalMinutes = Math.round(diffMs / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    const checkoutData = {
+      checkoutId: uuidv4(),
+      visitorId: visitor._id,
+      name: visitor.fullName,
+      company: visitor.visitorCompany,
+      phone: visitor.phoneNumber,
+      checkInTime: visitor.checkInTime,
+      checkOutTime: checkOutTime,
+      purpose: visitor.reasonForVisit,
+      otp: visitor.otp,
+      meetingDuration: { hours, minutes }, // Store as object
+    };
+
+    const newCheckout = await Checkout.create(checkoutData);
+
+    res.status(201).json({
+      success: true,
+      message: "Checkout data stored successfully",
+      data: {
+        checkoutId: newCheckout.checkoutId,
+        visitorId: newCheckout.visitorId,
+        name: newCheckout.name,
+        company: newCheckout.company,
+        phone: newCheckout.phone,
+        checkInTime: newCheckout.checkInTime,
+        checkOutTime: newCheckout.checkOutTime,
+        purpose: newCheckout.purpose,
+        otp: newCheckout.otp,
+        meetingDuration: newCheckout.meetingDuration,
+        createdAt: newCheckout.createdAt,
+        updatedAt: newCheckout.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error("Error storing checkout data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error storing checkout data",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = exports;

@@ -1,3 +1,5 @@
+
+// Checkout.js
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -13,6 +15,7 @@ import { useNavigate, Routes, Route } from "react-router-dom";
 import { CheckCircle } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useLocation } from 'react-router-dom';
 
 const VisitorCheckout = () => {
   const navigate = useNavigate();
@@ -39,7 +42,7 @@ const VisitorCheckout = () => {
         let data = Array.isArray(rawData) ? rawData : rawData.data || [];
 
         const transformedVisitors = data
-          .filter((visitor) => !visitor.checkOutTime)
+          .filter((visitor) => !visitor.checkOutTime) // Only show visitors who haven't checked out
           .map((visitor) => {
             const checkInTime = visitor.checkInTime
               ? new Date(visitor.checkInTime)
@@ -78,7 +81,7 @@ const VisitorCheckout = () => {
     };
 
     fetchVisitors();
-    const interval = setInterval(fetchVisitors, 60000);
+    const interval = setInterval(fetchVisitors, 60000); // Refresh every 60 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -144,28 +147,36 @@ const VisitorCheckout = () => {
       const checkoutResponse = await fetch(
         `http://localhost:5000/api/visitors/checkout/${id}`,
         {
-          method: "PUT",
+          method: "POST", // Changed from PUT to POST
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify({}), // Empty body as per backend requirement
         }
       );
 
       if (!checkoutResponse.ok) {
-        throw new Error("Failed to check out visitor");
+        const errorData = await checkoutResponse.json();
+        throw new Error(errorData.message || "Failed to check out visitor");
       }
+
+      const checkoutData = await checkoutResponse.json();
 
       toast.success("Checking out...", {
         position: "top-right",
         autoClose: 2000,
       });
+
+      // Remove the checked-out visitor from the list
       setVisitors((prev) => prev.filter((v) => v.id !== id));
       setVerifiedOtps((prev) => {
         const newOtps = { ...prev };
         delete newOtps[id];
         return newOtps;
       });
-      navigate("/success");
+
+      // Navigate to success page with checkoutId (optional)
+      navigate("/success", { state: { checkoutId: checkoutData.data.checkoutId } });
     } catch (error) {
       toast.error(error.message, { position: "top-right", autoClose: 3000 });
     }
@@ -418,6 +429,8 @@ const VisitorCheckout = () => {
 
 const SuccessPage = () => {
   const navigate = useNavigate();
+  const { state } = useLocation(); // Access checkoutId from navigation state
+  const checkoutId = state?.checkoutId;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -445,6 +458,11 @@ const SuccessPage = () => {
         >
           Checkout Successful!
         </Typography>
+        {checkoutId && (
+          <Typography variant="body1" sx={{ mt: 1, color: "#666" }}>
+            Checkout ID: {checkoutId.slice(0, 8)}...
+          </Typography>
+        )}
         <Typography variant="body1" sx={{ mt: 1, color: "#666" }}>
           Redirecting to dashboard in 2 seconds...
         </Typography>

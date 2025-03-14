@@ -1,4 +1,4 @@
-
+//HostVisitorFromCheckIn.js
 
 import React, { useState, useEffect } from "react";
 import {
@@ -27,22 +27,23 @@ const HostVisitorFromCheckIn = () => {
     return JSON.parse(localStorage.getItem("toggleVisitor")) || false;
   });
 
-  useEffect(() => {
-    const fetchVisitors = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/visitors");
-        console.log("Full API Response:", response);
-        console.log("Response Data:", response.data);
+  const fetchVisitors = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/visitors");
+      console.log("Full API Response:", response);
+      console.log("Response Data:", response.data);
 
-        const visitorsArray = response.data.data || [];
-        if (!Array.isArray(visitorsArray)) {
-          throw new Error(
-            "Expected an array in response.data.data, but got: " +
-              typeof visitorsArray
-          );
-        }
+      const visitorsArray = response.data.data || [];
+      if (!Array.isArray(visitorsArray)) {
+        throw new Error(
+          "Expected an array in response.data.data, but got: " +
+            typeof visitorsArray
+        );
+      }
 
-        const visitorsData = visitorsArray.map((visitor) => ({
+      const visitorsData = visitorsArray
+        .filter((visitor) => !visitor.checkOutTime) // Filter out checked-out visitors
+        .map((visitor) => ({
           id: visitor._id || "Unknown ID",
           name: visitor.fullName || visitor.name || "N/A",
           company: visitor.visitorCompany || "N/A",
@@ -54,22 +55,23 @@ const HostVisitorFromCheckIn = () => {
               })
             : "N/A",
           purpose: visitor.reasonForVisit || "N/A",
-          otp: visitor.otp || generateOTP(), // Generate OTP if not present
+          otp: visitor.otp || generateOTP(),
           status: visitor.status || "Pending",
         }));
 
-        console.log("Mapped Visitors:", visitorsData);
-        setVisitors(visitorsData);
-        setError(null);
-      } catch (error) {
-        console.error("Error fetching visitors:", error.message);
-        setVisitors([]);
-        setError(`Failed to fetch visitors: ${error.message}`);
-      }
-    };
+      console.log("Mapped Visitors:", visitorsData);
+      setVisitors(visitorsData);
+      setError(null);
+    } catch (error) {
+      console.error("Error fetching visitors:", error.message);
+      setVisitors([]);
+      setError(`Failed to fetch visitors: ${error.message}`);
+    }
+  };
 
-    fetchVisitors();
-  }, []);
+  useEffect(() => {
+    fetchVisitors(); // Fetch visitors when the component mounts
+  }, []); // Empty dependency array means it only runs once on mount
 
   useEffect(() => {
     localStorage.setItem("toggleVisitor", JSON.stringify(toggleVisitor));
@@ -78,7 +80,6 @@ const HostVisitorFromCheckIn = () => {
   const regenerateOTP = async (id) => {
     const newOtp = generateOTP();
     try {
-      // Update the OTP in the backend
       await axios.put(`http://localhost:5000/api/visitors/${id}`, { otp: newOtp });
       const updatedVisitors = visitors.map((visitor) =>
         visitor.id === id ? { ...visitor, otp: newOtp } : visitor
@@ -277,7 +278,7 @@ const HostVisitorFromCheckIn = () => {
                 mt: 2,
               }}
             >
-              No visitors found.
+              No active visitors found.
             </Typography>
           )}
 

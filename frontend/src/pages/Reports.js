@@ -1,3 +1,5 @@
+//report.js
+
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import {
@@ -12,20 +14,18 @@ import {
   TextField,
   CircularProgress,
 } from "@mui/material";
-import Navbar from "../components/Navbar"; // Adjust the path based on your project structure
+import Navbar from "../components/Navbar";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortBy, setSortBy] = useState("visitDate");
+  const [sortBy, setSortBy] = useState("checkInTime");
   const [order, setOrder] = useState("desc");
   const [error, setError] = useState("");
-  // Temporary state for date inputs (doesn't trigger re-fetch)
   const [tempStartDate, setTempStartDate] = useState("");
   const [tempEndDate, setTempEndDate] = useState("");
-  // Actual filters that trigger API calls
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -39,7 +39,7 @@ const Reports = () => {
         limit: 10,
         sortBy,
         order,
-        ...(startDate && endDate ? { startDate, endDate } : {}), // Send only if filtering by date
+        ...(startDate && endDate ? { startDate, endDate } : {}),
       };
 
       const { data } = await axios.get(`http://localhost:5000/api/visitors/report`, { params });
@@ -66,36 +66,47 @@ const Reports = () => {
     setOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
   };
 
+  const formatDuration = (duration) => {
+    if (!duration) return "N/A";
+    const { hours, minutes } = duration;
+    let result = "";
+    if (hours > 0) result += `${hours} hr${hours !== 1 ? "s" : ""}`;
+    if (minutes > 0) result += `${result ? " " : ""}${minutes} min`;
+    return result || "0 min";
+  };
+
   const downloadCSV = () => {
     if (reports.length === 0) {
       alert("No data available for export!");
       return;
     }
 
-    // Define CSV headers
-    const headers = ["Visitor Name", "Visit Date", "Purpose", "Host", "Meeting Duration (min)", "Attendees"];
-
-    // Map data to CSV format
-    const csvRows = [
-      headers.join(","), // First row (column headers)
-      ...reports.map(report =>
-        [
-          report.name,
-          new Date(report.checkInTime).toLocaleDateString(),
-          report.reasonForVisit,
-          report.personToVisit,
-          report.meetingDuration || "N/A",
-          report.teamMembersCount || 1
-        ].map(value => `"${value}"`).join(",") // Enclose values in quotes to handle commas
-      )
+    const headers = [
+      "Visitor Name",
+      "Check-In Date",
+      "Check-Out Date",
+      "Purpose",
+      "Host",
+      "Meeting Duration",
+      "Attendees",
     ];
 
-    // Create CSV Blob
+    const csvRows = [
+      headers.join(","),
+      ...reports.map((report) => [
+        report.name,
+        new Date(report.checkInTime).toLocaleString(),
+        report.checkOutTime ? new Date(report.checkOutTime).toLocaleString() : "N/A",
+        report.reasonForVisit,
+        report.personToVisit,
+        formatDuration(report.meetingDuration),
+        report.teamMembersCount || 1,
+      ].map((value) => `"${value}"`).join(",")),
+    ];
+
     const csvContent = csvRows.join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-
-    // Create download link
     const a = document.createElement("a");
     a.href = url;
     a.download = "visitor_reports.csv";
@@ -104,7 +115,6 @@ const Reports = () => {
     document.body.removeChild(a);
   };
 
-  // Apply filters when button is clicked
   const applyFilters = () => {
     setStartDate(tempStartDate);
     setEndDate(tempEndDate);
@@ -112,11 +122,10 @@ const Reports = () => {
 
   return (
     <>
-      <Navbar /> {/* Add the Navbar here */}
+      <Navbar />
       <div style={{ padding: "20px" }}>
         <h2>Visitor Reports</h2>
 
-        {/* Filters */}
         <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
           <TextField
             label="Start Date"
@@ -132,52 +141,76 @@ const Reports = () => {
             onChange={(e) => setTempEndDate(e.target.value)}
             InputLabelProps={{ shrink: true }}
           />
-          <Button variant="contained" onClick={applyFilters}>Apply Filters</Button>
-          <Button variant="contained" color="success" onClick={downloadCSV}>Download CSV</Button>
+          <Button variant="contained" onClick={applyFilters}>
+            Apply Filters
+          </Button>
+          <Button variant="contained" color="success" onClick={downloadCSV}>
+            Download CSV
+          </Button>
         </div>
 
-        {/* Reports Table */}
         <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell onClick={() => toggleSort("visitorName")} style={{ cursor: "pointer" }}>
-                  <b>Visitor Name {sortBy === "visitorName" ? (order === "asc" ? "▲" : "▼") : ""}</b>
+                <TableCell onClick={() => toggleSort("name")} style={{ cursor: "pointer" }}>
+                  <b>Visitor Name {sortBy === "name" ? (order === "asc" ? "▲" : "▼") : ""}</b>
                 </TableCell>
-                <TableCell onClick={() => toggleSort("visitDate")} style={{ cursor: "pointer" }}>
-                  <b>Visit Date {sortBy === "visitDate" ? (order === "asc" ? "▲" : "▼") : ""}</b>
+                <TableCell onClick={() => toggleSort("checkInTime")} style={{ cursor: "pointer" }}>
+                  <b>Check-In {sortBy === "checkInTime" ? (order === "asc" ? "▲" : "▼") : ""}</b>
                 </TableCell>
-                <TableCell><b>Purpose</b></TableCell>
-                <TableCell><b>Host</b></TableCell>
-                <TableCell><b>Meeting Duration (min)</b></TableCell>
-                <TableCell><b>Attendees</b></TableCell>
+                <TableCell onClick={() => toggleSort("checkOutTime")} style={{ cursor: "pointer" }}>
+                  <b>Check-Out {sortBy === "checkOutTime" ? (order === "asc" ? "▲" : "▼") : ""}</b>
+                </TableCell>
+                <TableCell>
+                  <b>Purpose</b>
+                </TableCell>
+                <TableCell>
+                  <b>Host</b>
+                </TableCell>
+                <TableCell
+                  onClick={() => toggleSort("meetingDuration")}
+                  style={{ cursor: "pointer" }}
+                >
+                  <b>
+                    Duration {sortBy === "meetingDuration" ? (order === "asc" ? "▲" : "▼") : ""}
+                  </b>
+                </TableCell>
+                <TableCell>
+                  <b>Attendees</b>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">
+                  <TableCell colSpan={7} align="center">
                     <CircularProgress size={24} />
                   </TableCell>
                 </TableRow>
               ) : error ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center" style={{ color: "red" }}>
+                  <TableCell colSpan={7} align="center" style={{ color: "red" }}>
                     {error}
                   </TableCell>
                 </TableRow>
               ) : reports.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} align="center">No reports found.</TableCell>
+                  <TableCell colSpan={7} align="center">
+                    No reports found.
+                  </TableCell>
                 </TableRow>
               ) : (
                 reports.map((report) => (
                   <TableRow key={report._id}>
                     <TableCell>{report.name}</TableCell>
-                    <TableCell>{new Date(report.checkInTime).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(report.checkInTime).toLocaleString()}</TableCell>
+                    <TableCell>
+                      {report.checkOutTime ? new Date(report.checkOutTime).toLocaleString() : "N/A"}
+                    </TableCell>
                     <TableCell>{report.reasonForVisit}</TableCell>
                     <TableCell>{report.personToVisit}</TableCell>
-                    <TableCell>{report.meetingDuration || "N/A"}</TableCell>
+                    <TableCell>{formatDuration(report.meetingDuration)}</TableCell>
                     <TableCell>{report.teamMembersCount || 1}</TableCell>
                   </TableRow>
                 ))
@@ -186,11 +219,19 @@ const Reports = () => {
           </Table>
         </TableContainer>
 
-        {/* Pagination */}
         <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "10px" }}>
-          <Button disabled={page === 1} onClick={() => setPage(page - 1)}>Previous</Button>
-          <span> Page {page} of {totalPages} </span>
-          <Button disabled={page === totalPages || totalPages === 1} onClick={() => setPage(page + 1)}>Next</Button>
+          <Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+            Previous
+          </Button>
+          <span>
+            Page {page} of {totalPages}
+          </span>
+          <Button
+            disabled={page === totalPages || totalPages === 1}
+            onClick={() => setPage(page + 1)}
+          >
+            Next
+          </Button>
         </div>
       </div>
     </>

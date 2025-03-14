@@ -73,10 +73,10 @@ const Navbar = () => {
       
         },
 
-        // {
-        //   type: "button",
-        //   label: "HOST",path:"/HostDashboard"
-        // },
+         {
+           type: "button",
+           label: "Admin",path:"/userlist"
+         },
         
         // **Reports Section Added**
         { type: "button", label: "Reports", path: "/reports" },
@@ -120,7 +120,7 @@ const Navbar = () => {
 
       guest: [
         { type: "button", label: "Login", path: "/" },
-        { type: "button", label: "Register", path: "/companyregister" },
+        // { type: "button", label: "Register", path: "/companyregister" },
       ],
     };
 

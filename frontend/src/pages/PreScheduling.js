@@ -39,7 +39,7 @@ const PreScheduling = () => {
     host: "",
     email: "",
     department: "",
-  });
+  }); 
   const [loading, setLoading] = useState(false);
   const [fetchingHosts, setFetchingHosts] = useState(true);
   const [errors, setErrors] = useState({});

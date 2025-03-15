@@ -684,7 +684,6 @@
 
 
 
-
 import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import {
@@ -764,8 +763,8 @@ function Home() {
   const [meterData, setMeterData] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
   const [currentDate, setCurrentDate] = useState("");
-  const [anchorEl, setAnchorEl] = useState(null); // For menu positioning
-  const [selectedVisitorId, setSelectedVisitorId] = useState(null); // Track selected row
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedVisitorId, setSelectedVisitorId] = useState(null);
 
   const [stats, setStats] = useState([
     { title: "Total Visitors", value: 0, icon: <People />, color: "#673ab7" },
@@ -828,7 +827,6 @@ function Home() {
       );
       setCurrentDate(formattedCurrentDate);
 
-      // Fetch visitors
       const visitorResponse = await fetch("http://localhost:5000/api/visitors");
       if (!visitorResponse.ok) throw new Error("Failed to fetch visitor data");
       const rawVisitorData = await visitorResponse.json();
@@ -868,7 +866,6 @@ function Home() {
         (v) => v.checkOut !== "N/A"
       ).length;
 
-      // Fetch pre-scheduled visitors for "Pending" count
       const prescheduleResponse = await fetch(
         "http://localhost:5000/api/preschedules"
       );
@@ -891,7 +888,6 @@ function Home() {
 
       const totalVisitors = checkedIn + checkedOut;
 
-      // Fetch vehicles
       const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
       if (!vehicleResponse.ok) throw new Error("Failed to fetch vehicle data");
       const vehicleData = await vehicleResponse.json();
@@ -947,8 +943,7 @@ function Home() {
       setChartData(
         dateRange.map((date) => ({
           name: new Date(date).toLocaleDateString("en-US", {
-            day: "numeric",
-            month: "short",
+            weekday: "long",
           }),
           visits: dailyVisits[date] || 0,
         }))
@@ -986,7 +981,6 @@ function Home() {
     };
   }, [fetchVisitors]);
 
-  // Handle menu open/close
   const handleMenuClick = (event, id) => {
     setAnchorEl(event.currentTarget);
     setSelectedVisitorId(id);
@@ -997,7 +991,6 @@ function Home() {
     setSelectedVisitorId(null);
   };
 
-  // Delete visitor function
   const handleDelete = async () => {
     if (!selectedVisitorId) return;
 
@@ -1011,12 +1004,10 @@ function Home() {
 
       if (!response.ok) throw new Error("Failed to delete visitor");
 
-      // Update state to remove deleted visitor
       setVisitors((prevVisitors) =>
         prevVisitors.filter((visitor) => visitor.id !== selectedVisitorId)
       );
 
-      // Recalculate stats
       const checkedIn = visitors.filter(
         (v) => v.checkIn !== "N/A" && v.checkOut === "N/A"
       ).length;
@@ -1027,14 +1018,14 @@ function Home() {
         { ...prevStats[0], value: totalVisitors },
         { ...prevStats[1], value: checkedIn },
         { ...prevStats[2], value: checkedOut },
-        prevStats[3], // Pending unchanged
-        prevStats[4], // Vehicle Checked-In unchanged
+        prevStats[3],
+        prevStats[4],
       ]);
 
       setMeterData((prevMeterData) => [
         { ...prevMeterData[0], value: checkedIn },
         { ...prevMeterData[1], value: checkedOut },
-        prevMeterData[2], // Pending unchanged
+        prevMeterData[2],
       ]);
 
       console.log(`Visitor with ID ${selectedVisitorId} deleted successfully`);
@@ -1328,7 +1319,7 @@ function Home() {
                   mb: 2,
                 }}
               >
-                Activity Chart
+                Weekly Visitors Insights
               </Typography>
               <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
                 <PieChart>
@@ -1338,10 +1329,11 @@ function Home() {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={isMobile ? 70 : 100}
+                    outerRadius={isMobile ? 80 : 110} // Increased radius to reduce overlap
                     fill="#8884d8"
-                    label={({ name, visits }) => `${name}: ${visits}`}
+                    label={({ name, visits }) => `${name}: ${visits} visits`}
                     labelLine={true}
+                    paddingAngle={2} // Add padding between segments to reduce overlap
                   >
                     {chartData.map((entry, index) => (
                       <Cell
@@ -1368,6 +1360,7 @@ function Home() {
                       border: "1px solid #ddd",
                       boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                     }}
+                    formatter={(value, name) => [`${value} visits`, name]}
                   />
                 </PieChart>
               </ResponsiveContainer>

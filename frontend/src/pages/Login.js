@@ -44,7 +44,7 @@ const LoginForgotPassword = () => {
             navigate("/vehicles");
             break;
           case "host":
-            navigate("/visitorlist");
+            navigate("/HostDashboard");
             break;
           default:
             navigate("/");

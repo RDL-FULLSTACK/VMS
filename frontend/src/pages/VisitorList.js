@@ -302,19 +302,7 @@ const VisitorList = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        <Button
-                          variant="contained"
-                          size="small"
-                          sx={{ 
-                            ...buttonStyles,
-                            bgcolor: 'green',
-                            color: 'white',
-                            '&:hover': { bgcolor: 'darkgreen' }
-                          }}
-                          onClick={() => navigate(`/editcheckin/${visitor.id}`)}
-                        >
-                          Edit Check-In
-                        </Button>
+                        
                         <Button
                           variant="contained"
                           size="small"

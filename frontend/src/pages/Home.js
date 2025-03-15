@@ -1,6 +1,7 @@
+// 
 import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import { useNavigate } from "react-router-dom";
 import {
   Typography,
   Container,
@@ -70,6 +71,7 @@ function TabPanel(props) {
 }
 
 function Home() {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visitors, setVisitors] = useState([]);
@@ -198,15 +200,11 @@ function Home() {
         return isPending;
       }).length;
 
-      console.log("Preschedule Data:", prescheduleData);
-      console.log("Pending Count:", pending);
-
       const totalVisitors = checkedIn + checkedOut;
 
       const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
       if (!vehicleResponse.ok) throw new Error("Failed to fetch vehicle data");
       const vehicleData = await vehicleResponse.json();
-      console.log("Raw Vehicle Data:", vehicleData);
 
       const currentDateVehicles = (
         Array.isArray(vehicleData) ? vehicleData : []
@@ -224,7 +222,6 @@ function Home() {
         checkOutTime: formatTimeOnly(vehicle.checkOutTime),
       }));
 
-      console.log("Transformed Vehicles:", transformedVehicles);
       setVehicles(transformedVehicles);
 
       const vehicleCheckedIn = currentDateVehicles.filter(
@@ -245,7 +242,6 @@ function Home() {
         { name: "Pending", value: pending || 0, color: "#FFBB28" },
       ];
       setMeterData(updatedMeterData);
-      console.log("Meter Data:", updatedMeterData);
 
       const dateRange = getDateRange(7);
       const dailyVisits = visitorData.reduce((acc, visitor) => {
@@ -306,6 +302,10 @@ function Home() {
     setSelectedVisitorId(null);
   };
 
+  const handleEditCheckIn = (visitorId) => {
+    navigate(`/editcheckin/${visitorId}`);
+  };
+
   const handleDelete = async () => {
     if (!selectedVisitorId) return;
 
@@ -342,8 +342,6 @@ function Home() {
         { ...prevMeterData[1], value: checkedOut },
         prevMeterData[2],
       ]);
-
-      console.log(`Visitor with ID ${selectedVisitorId} deleted successfully`);
     } catch (err) {
       console.error("Error deleting visitor:", err);
       setError(err.message);
@@ -375,7 +373,7 @@ function Home() {
       headerName: "Email",
       flex: 1.5,
       minWidth: 150,
-      hide: isMobile,
+      hideable: isMobile,
     },
     { field: "company", headerName: "Company", flex: 1, minWidth: 120 },
     {
@@ -383,7 +381,7 @@ function Home() {
       headerName: "Phone",
       flex: 1,
       minWidth: 120,
-      hide: isTablet,
+      hideable: isTablet,
     },
     { field: "checkIn", headerName: "Check-In", flex: 1, minWidth: 120 },
     {
@@ -398,21 +396,21 @@ function Home() {
       headerName: "Purpose",
       flex: 1,
       minWidth: 120,
-      hide: isTablet,
+      hideable: isTablet,
     },
     {
       field: "personToVisit",
       headerName: "Host",
       flex: 1,
       minWidth: 120,
-      hide: isTablet,
+      hideable: isTablet,
     },
     {
       field: "designation",
       headerName: "Designation",
       flex: 1,
       minWidth: 120,
-      hide: isTablet,
+      hideable: isTablet,
     },
     {
       field: "actions",
@@ -434,10 +432,20 @@ function Home() {
             open={Boolean(anchorEl) && selectedVisitorId === params.row.id}
             onClose={handleMenuClose}
           >
-            <MenuItem onClick={() => { /* Edit functionality TBD */ }}>
+            <MenuItem onClick={() => handleEditCheckIn(selectedVisitorId)}>
               Edit
             </MenuItem>
-            <MenuItem onClick={handleDelete}>Delete</MenuItem>
+            <MenuItem
+            onClick={handleDelete}
+            sx={{
+              color: "red", // Sets the text color to red
+              "&:hover": {
+                backgroundColor: "#ffebee", // Light red background on hover for better UX
+              },
+            }}
+          >
+            Delete
+          </MenuItem>
           </Menu>
         </>
       ),
@@ -464,226 +472,253 @@ function Home() {
       headerName: "Check-Out Time",
       flex: 1,
       minWidth: 120,
-      hide: isMobile,
+      hideable: isMobile,
     },
   ];
 
   const handleTabChange = (event, newValue) => setActiveTab(newValue);
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <>
       <Navbar />
-      <Box sx={{ flexGrow: 1 }}>
-        <Grid
-          container
-          spacing={isMobile ? 1 : 2}
-          mt={isMobile ? 1 : 2}
-          px={isMobile ? 1 : 2}
-          mb={4} // Added margin-bottom for space before footer
-        >
-          <Grid item xs={12} md={8}>
-            <Container
-              sx={{
-                bgcolor: "#f8f9fa",
-                py: isMobile ? 2 : 3,
-                px: isMobile ? 2 : 3,
-                borderRadius: "20px",
-                boxShadow: 3,
-                mb: isMobile ? 2 : 3,
-              }}
-            >
-              <Grid
-                container
-                spacing={isMobile ? 2 : 3}
-                justifyContent="center"
-              >
-                {stats.map((stat, index) => (
-                  <Grid item xs={6} sm={4} md={2.2} key={index}>
-                    <Card
-                      sx={{
-                        bgcolor: stat.color,
-                        color: "white",
-                        textAlign: "center",
-                        p: isMobile ? 1 : 2,
-                        borderRadius: 2,
-                        height: 100,
-                      }}
-                    >
-                      <CardContent>
-                        <Box
-                          display="flex"
-                          flexDirection="column"
-                          alignItems="center"
+      <Grid
+        container
+        spacing={isMobile ? 1 : 2}
+        mt={isMobile ? 1 : 2}
+        px={isMobile ? 1 : 2}
+      >
+        <Grid item xs={12} md={8}>
+          <Container
+            sx={{
+              bgcolor: "#f8f9fa",
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
+              borderRadius: "20px",
+              boxShadow: 3,
+              mb: isMobile ? 2 : 3,
+            }}
+          >
+            <Grid container spacing={isMobile ? 2 : 3} justifyContent="center">
+              {stats.map((stat, index) => (
+                <Grid item xs={6} sm={4} md={2.2} key={index}>
+                  <Card
+                    sx={{
+                      bgcolor: stat.color,
+                      color: "white",
+                      textAlign: "center",
+                      p: isMobile ? 1 : 2,
+                      borderRadius: 2,
+                      height: 100,
+                    }}
+                  >
+                    <CardContent>
+                      <Box
+                        display="flex"
+                        flexDirection="column"
+                        alignItems="center"
+                      >
+                        {stat.icon}
+                        <Typography
+                          variant={isMobile ? "body2" : "body1"}
+                          sx={{ fontSize: isMobile ? "0.8rem" : "1rem" }}
                         >
-                          {stat.icon}
-                          <Typography
-                            variant={isMobile ? "body2" : "body1"}
-                            sx={{ fontSize: isMobile ? "0.8rem" : "1rem" }}
-                          >
-                            {stat.title}
-                          </Typography>
-                          <Typography
-                            variant={isMobile ? "h6" : "h5"}
-                            sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}
-                          >
-                            {stat.value}
-                          </Typography>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Container>
+                          {stat.title}
+                        </Typography>
+                        <Typography
+                          variant={isMobile ? "h6" : "h5"}
+                          sx={{ fontSize: isMobile ? "1.2rem" : "1.5rem" }}
+                        >
+                          {stat.value}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
 
-            <Container
+          <Container
+            sx={{
+              bgcolor: "#f8f9fa",
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
+              borderRadius: "20px",
+              boxShadow: 3,
+              height: isMobile ? "auto" : "600px",
+            }}
+          >
+            <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}>
+              <Tabs value={activeTab} onChange={handleTabChange} centered>
+                <Tab label="Visitors" id="tab-0" aria-controls="tabpanel-0" />
+                <Tab label="Vehicles" id="tab-1" aria-controls="tabpanel-1" />
+              </Tabs>
+              <TabPanel value={activeTab} index={0} date={currentDate}>
+                {loading ? (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    py={4}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : error ? (
+                  <Typography variant="body1" color="error" align="center">
+                    {error}
+                  </Typography>
+                ) : (
+                  <DataGrid
+                    rows={visitors}
+                    columns={visitorColumns}
+                    getRowId={(row) => row.id}
+                    autoHeight
+                    disableColumnMenu
+                    pageSizeOptions={[5]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { pageSize: isMobile ? 5 : 5 },
+                      },
+                    }}
+                  />
+                )}
+              </TabPanel>
+              <TabPanel value={activeTab} index={1} date={currentDate}>
+                {loading ? (
+                  <Box
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    py={4}
+                  >
+                    <CircularProgress />
+                  </Box>
+                ) : error ? (
+                  <Typography variant="body1" color="error" align="center">
+                    {error}
+                  </Typography>
+                ) : (
+                  <DataGrid
+                    rows={vehicles}
+                    columns={vehicleColumns}
+                    getRowId={(row) => row.id}
+                    autoHeight
+                    disableColumnMenu
+                    pageSizeOptions={[5]}
+                    initialState={{
+                      pagination: {
+                        paginationModel: { pageSize: isMobile ? 5 : 5 },
+                      },
+                    }}
+                  />
+                )}
+              </TabPanel>
+            </Paper>
+          </Container>
+        </Grid>
+
+        <Grid item xs={12} md={4}>
+          <Container
+            sx={{
+              bgcolor: "#f8f9fa",
+              py: isMobile ? 2 : 3,
+              px: isMobile ? 2 : 3,
+              borderRadius: "20px",
+              boxShadow: 3,
+              height: isMobile ? "auto" : "800px",
+            }}
+          >
+            <Paper
+              elevation={4}
+              sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}
+            >
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
+                gutterBottom
+                sx={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                }}
+              >
+                Visitor Status Overview
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+                <PieChart>
+                  <Pie
+                    data={meterData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={isMobile ? 80 : 100}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    labelLine={true}
+                    paddingAngle={2}
+                  >
+                    {meterData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      fontSize: isMobile ? 12 : 14,
+                      backgroundColor: "rgba(255, 255, 255, 0.95)",
+                      borderRadius: "8px",
+                      border: "1px solid #ddd",
+                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                    }}
+                    formatter={(value, name) => [`${value}`, name]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Paper>
+            
+            <Paper
+              elevation={8}
               sx={{
-                bgcolor: "#f8f9fa",
-                py: isMobile ? 2 : 3,
-                px: isMobile ? 2 : 3,
-                borderRadius: "20px",
-                boxShadow: 3,
-                height: isMobile ? "auto" : "600px",
+                p: isMobile ? 2 : 4,
+                borderRadius: "10px",
+                bgcolor: "#fff",
+                boxShadow: 4,
+                height: isMobile ? 280 : 320,
               }}
             >
-              <Paper
-                elevation={4}
-                sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}
+              <Typography
+                variant={isMobile ? "h6" : "h5"}
+                gutterBottom
+                sx={{
+                  textAlign: "center",
+                  fontWeight: "bold",
+                  color: "#333",
+                  mb: 2,
+                }}
               >
-                <Tabs value={activeTab} onChange={handleTabChange} centered>
-                  <Tab
-                    label="Visitors"
-                    id="tab-0"
-                    aria-controls="tabpanel-0"
-                  />
-                  <Tab
-                    label="Vehicles"
-                    id="tab-1"
-                    aria-controls="tabpanel-1"
-                  />
-                </Tabs>
-                <TabPanel value={activeTab} index={0} date={currentDate}>
-                  {loading ? (
-                    <Box
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
-                      py={4}
-                    >
-                      <CircularProgress />
-                    </Box>
-                  ) : error ? (
-                    <Typography variant="body1" color="error" align="center">
-                      {error}
-                    </Typography>
-                  ) : (
-                    <DataGrid
-                      rows={visitors}
-                      columns={visitorColumns}
-                      getRowId={(row) => row.id}
-                      autoHeight
-                      disableColumnMenu
-                      pageSizeOptions={[5]}
-                      initialState={{
-                        pagination: {
-                          paginationModel: { pageSize: isMobile ? 5 : 5 },
-                        },
-                      }}
-                    />
-                  )}
-                </TabPanel>
-                <TabPanel value={activeTab} index={1} date={currentDate}>
-                  {loading ? (
-                    <Box
-                      display="flex"
-                      justifyContent="center"
-                      alignItems="center"
-                      py={4}
-                    >
-                      <CircularProgress />
-                    </Box>
-                  ) : error ? (
-                    <Typography variant="body1" color="error" align="center">
-                      {error}
-                    </Typography>
-                  ) : (
-                    <DataGrid
-                      rows={vehicles}
-                      columns={vehicleColumns}
-                      getRowId={(row) => row.id}
-                      autoHeight
-                      disableColumnMenu
-                      pageSizeOptions={[5]}
-                      initialState={{
-                        pagination: {
-                          paginationModel: { pageSize: isMobile ? 5 : 5 },
-                        },
-                      }}
-                    />
-                  )}
-                </TabPanel>
-              </Paper>
-            </Container>
-          </Grid>
-
-          <Grid item xs={12} md={4}>
-            <Container
-              sx={{
-                bgcolor: "#f8f9fa",
-                py: isMobile ? 2 : 3,
-                px: isMobile ? 2 : 3,
-                borderRadius: "20px",
-                boxShadow: 3,
-                height: isMobile ? "auto" : "800px",
-              }}
-            >
-              <Paper
-                elevation={4}
-                sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}
-              >
-                <Typography
-                  variant={isMobile ? "h6" : "h5"}
-                  gutterBottom
-                  sx={{
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    color: "#333",
-                    mb: 2,
-                  }}
-                >
-                  Weekly Visitors Insights
-                </Typography>
+                Weekly Visitors Insights
+              </Typography>
+              {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-                  <PieChart>
-                    <Pie
-                      data={chartData}
-                      dataKey="visits"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={isMobile ? 80 : 110}
-                      fill="#8884d8"
-                      label={({ name, visits }) => `${name}: ${visits} visits`}
-                      labelLine={true}
-                      paddingAngle={2}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={
-                            [
-                              "#0088FE",
-                              "#00C49F",
-                              "#FFBB28",
-                              "#FF8042",
-                              "#8884d8",
-                              "#82ca9d",
-                              "#ffc107",
-                            ][index % 7]
-                          }
-                        />
-                      ))}
-                    </Pie>
+                  <BarChart
+                    data={chartData}
+                    margin={{
+                      top: 20,
+                      right: isMobile ? 10 : 20,
+                      left: 0,
+                      bottom: 40, // Increased bottom margin to accommodate rotated labels
+                    }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: "#555", fontSize: isMobile ? 10 : 12, angle: -45 }} // Rotate labels by -45 degrees
+                      textAnchor="end" // Align text to the end for rotated labels
+                      interval={0} // Show all ticks (no skipping)
+                      height={60} // Increase height to accommodate rotated labels
+                    />
+                    <YAxis
+                      tick={{ fill: "#555", fontSize: isMobile ? 10 : 12 }}
+                    />
                     <Tooltip
                       contentStyle={{
                         fontSize: isMobile ? 12 : 14,
@@ -692,127 +727,20 @@ function Home() {
                         border: "1px solid #ddd",
                         boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
                       }}
-                      formatter={(value, name) => [`${value} visits`, name]}
                     />
-                  </PieChart>
+                    <Bar dataKey="visits" fill="#8884d8" radius={[10, 10, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
-              </Paper>
-              <Paper
-                elevation={8}
-                sx={{
-                  p: isMobile ? 2 : 4,
-                  borderRadius: "10px",
-                  bgcolor: "#fff",
-                  boxShadow: 4,
-                  height: isMobile ? 280 : 320,
-                }}
-              >
-                <Typography
-                  variant={isMobile ? "h6" : "h5"}
-                  gutterBottom
-                  sx={{
-                    textAlign: "center",
-                    fontWeight: "bold",
-                    color: "#333",
-                    mb: 2,
-                  }}
-                >
-                  Visitor Status Overview
+              ) : (
+                <Typography align="center" color="textSecondary">
+                  No data available for Weekly Visitors Insights
                 </Typography>
-                {meterData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-                    <BarChart
-                      data={meterData}
-                      margin={{
-                        top: 20,
-                        right: isMobile ? 10 : 20,
-                        left: 0,
-                        bottom: 20,
-                      }}
-                    >
-                      <defs>
-                        <linearGradient
-                          id="colorCheckedIn"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8} />
-                          <stop
-                            offset="95%"
-                            stopColor="#0088FE"
-                            stopOpacity={0.3}
-                          />
-                        </linearGradient>
-                        <linearGradient
-                          id="colorCheckedOut"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8} />
-                          <stop
-                            offset="95%"
-                            stopColor="#00C49F"
-                            stopOpacity={0.3}
-                          />
-                        </linearGradient>
-                        <linearGradient
-                          id="colorPending"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop offset="5%" stopColor="#FFBB28" stopOpacity={0.8} />
-                          <stop
-                            offset="95%"
-                            stopColor="#FFBB28"
-                            stopOpacity={0.3}
-                          />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-                      <XAxis
-                        dataKey="name"
-                        tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
-                      />
-                      <YAxis
-                        tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
-                      />
-                      <Tooltip
-                        contentStyle={{
-                          fontSize: isMobile ? 12 : 14,
-                          backgroundColor: "rgba(255, 255, 255, 0.95)",
-                          borderRadius: "8px",
-                          border: "1px solid #ddd",
-                          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                        }}
-                      />
-                      <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                        {meterData.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={`url(#color${entry.name.replace("-", "")})`}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <Typography align="center" color="textSecondary">
-                    No data available for Visitor Status Overview
-                  </Typography>
-                )}
-              </Paper>
-            </Container>
-          </Grid>
+              )}
+            </Paper>
+          </Container>
         </Grid>
-      </Box>
-      <Footer />
-    </Box>
+      </Grid>
+    </>
   );
 }
 

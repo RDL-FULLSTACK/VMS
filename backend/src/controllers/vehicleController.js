@@ -1,7 +1,7 @@
 // controllers/vehicleController.js
 const Vehicle = require("../models/Vehicle");
 
-// 🔹 Get All Vehicles
+// Existing functions remain unchanged...
 exports.getAllVehicles = async (req, res) => {
   try {
     const vehicles = await Vehicle.find();
@@ -11,28 +11,24 @@ exports.getAllVehicles = async (req, res) => {
   }
 };
 
-// 🔹 Add Vehicle (Registration)
 exports.addVehicle = async (req, res) => {
   try {
     const { vehicleNumber, purpose, date, checkInTime } = req.body;
-    // console.log("Request body:", req.body); // Log the incoming request body
 
-    // Validate required fields manually
     if (!vehicleNumber || !purpose || !date || !checkInTime) {
-      return res.status(400).json({ 
-        message: "Missing required fields: vehicleNumber, purpose, date, and checkInTime are required" 
+      return res.status(400).json({
+        message: "Missing required fields: vehicleNumber, purpose, date, and checkInTime are required"
       });
     }
 
-    // Check if vehicle exists and hasn't checked out
-    const existingVehicle = await Vehicle.findOne({ 
+    const existingVehicle = await Vehicle.findOne({
       vehicleNumber,
-      checkOutTime: "" 
+      checkOutTime: ""
     });
 
     if (existingVehicle) {
-      return res.status(400).json({ 
-        message: "Vehicle is already checked in and hasn't checked out yet" 
+      return res.status(400).json({
+        message: "Vehicle is already checked in and hasn't checked out yet"
       });
     }
 
@@ -44,19 +40,18 @@ exports.addVehicle = async (req, res) => {
       checkOutTime: "",
     });
     await newVehicle.save();
-    res.status(201).json({ 
-      message: "Vehicle registered successfully", 
-      vehicle: newVehicle 
+    res.status(201).json({
+      message: "Vehicle registered successfully",
+      vehicle: newVehicle
     });
   } catch (error) {
-    console.error("Error in addVehicle:", error); // Log the error
-    res.status(400).json({ 
-      message: error.message || "Failed to register vehicle due to server error" 
+    console.error("Error in addVehicle:", error);
+    res.status(400).json({
+      message: error.message || "Failed to register vehicle due to server error"
     });
   }
 };
 
-// 🔹 Checkout Vehicle
 exports.checkoutVehicle = async (req, res) => {
   try {
     const { vehicleNumber, checkOutTime } = req.body;
@@ -78,12 +73,48 @@ exports.checkoutVehicle = async (req, res) => {
   }
 };
 
-// 🔹 Delete Vehicle (Optional)
 exports.deleteVehicle = async (req, res) => {
   try {
     await Vehicle.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: "Vehicle deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// New function for vehicle reports with pagination, sorting, and filtering
+exports.getVehicleReports = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search } = req.query;
+
+    let query = {};
+    // Filter by date range if provided
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
+    // Filter by vehicleNumber if search is provided
+    if (search) {
+      query.vehicleNumber = { $regex: search, $options: "i" }; // Case-insensitive search on vehicleNumber
+    }
+
+    const vehicles = await Vehicle.find(query)
+      .sort({ [sortBy]: order === "asc" ? 1 : -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const total = await Vehicle.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+
+    if (vehicles.length === 0) {
+      return res.status(404).json({ message: "No vehicle reports found", vehicles: [], totalPages });
+    }
+
+    res.status(200).json({ vehicles, totalPages });
+  } catch (error) {
+    console.error("Error fetching vehicle reports:", error);
+    res.status(500).json({ message: "Error fetching vehicle reports", error: error.message });
   }
 };

@@ -41,7 +41,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import Footer from "../components/footer";
+import Footer from "../components/Footer";
 
 // Custom TabPanel component
 function TabPanel(props) {

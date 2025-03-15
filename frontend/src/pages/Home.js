@@ -79,7 +79,6 @@ function Home() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
-  // Utility functions moved inside fetchVisitors to avoid dependency issues
   const fetchVisitors = useCallback(async () => {
     const getCurrentDate = () => new Date().toISOString().split("T")[0];
 
@@ -168,13 +167,14 @@ function Home() {
       if (!Array.isArray(prescheduleData))
         throw new Error("Unexpected preschedule data format");
 
-      // Filter pre-scheduled visitors for the current date (assuming a 'date' or 'scheduledDate' field exists)
+      // Filter pre-scheduled visitors for "pending" status only (no date restriction)
       const pending = prescheduleData.filter((preschedule) => {
-        const scheduledDate = extractDateOnly(
-          preschedule.date || preschedule.scheduledDate
-        ); // Adjust field name as per API
-        return scheduledDate === currentDate;
+        const isPending = preschedule.status?.toLowerCase() === "pending";
+        return isPending;
       }).length;
+
+      console.log("Preschedule Data:", prescheduleData); // Debug log
+      console.log("Pending Count:", pending); // Debug log
 
       const totalVisitors = checkedIn + checkedOut;
 
@@ -209,11 +209,14 @@ function Home() {
         { ...prevStats[4], value: currentDateVehicles.length },
       ]);
 
-      setMeterData([
-        { name: "Checked-In", value: checkedIn, color: "#0088FE" },
-        { name: "Checked-Out", value: checkedOut, color: "#00C49F" },
-        { name: "Pending", value: pending, color: "#FFBB28" },
-      ]);
+      // Update meterData for Visitor Status Overview with only Checked-In, Checked-Out, and Pending
+      const updatedMeterData = [
+        { name: "Checked-In", value: checkedIn || 0, color: "#0088FE" },
+        { name: "Checked-Out", value: checkedOut || 0, color: "#00C49F" },
+        { name: "Pending", value: pending || 0, color: "#FFBB28" },
+      ];
+      setMeterData(updatedMeterData);
+      console.log("Meter Data:", updatedMeterData); // Debug log
 
       const dateRange = getDateRange(7);
       const dailyVisits = visitorData.reduce((acc, visitor) => {
@@ -358,7 +361,6 @@ function Home() {
         px={isMobile ? 1 : 2}
       >
         <Grid item xs={12} md={8}>
-          {/* Cards Container */}
           <Container
             sx={{
               bgcolor: "#f8f9fa",
@@ -366,7 +368,7 @@ function Home() {
               px: isMobile ? 2 : 3,
               borderRadius: "20px",
               boxShadow: 3,
-              mb: isMobile ? 2 : 3, // Margin bottom to separate from the table container
+              mb: isMobile ? 2 : 3,
             }}
           >
             <Grid container spacing={isMobile ? 2 : 3} justifyContent="center">
@@ -409,7 +411,6 @@ function Home() {
             </Grid>
           </Container>
 
-          {/* Table Container */}
           <Container
             sx={{
               bgcolor: "#f8f9fa",
@@ -417,7 +418,7 @@ function Home() {
               px: isMobile ? 2 : 3,
               borderRadius: "20px",
               boxShadow: 3,
-              height: isMobile ? "auto" : "600px", // Adjusted height for table container
+              height: isMobile ? "auto" : "600px",
             }}
           >
             <Paper elevation={4} sx={{ p: isMobile ? 2 : 3, borderRadius: 2 }}>
@@ -488,7 +489,6 @@ function Home() {
             </Paper>
           </Container>
         </Grid>
-        {/* ... (rest of the Grid container, e.g., the charts column, remains unchanged) */}
 
         <Grid item xs={12} md={4}>
           <Container
@@ -581,87 +581,93 @@ function Home() {
               >
                 Visitor Status Overview
               </Typography>
-              <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-                <BarChart
-                  data={meterData}
-                  margin={{
-                    top: 20,
-                    right: isMobile ? 10 : 20,
-                    left: 0,
-                    bottom: 20,
-                  }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="colorCheckedIn"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#0088FE"
-                        stopOpacity={0.3}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="colorCheckedOut"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#00C49F"
-                        stopOpacity={0.3}
-                      />
-                    </linearGradient>
-                    <linearGradient
-                      id="colorPending"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop offset="5%" stopColor="#FFBB28" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#FFBB28"
-                        stopOpacity={0.3}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
-                  />
-                  <YAxis
-                    tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      fontSize: isMobile ? 12 : 14,
-                      backgroundColor: "rgba(255, 255, 255, 0.95)",
-                      borderRadius: "8px",
-                      border: "1px solid #ddd",
-                      boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              {meterData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+                  <BarChart
+                    data={meterData}
+                    margin={{
+                      top: 20,
+                      right: isMobile ? 10 : 20,
+                      left: 0,
+                      bottom: 20,
                     }}
-                  />
-                  <Bar dataKey="value" radius={[10, 10, 0, 0]}>
-                    {meterData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={`url(#color${entry.name.replace("-", "")})`}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                  >
+                    <defs>
+                      <linearGradient
+                        id="colorCheckedIn"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="5%" stopColor="#0088FE" stopOpacity={0.8} />
+                        <stop
+                          offset="95%"
+                          stopColor="#0088FE"
+                          stopOpacity={0.3}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="colorCheckedOut"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="5%" stopColor="#00C49F" stopOpacity={0.8} />
+                        <stop
+                          offset="95%"
+                          stopColor="#00C49F"
+                          stopOpacity={0.3}
+                        />
+                      </linearGradient>
+                      <linearGradient
+                        id="colorPending"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="5%" stopColor="#FFBB28" stopOpacity={0.8} />
+                        <stop
+                          offset="95%"
+                          stopColor="#FFBB28"
+                          stopOpacity={0.3}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ddd" />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
+                    />
+                    <YAxis
+                      tick={{ fill: "#555", fontSize: isMobile ? 12 : 14 }}
+                    />
+                    <Tooltip
+                      contentStyle={{
+                        fontSize: isMobile ? 12 : 14,
+                        backgroundColor: "rgba(255, 255, 255, 0.95)",
+                        borderRadius: "8px",
+                        border: "1px solid #ddd",
+                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                      }}
+                    />
+                    <Bar dataKey="value" radius={[10, 10, 0, 0]}>
+                      {meterData.map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={`url(#color${entry.name.replace("-", "")})`}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Typography align="center" color="textSecondary">
+                  No data available for Visitor Status Overview
+                </Typography>
+              )}
             </Paper>
           </Container>
         </Grid>

@@ -41,6 +41,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import Footer from "../components/footer";
 
 // Custom TabPanel component
 function TabPanel(props) {
@@ -740,6 +741,7 @@ function Home() {
           </Container>
         </Grid>
       </Grid>
+      <Footer/>
     </>
   );
 }

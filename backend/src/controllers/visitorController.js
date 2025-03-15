@@ -1,6 +1,4 @@
-
-
-//visitorController.js
+// visitorController.js
 
 const mongoose = require("mongoose");
 const Visitor = require("../models/Visitor");
@@ -444,49 +442,59 @@ exports.verifyEmailOtp = async (req, res) => {
   }
 };
 
-// 🔹 Get Visitors (Updated for hrs and min)
+// 🔹 Get Visitors (Updated to include the visitor in teamMembersCount)
 exports.getVisitors = async (req, res) => {
   try {
     let query = {};
+    const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search } = req.query;
 
-    if (req.query.startDate && req.query.endDate) {
+    // Date range filter
+    if (startDate && endDate) {
       query.checkInTime = {
-        $gte: new Date(req.query.startDate),
-        $lte: new Date(req.query.endDate + "T23:59:59.999Z"),
+        $gte: new Date(startDate),
+        $lte: new Date(endDate + "T23:59:59.999Z"),
       };
     }
 
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-    const sortBy = req.query.sortBy || "checkInTime";
-    const order = req.query.order === "asc" ? 1 : -1;
+    // Search filter on fullName
+    if (search) {
+      query.fullName = { $regex: new RegExp(search, "i") }; // Case-insensitive search
+    }
 
-    const fields = "_id fullName checkInTime checkOutTime reasonForVisit personToVisit teamMembers";
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const skip = (pageNum - 1) * limitNum;
+    const sortOrder = order === "asc" ? 1 : -1;
+
+    const fields = "_id fullName checkInTime checkOutTime reasonForVisit personToVisit teamMembers visitorCompany";
 
     const visitors = await Visitor.find(query)
       .select(fields)
-      .sort({ [sortBy]: order })
-      .limit(limit)
+      .sort({ [sortBy]: sortOrder })
+      .limit(limitNum)
       .skip(skip);
 
     const totalVisitors = await Visitor.countDocuments(query);
 
     if (!visitors.length) {
-      return res.status(404).json({ message: "No visitors found" });
+      return res.status(200).json({
+        visitors: [],
+        totalPages: 0,
+        message: "No visitors found",
+      });
     }
 
-    const formattedVisitors = visitors.map(visitor => {
+    const formattedVisitors = visitors.map((visitor) => {
       const checkIn = new Date(visitor.checkInTime);
       const checkOut = visitor.checkOutTime ? new Date(visitor.checkOutTime) : null;
       let meetingDuration = null;
 
       if (checkOut) {
         const diffMs = checkOut - checkIn;
-        const totalMinutes = Math.round(diffMs / 60000); // Total minutes
+        const totalMinutes = Math.round(diffMs / 60000);
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
-        meetingDuration = { hours, minutes }; // Object with hours and minutes
+        meetingDuration = { hours, minutes };
       }
 
       return {
@@ -496,14 +504,15 @@ exports.getVisitors = async (req, res) => {
         checkOutTime: visitor.checkOutTime,
         reasonForVisit: visitor.reasonForVisit,
         personToVisit: visitor.personToVisit,
-        teamMembersCount: visitor.teamMembers ? visitor.teamMembers.length : 0,
-        meetingDuration: meetingDuration, // Now an object { hours, minutes }
+        teamMembersCount: (visitor.teamMembers ? visitor.teamMembers.length : 0) + 1, // Add 1 to include the visitor
+        meetingDuration,
+        visitorCompany: visitor.visitorCompany,
       };
     });
 
     res.status(200).json({
       visitors: formattedVisitors,
-      totalPages: Math.ceil(totalVisitors / limit),
+      totalPages: Math.ceil(totalVisitors / limitNum),
     });
   } catch (error) {
     console.error("Error fetching visitors:", error);
@@ -551,7 +560,7 @@ exports.storeCheckoutData = async (req, res) => {
       checkOutTime: checkOutTime,
       purpose: visitor.reasonForVisit,
       otp: visitor.otp,
-      meetingDuration: { hours, minutes }, // Store as object
+      meetingDuration: { hours, minutes },
     };
 
     const newCheckout = await Checkout.create(checkoutData);

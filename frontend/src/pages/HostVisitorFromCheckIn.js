@@ -1,5 +1,3 @@
-//HostVisitorFromCheckIn.js
-
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -13,7 +11,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axios from "axios";
-import { Switch } from "@mui/material";
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -23,9 +20,7 @@ const HostVisitorFromCheckIn = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const visitorsPerPage = 10;
-  const [toggleVisitor, setToggleVisitor] = useState(() => {
-    return JSON.parse(localStorage.getItem("toggleVisitor")) || false;
-  });
+  const [viewMode, setViewMode] = useState("Visitors");
 
   const fetchVisitors = async () => {
     try {
@@ -42,7 +37,7 @@ const HostVisitorFromCheckIn = () => {
       }
 
       const visitorsData = visitorsArray
-        .filter((visitor) => !visitor.checkOutTime) // Filter out checked-out visitors
+        .filter((visitor) => !visitor.checkOutTime)
         .map((visitor) => ({
           id: visitor._id || "Unknown ID",
           name: visitor.fullName || visitor.name || "N/A",
@@ -70,12 +65,8 @@ const HostVisitorFromCheckIn = () => {
   };
 
   useEffect(() => {
-    fetchVisitors(); // Fetch visitors when the component mounts
-  }, []); // Empty dependency array means it only runs once on mount
-
-  useEffect(() => {
-    localStorage.setItem("toggleVisitor", JSON.stringify(toggleVisitor));
-  }, [toggleVisitor]);
+    fetchVisitors();
+  }, []);
 
   const regenerateOTP = async (id) => {
     const newOtp = generateOTP();
@@ -91,9 +82,11 @@ const HostVisitorFromCheckIn = () => {
     }
   };
 
-  const handleToggleChange = () => {
-    setToggleVisitor(false);
-    navigate("/HostDashboard");
+  const handleViewChange = (newView) => {
+    setViewMode(newView);
+    if (newView === "Pre-Schedules") {
+      navigate("/HostDashboard");
+    }
   };
 
   const indexOfLastVisitor = currentPage * visitorsPerPage;
@@ -112,6 +105,7 @@ const HostVisitorFromCheckIn = () => {
               justifyContent: "space-between",
               alignItems: { xs: "flex-start", sm: "center" },
               mb: 3,
+              gap: { xs: 2, sm: 0 },
             }}
           >
             <Typography
@@ -119,8 +113,7 @@ const HostVisitorFromCheckIn = () => {
               sx={{
                 fontWeight: "bold",
                 textAlign: { xs: "left", sm: "center" },
-                fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
-                mb: { xs: 2, sm: 0 },
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
               }}
             >
               Visitors
@@ -134,18 +127,50 @@ const HostVisitorFromCheckIn = () => {
                 width: { xs: "100%", sm: "auto" },
               }}
             >
-              <Switch
-                checked={toggleVisitor}
-                onChange={handleToggleChange}
+              <Box
                 sx={{
-                  "& .MuiSwitch-switchBase.Mui-checked": {
-                    color: "#5F3B91",
-                  },
-                  "& .MuiSwitch-track": {
-                    bgcolor: toggleVisitor ? "#5F3B91" : "lightgray",
-                  },
+                  display: "flex",
+                  gap: 1,
+                  bgcolor: "#e0e0e0",
+                  borderRadius: "20px",
+                  p: 0.5,
                 }}
-              />
+              >
+                <Button
+                  onClick={() => handleViewChange("Pre-Schedules")}
+                  sx={{
+                    bgcolor: viewMode === "Pre-Schedules" ? "#5F3B91" : "transparent",
+                    color: viewMode === "Pre-Schedules" ? "white" : "black",
+                    borderRadius: "20px",
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.3, sm: 0.5 },
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    textTransform: "none",
+                    "&:hover": {
+                      bgcolor: viewMode === "Pre-Schedules" ? "#4a2c73" : "#d0d0d0",
+                    },
+                  }}
+                >
+                  Approvals
+                </Button>
+                <Button
+                  onClick={() => handleViewChange("Visitors")}
+                  sx={{
+                    bgcolor: viewMode === "Visitors" ? "#5F3B91" : "transparent",
+                    color: viewMode === "Visitors" ? "white" : "black",
+                    borderRadius: "20px",
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.3, sm: 0.5 },
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    textTransform: "none",
+                    "&:hover": {
+                      bgcolor: viewMode === "Visitors" ? "#4a2c73" : "#d0d0d0",
+                    },
+                  }}
+                >
+                  Visitors
+                </Button>
+              </Box>
             </Box>
           </Box>
 
@@ -155,7 +180,7 @@ const HostVisitorFromCheckIn = () => {
               sx={{
                 mb: 2,
                 textAlign: "center",
-                fontSize: { xs: "0.9rem", sm: "1rem" },
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
               }}
             >
               {error}
@@ -170,13 +195,41 @@ const HostVisitorFromCheckIn = () => {
                 alignItems="center"
                 sx={{ display: { xs: "none", sm: "flex" } }}
               >
-                <Grid item xs={2}><Typography fontWeight="bold">Name</Typography></Grid>
-                <Grid item xs={2}><Typography fontWeight="bold">Company</Typography></Grid>
-                <Grid item xs={2}><Typography fontWeight="bold">Phone</Typography></Grid>
-                <Grid item xs={1}><Typography fontWeight="bold">Time</Typography></Grid>
-                <Grid item xs={2}><Typography fontWeight="bold">Purpose</Typography></Grid>
-                <Grid item xs={1}><Typography fontWeight="bold">OTP</Typography></Grid>
-                <Grid item xs={2}><Typography fontWeight="bold">Actions</Typography></Grid>
+                <Grid item xs={2}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Name
+                  </Typography>
+                </Grid>
+                <Grid item xs={2}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Company
+                  </Typography>
+                </Grid>
+                <Grid item xs={2}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Phone
+                  </Typography>
+                </Grid>
+                <Grid item xs={1}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Time
+                  </Typography>
+                </Grid>
+                <Grid item xs={2}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Purpose
+                  </Typography>
+                </Grid>
+                <Grid item xs={1}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    OTP
+                  </Typography>
+                </Grid>
+                <Grid item xs={2}>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Actions
+                  </Typography>
+                </Grid>
               </Grid>
             </CardContent>
           </Card>
@@ -199,11 +252,11 @@ const HostVisitorFromCheckIn = () => {
                     gap: { xs: 1, sm: 0 },
                   }}
                 >
-                  <Grid container spacing={1} alignItems="center">
+                  <Grid container spacing={1} alignItems="left" direction={{ xs: "column", sm: "row" }}>
                     <Grid item xs={12} sm={2}>
                       <Typography
                         sx={{
-                          fontSize: { xs: "0.9rem", sm: "1rem" },
+                          fontSize: { xs: "0.75rem", sm: "0.875rem" },
                           fontWeight: { xs: "bold", sm: "normal" },
                         }}
                       >
@@ -211,22 +264,22 @@ const HostVisitorFromCheckIn = () => {
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {visitor.company}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {visitor.phone}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={1}>
-                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {visitor.Time}
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <Typography sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         {visitor.purpose}
                       </Typography>
                     </Grid>
@@ -235,7 +288,7 @@ const HostVisitorFromCheckIn = () => {
                         sx={{
                           fontWeight: "bold",
                           color: "#D32F2F",
-                          fontSize: { xs: "1rem", sm: "1.1rem" },
+                          fontSize: { xs: "0.875rem", sm: "1rem" },
                         }}
                       >
                         {visitor.otp}
@@ -256,8 +309,8 @@ const HostVisitorFromCheckIn = () => {
                           size="small"
                           onClick={() => regenerateOTP(visitor.id)}
                           sx={{
-                            fontSize: { xs: "0.7rem", sm: "0.875rem" },
-                            py: 0.5,
+                            fontSize: { xs: "0.65rem", sm: "0.75rem" },
+                            py: { xs: 0.3, sm: 0.5 },
                             px: { xs: 1, sm: 2 },
                           }}
                         >
@@ -274,7 +327,7 @@ const HostVisitorFromCheckIn = () => {
               sx={{
                 textAlign: "center",
                 color: "gray",
-                fontSize: { xs: "0.9rem", sm: "1rem" },
+                fontSize: { xs: "0.875rem", sm: "1rem" },
                 mt: 2,
               }}
             >
@@ -297,8 +350,9 @@ const HostVisitorFromCheckIn = () => {
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
               sx={{
-                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
                 minWidth: { xs: "100px", sm: "120px" },
+                py: { xs: 0.5, sm: 1 },
               }}
             >
               Previous
@@ -307,7 +361,7 @@ const HostVisitorFromCheckIn = () => {
             <Typography
               sx={{
                 mx: { xs: 0, sm: 2 },
-                fontSize: { xs: "0.9rem", sm: "1rem" },
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
                 textAlign: "center",
               }}
             >
@@ -319,8 +373,9 @@ const HostVisitorFromCheckIn = () => {
               disabled={indexOfLastVisitor >= visitors.length}
               onClick={() => setCurrentPage(currentPage + 1)}
               sx={{
-                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
                 minWidth: { xs: "100px", sm: "120px" },
+                py: { xs: 0.5, sm: 1 },
               }}
             >
               Next

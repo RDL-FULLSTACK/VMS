@@ -16,15 +16,12 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { Switch } from "@mui/material";
 
 const HostDashboard = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [toggleVisitor, setToggleVisitor] = useState(() => {
-    return JSON.parse(localStorage.getItem("toggleVisitor")) || false;
-  });
+  const [viewMode, setViewMode] = useState("Pre-Schedules");
   const [currentPage, setCurrentPage] = useState(1);
   const visitorsPerPage = 10;
 
@@ -45,9 +42,8 @@ const HostDashboard = () => {
           status: pre.status || "Pending",
         }));
 
-        // Sort by _id in descending order (latest entry first)
         const sortedPreSchedules = preSchedules.sort((a, b) => {
-          return b.id.localeCompare(a.id); // MongoDB _id is a string, so use localeCompare
+          return b.id.localeCompare(a.id);
         });
 
         setVisitors(sortedPreSchedules);
@@ -62,10 +58,6 @@ const HostDashboard = () => {
     };
     fetchPreSchedules();
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem("toggleVisitor", JSON.stringify(toggleVisitor));
-  }, [toggleVisitor]);
 
   const handleApproval = async (id) => {
     try {
@@ -94,7 +86,6 @@ const HostDashboard = () => {
         status: pre.status || "Pending",
       }));
 
-      // Sort refreshed data by _id in descending order
       const sortedRefreshedPreSchedules = refreshedPreSchedules.sort((a, b) => {
         return b.id.localeCompare(a.id);
       });
@@ -136,7 +127,6 @@ const HostDashboard = () => {
         status: pre.status || "Pending",
       }));
 
-      // Sort refreshed data by _id in descending order
       const sortedRefreshedPreSchedules = refreshedPreSchedules.sort((a, b) => {
         return b.id.localeCompare(a.id);
       });
@@ -155,9 +145,11 @@ const HostDashboard = () => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleToggleChange = () => {
-    setToggleVisitor(true);
-    navigate("/HostVisitorFormCheckIn");
+  const handleViewChange = (newView) => {
+    setViewMode(newView);
+    if (newView === "Visitors") {
+      navigate("/HostVisitorFormCheckIn");
+    }
   };
 
   const handleClose = () => {
@@ -167,7 +159,6 @@ const HostDashboard = () => {
   const open = Boolean(anchorEl);
   const id = open ? "notification-popover" : undefined;
 
-  // Pagination Logic
   const indexOfLastVisitor = currentPage * visitorsPerPage;
   const indexOfFirstVisitor = indexOfLastVisitor - visitorsPerPage;
   const currentVisitors = visitors.slice(indexOfFirstVisitor, indexOfLastVisitor);
@@ -176,30 +167,84 @@ const HostDashboard = () => {
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", display: "flex", flexDirection: "column" }}>
       <Navbar />
       <ToastContainer position="top-right" autoClose={3000} />
-      <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 3 } }}>
-        <Container>
+      <Box sx={{ flexGrow: 1, p: { xs: 1, sm: 2, md: 3 } }}>
+        <Container maxWidth="lg">
           <Box
             sx={{
               display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
               justifyContent: "space-between",
-              alignItems: "center",
+              alignItems: { xs: "flex-start", sm: "center" },
               mb: 3,
+              gap: { xs: 2, sm: 0 },
             }}
           >
             <Typography
               variant="h5"
               sx={{
                 fontWeight: "bold",
-                textAlign: "center",
-                fontSize: { xs: "1.5rem", sm: "1.75rem" },
+                textAlign: { xs: "left", sm: "center" },
+                fontSize: { xs: "1.25rem", sm: "1.5rem", md: "1.75rem" },
               }}
             >
               Pre-Schedules
             </Typography>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 1, sm: 2 },
+                flexWrap: "wrap",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  bgcolor: "#e0e0e0",
+                  borderRadius: "20px",
+                  p: 0.5,
+                }}
+              >
+                <Button
+                  onClick={() => handleViewChange("Pre-Schedules")}
+                  sx={{
+                    bgcolor: viewMode === "Pre-Schedules" ? "#5F3B91" : "transparent",
+                    color: viewMode === "Pre-Schedules" ? "white" : "black",
+                    borderRadius: "20px",
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.3, sm: 0.5 },
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    textTransform: "none",
+                    "&:hover": {
+                      bgcolor: viewMode === "Pre-Schedules" ? "#4a2c73" : "#d0d0d0",
+                    },
+                  }}
+                >
+                  Approvals
+                </Button>
+                <Button
+                  onClick={() => handleViewChange("Visitors")}
+                  sx={{
+                    bgcolor: viewMode === "Visitors" ? "#5F3B91" : "transparent",
+                    color: viewMode === "Visitors" ? "white" : "black",
+                    borderRadius: "20px",
+                    px: { xs: 1.5, sm: 2 },
+                    py: { xs: 0.3, sm: 0.5 },
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    textTransform: "none",
+                    "&:hover": {
+                      bgcolor: viewMode === "Visitors" ? "#4a2c73" : "#d0d0d0",
+                    },
+                  }}
+                >
+                  Visitors
+                </Button>
+              </Box>
+
               <IconButton onClick={handleNotificationClick}>
-                <NotificationsIcon sx={{ fontSize: 30, color: "#5F3B91" }} />
+                <NotificationsIcon sx={{ fontSize: { xs: 24, sm: 30 }, color: "#5F3B91" }} />
                 {visitors.filter((v) => v.status === "Pending").length > 0 && (
                   <Box
                     sx={{
@@ -208,32 +253,19 @@ const HostDashboard = () => {
                       right: 5,
                       bgcolor: "red",
                       borderRadius: "50%",
-                      width: 15,
-                      height: 15,
+                      width: { xs: 12, sm: 15 },
+                      height: { xs: 12, sm: 15 },
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       color: "white",
-                      fontSize: "10px",
+                      fontSize: { xs: "8px", sm: "10px" },
                     }}
                   >
                     {visitors.filter((v) => v.status === "Pending").length}
                   </Box>
                 )}
               </IconButton>
-
-              <Switch
-                checked={toggleVisitor}
-                onChange={handleToggleChange}
-                sx={{
-                  "& .MuiSwitch-switchBase.Mui-checked": {
-                    color: "#5F3B91",
-                  },
-                  "& .MuiSwitch-track": {
-                    bgcolor: toggleVisitor ? "#5F3B91" : "lightgray",
-                  },
-                }}
-              />
             </Box>
           </Box>
 
@@ -245,14 +277,16 @@ const HostDashboard = () => {
             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             transformOrigin={{ vertical: "top", horizontal: "right" }}
           >
-            <Box sx={{ p: 2, maxWidth: 400 }}>
-              <Typography variant="h6">Notifications</Typography>
+            <Box sx={{ p: 2, maxWidth: { xs: 300, sm: 400 } }}>
+              <Typography variant="h6" sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}>
+                Notifications
+              </Typography>
               {visitors.filter((v) => v.status === "Pending").length > 0 ? (
                 visitors
                   .filter((v) => v.status === "Pending")
                   .map((visitor) => (
                     <Box key={visitor.id} sx={{ mb: 2, borderBottom: "1px solid #eee" }}>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
                         <strong>{visitor.name}</strong> scheduled a visit for{" "}
                         <strong>{visitor.purpose}</strong> on {visitor.date}.
                       </Typography>
@@ -262,6 +296,7 @@ const HostDashboard = () => {
                           color="success"
                           size="small"
                           onClick={() => handleApproval(visitor.id)}
+                          sx={{ fontSize: { xs: "0.65rem", sm: "0.75rem" }, px: { xs: 1, sm: 2 } }}
                         >
                           Approve
                         </Button>
@@ -270,6 +305,7 @@ const HostDashboard = () => {
                           color="error"
                           size="small"
                           onClick={() => handleRejection(visitor.id)}
+                          sx={{ fontSize: { xs: "0.65rem", sm: "0.75rem" }, px: { xs: 1, sm: 2 } }}
                         >
                           Reject
                         </Button>
@@ -277,28 +313,40 @@ const HostDashboard = () => {
                     </Box>
                   ))
               ) : (
-                <Typography variant="body2">No pending pre-schedules</Typography>
+                <Typography variant="body2" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                  No pending pre-schedules
+                </Typography>
               )}
             </Box>
           </Popover>
 
           <Card sx={{ mb: 2, bgcolor: "#5F3B91", color: "white" }}>
-            <CardContent>
+            <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
               <Grid container spacing={1} alignItems="center">
                 <Grid item xs={12} sm={2}>
-                  <Typography fontWeight="bold">Name</Typography>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Name
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={2}>
-                  <Typography fontWeight="bold">Date</Typography>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Date
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={2}>
-                  <Typography fontWeight="bold">Time</Typography>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Time
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={3}>
-                  <Typography fontWeight="bold">Purpose</Typography>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Purpose
+                  </Typography>
                 </Grid>
                 <Grid item xs={12} sm={3}>
-                  <Typography fontWeight="bold">Status</Typography>
+                  <Typography fontWeight="bold" sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                    Status
+                  </Typography>
                 </Grid>
               </Grid>
             </CardContent>
@@ -307,49 +355,86 @@ const HostDashboard = () => {
           {currentVisitors.length > 0 ? (
             currentVisitors.map((visitor) => (
               <Card key={visitor.id} sx={{ mb: 2, bgcolor: "white", color: "#000" }}>
-                <CardContent>
-                  <Grid container spacing={1} alignItems="center">
+                <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
+                  <Grid container spacing={1} alignItems="left" direction={{ xs: "column", sm: "row" }}>
                     <Grid item xs={12} sm={2}>
-                      <Typography>{visitor.name}</Typography>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        <strong>{visitor.name}</strong>
+                      </Typography>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <Typography>{visitor.date}</Typography>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        {visitor.date}
+                      </Typography>
                     </Grid>
                     <Grid item xs={12} sm={2}>
-                      <Typography>{visitor.Time}</Typography>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        {visitor.Time}
+                      </Typography>
                     </Grid>
                     <Grid item xs={12} sm={3}>
-                      <Typography>{visitor.purpose}</Typography>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        {visitor.purpose}
+                      </Typography>
                     </Grid>
                     <Grid item xs={12} sm={3}>
-                      <Typography>{visitor.status}</Typography>
+                      <Typography sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}>
+                        {visitor.status}
+                      </Typography>
                     </Grid>
                   </Grid>
                 </CardContent>
               </Card>
             ))
           ) : (
-            <Typography variant="body1" sx={{ textAlign: "center", mt: 2 }}>
+            <Typography
+              variant="body1"
+              sx={{ textAlign: "center", mt: 2, fontSize: { xs: "0.875rem", sm: "1rem" } }}
+            >
               No pre-schedule data available.
             </Typography>
           )}
 
-          {/* Pagination Controls */}
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 2, gap: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "center",
+              alignItems: "center",
+              mt: 2,
+              gap: { xs: 1, sm: 2 },
+            }}
+          >
             <Button
               variant="contained"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(currentPage - 1)}
+              sx={{
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                minWidth: { xs: "100px", sm: "120px" },
+                py: { xs: 0.5, sm: 1 },
+              }}
             >
               Previous
             </Button>
-            <Typography sx={{ display: "flex", alignItems: "center" }}>
+            <Typography
+              sx={{
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                display: "flex",
+                alignItems: "center",
+              }}
+            >
               Page {currentPage} of {Math.ceil(visitors.length / visitorsPerPage)}
             </Typography>
             <Button
               variant="contained"
               disabled={indexOfLastVisitor >= visitors.length}
               onClick={() => setCurrentPage(currentPage + 1)}
+              sx={{
+                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                minWidth: { xs: "100px", sm: "120px" },
+                py: { xs: 0.5, sm: 1 },
+              }}
             >
               Next
             </Button>

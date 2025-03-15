@@ -463,6 +463,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import CompanyLogin from "./companylogin";
 
 const UserList = () => {
@@ -883,6 +884,7 @@ const UserList = () => {
           </Alert>
         </Snackbar>
       </Container>
+      <Footer/>
     </>
   );
 };

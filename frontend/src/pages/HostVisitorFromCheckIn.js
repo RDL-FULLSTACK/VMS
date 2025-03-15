@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axios from "axios";
+import Footer from"../components/Footer";
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -383,6 +384,7 @@ const HostVisitorFromCheckIn = () => {
           </Box>
         </Container>
       </Box>
+      <Footer/>
     </Box>
   );
 };

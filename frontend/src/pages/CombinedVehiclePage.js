@@ -17,6 +17,7 @@ import VehicleRegistration from "./VehicleRegistration";
 import VehicleCheckout from "./VehicleCheckout";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "../components/Footer";
 
 const CombinedVehiclePage = () => {
   const [view, setView] = useState(0);
@@ -292,6 +293,7 @@ const CombinedVehiclePage = () => {
         limit={3}
         style={{ zIndex: 10000, position: "fixed", top: 10, right: 10 }}
       />
+      <Footer/>
     </>
   );
 };

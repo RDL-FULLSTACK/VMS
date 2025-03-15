@@ -21,6 +21,7 @@ import { Edit, Delete } from "@mui/icons-material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 // Rest of the code remains unchanged
 const StyledContainer = styled(Container)(({ theme }) => ({
@@ -127,6 +128,7 @@ function Admin() {
           <Button onClick={handleDelete} color="error">Yes, Delete</Button>
         </DialogActions>
       </Dialog>
+      <Footer/>
     </>
   );
 }

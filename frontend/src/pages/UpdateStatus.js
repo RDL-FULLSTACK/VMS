@@ -6,6 +6,7 @@ import {
 } from "@mui/material";
 import Swal from "sweetalert2";
 import Navbar from "../components/Navbar"; // Added Navbar import
+import Footer from "../components/Footer";
 
 const UpdateStatus = () => {
     const { id } = useParams();
@@ -92,6 +93,7 @@ const UpdateStatus = () => {
                     </Card>
                 </Container>
             </Box>
+            <Footer/>
         </Box>
     );
 };

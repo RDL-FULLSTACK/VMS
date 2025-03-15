@@ -17,6 +17,7 @@ import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const EditCheckin = () => {
   const location = useLocation();
@@ -993,6 +994,7 @@ const EditCheckin = () => {
           Save Changes
         </Button>
       </Box>
+      <Footer/>
     </>
   );
 };

@@ -16,7 +16,7 @@ import { CheckCircle } from "@mui/icons-material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from 'react-router-dom';
-
+import Footer from "../components/Footer";
 const VisitorCheckout = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
@@ -481,6 +481,7 @@ const Checkout = () => {
         <Route path="/" element={<VisitorCheckout />} />
         <Route path="/success" element={<SuccessPage />} />
       </Routes>
+      <Footer/>
     </>
   );
 };

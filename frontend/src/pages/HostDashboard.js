@@ -16,6 +16,7 @@ import Navbar from "../components/Navbar";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Footer from "../components/Footer";
 
 const HostDashboard = () => {
   const navigate = useNavigate();
@@ -441,6 +442,7 @@ const HostDashboard = () => {
           </Box>
         </Container>
       </Box>
+      <Footer/>
     </Box>
   );
 };

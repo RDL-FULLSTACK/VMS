@@ -980,6 +980,7 @@ import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const Checkin = () => {
   const navigate = useNavigate();
@@ -2064,6 +2065,7 @@ const Checkin = () => {
           Submit
         </Button>
       </Box>
+      <Footer/>
     </>
   );
 };

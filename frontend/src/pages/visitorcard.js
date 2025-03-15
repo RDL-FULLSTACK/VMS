@@ -312,6 +312,7 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import html2canvas from "html2canvas";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const VisitorCard = () => {
   const { visitorId } = useParams();
@@ -604,6 +605,7 @@ const VisitorCard = () => {
           </Grid>
         </Card>
       </Container>
+      <Footer/>
     </>
   );
 };

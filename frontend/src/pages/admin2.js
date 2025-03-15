@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Nav from "../components/Navbar";
 import { Box, Typography, Button, MenuItem, TextField } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import Footer from "../components/Footer";
 
 const Admin2 = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -55,6 +56,7 @@ const Admin2 = () => {
           </div>
         )}
       </div>
+    <Footer/>
     </div>
   );
 };

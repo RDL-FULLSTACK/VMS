@@ -4,6 +4,7 @@ import {
   TextField, Pagination, CircularProgress
 } from '@mui/material';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import { useNavigate } from "react-router-dom";
 
 const VisitorList = () => {
@@ -386,6 +387,7 @@ const VisitorList = () => {
           </DialogActions>
         </Dialog>
       </Box>
+      <Footer/>
     </>
   );
 };

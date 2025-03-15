@@ -14,6 +14,7 @@ import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
 const CompanyRegister = () => {
   const [formData, setFormData] = useState({
     username: "",

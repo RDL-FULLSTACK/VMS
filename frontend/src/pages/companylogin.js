@@ -64,7 +64,7 @@ const CompanyRegister = () => {
           case "security":
             navigate("/vehicle-details");
             break;
-          case "host":
+          case "employee":  // Changed from "host" to "employee"
             navigate("/visitorlist");
             break;
           default:
@@ -147,7 +147,7 @@ const CompanyRegister = () => {
                 <MenuItem value="Admin">Admin</MenuItem>
                 <MenuItem value="Receptionist">Receptionist</MenuItem>
                 <MenuItem value="Security">Security</MenuItem>
-                <MenuItem value="Host">Host</MenuItem>
+                <MenuItem value="Employee">Employee</MenuItem>  {/* Changed from "Host" to "Employee" */}
               </Select>
             </FormControl>
             <Button

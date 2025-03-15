@@ -20,7 +20,7 @@ const registerUser = async (req, res) => {
     }
 
     // Validate role
-    const validRoles = ['admin', 'receptionist', 'security', 'host'];
+    const validRoles = ['admin', 'receptionist', 'security', 'employee'];
     const normalizedRole = role.toLowerCase();
     if (!validRoles.includes(normalizedRole)) {
       return res.status(400).json({ message: 'Invalid role. Allowed roles: admin, receptionist, security, host' });

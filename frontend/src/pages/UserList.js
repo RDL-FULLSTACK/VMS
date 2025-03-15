@@ -433,12 +433,6 @@
 // };
 
 // export default UserList;
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -682,7 +676,7 @@ const UserList = () => {
           >
             <MenuItem value="All">All Roles</MenuItem>
             <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="host">Host</MenuItem>
+            <MenuItem value="employee">Employee</MenuItem>
             <MenuItem value="security">Security</MenuItem>
             <MenuItem value="receptionist">Receptionist</MenuItem>
           </Select>
@@ -691,7 +685,7 @@ const UserList = () => {
             sx={{ backgroundColor: "#5a3d91", color: "white", "&:hover": { backgroundColor: "#4a2f77" } }}
             onClick={handleCompanyLogin}
           >
-            Company Login
+          Add User
           </Button>
         </div>
 
@@ -857,7 +851,7 @@ const UserList = () => {
           fullWidth
         >
           <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
-            Company Login
+            Add User
             <IconButton
               onClick={handleCloseCompanyLogin}
               sx={{ position: "absolute", right: 8, top: 8, color: "white" }}

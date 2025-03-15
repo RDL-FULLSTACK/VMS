@@ -47,7 +47,6 @@ const VisitorList = () => {
           const checkOutTime = visitor.checkOutTime ? new Date(visitor.checkOutTime) : null;
           const checkInDate = checkInTime ? checkInTime.toISOString().split('T')[0] : null;
 
-          // Calculate actual duration (in milliseconds)
           let actualDuration = 0;
           if (checkInTime && checkInDate === currentDate) {
             actualDuration = checkOutTime 
@@ -55,7 +54,6 @@ const VisitorList = () => {
               : currentTime - checkInTime;
           }
 
-          // Convert expectedDuration to milliseconds
           const expectedDurationMs = (visitor.expectedDuration?.hours || 0) * 60 * 60 * 1000 + 
                                    (visitor.expectedDuration?.minutes || 0) * 60 * 1000;
 
@@ -74,8 +72,8 @@ const VisitorList = () => {
             expectedDuration: visitor.expectedDuration || { hours: 0, minutes: 0 },
             actualDuration,
             isOverDuration: actualDuration > expectedDurationMs,
-            checkInTimeRaw: checkInTime, // Store raw Date object for interval updates
-            checkOutTimeRaw: checkOutTime, // Store raw Date object for interval updates
+            checkInTimeRaw: checkInTime,
+            checkOutTimeRaw: checkOutTime,
           };
         });
 
@@ -89,7 +87,6 @@ const VisitorList = () => {
 
     fetchVisitors();
 
-    // Set up an interval to update the actual duration every minute
     const interval = setInterval(() => {
       setVisitors(prevVisitors => prevVisitors.map(visitor => {
         if (!visitor.checkOutTimeRaw && visitor.checkInTimeRaw) {
@@ -109,7 +106,7 @@ const VisitorList = () => {
         }
         return visitor;
       }));
-    }, 60000); // Update every minute
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
@@ -123,12 +120,10 @@ const VisitorList = () => {
     setPage(newPage);
   };
 
-  // Reset page to 1 when searchTerm or selectedDate changes
   useEffect(() => {
     setPage(1);
   }, [searchTerm, selectedDate]);
 
-  // Filter based only on name
   const filteredVisitors = visitors.filter((visitor) => {
     const matchesSearch = visitor.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDate = selectedDate ? visitor.date === selectedDate : true;
@@ -148,9 +143,16 @@ const VisitorList = () => {
   };
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <Box sx={{ p: { xs: 1, sm: 2 }, bgcolor: '#f5f5f5', minHeight: '100vh' }}>
+      <Box 
+        sx={{ 
+          flexGrow: 1, 
+          p: { xs: 1, sm: 2 }, 
+          bgcolor: '#f5f5f5', 
+          mb: 1 // Reduced margin-bottom from default or implicit spacing
+        }}
+      >
         <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 1 }}>
           <Typography variant="h6" gutterBottom>Visitor List</Typography>
 
@@ -237,7 +239,7 @@ const VisitorList = () => {
                       borderBottom: '1px solid #e0e0e0',
                       alignItems: 'center',
                       minWidth: '1390px',
-                      bgcolor: visitor.isOverDuration ? '#ffcccc' : 'inherit', // Highlight red if over duration
+                      bgcolor: visitor.isOverDuration ? '#ffcccc' : 'inherit',
                     }}
                   >
                     <Box sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -302,7 +304,6 @@ const VisitorList = () => {
                           justifyContent: 'center',
                         }}
                       >
-                        
                         <Button
                           variant="contained"
                           size="small"
@@ -375,8 +376,8 @@ const VisitorList = () => {
           </DialogActions>
         </Dialog>
       </Box>
-      <Footer/>
-    </>
+      <Footer />
+    </Box>
   );
 };
 

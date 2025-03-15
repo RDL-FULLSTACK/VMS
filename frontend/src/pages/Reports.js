@@ -15,6 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const Reports = () => {
   const [reports, setReports] = useState([]);
@@ -234,6 +235,7 @@ const Reports = () => {
           </Button>
         </div>
       </div>
+      <Footer/>
     </>
   );
 };

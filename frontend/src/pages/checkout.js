@@ -1,5 +1,3 @@
-
-// Checkout.js
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -17,6 +15,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useLocation } from 'react-router-dom';
 import Footer from "../components/Footer";
+
 const VisitorCheckout = () => {
   const navigate = useNavigate();
   const [visitors, setVisitors] = useState([]);
@@ -42,7 +41,7 @@ const VisitorCheckout = () => {
         let data = Array.isArray(rawData) ? rawData : rawData.data || [];
 
         const transformedVisitors = data
-          .filter((visitor) => !visitor.checkOutTime) // Only show visitors who haven't checked out
+          .filter((visitor) => !visitor.checkOutTime)
           .map((visitor) => {
             const checkInTime = visitor.checkInTime
               ? new Date(visitor.checkInTime)
@@ -81,7 +80,7 @@ const VisitorCheckout = () => {
     };
 
     fetchVisitors();
-    const interval = setInterval(fetchVisitors, 60000); // Refresh every 60 seconds
+    const interval = setInterval(fetchVisitors, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -147,11 +146,11 @@ const VisitorCheckout = () => {
       const checkoutResponse = await fetch(
         `http://localhost:5000/api/visitors/checkout/${id}`,
         {
-          method: "POST", // Changed from PUT to POST
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({}), // Empty body as per backend requirement
+          body: JSON.stringify({}),
         }
       );
 
@@ -167,7 +166,6 @@ const VisitorCheckout = () => {
         autoClose: 2000,
       });
 
-      // Remove the checked-out visitor from the list
       setVisitors((prev) => prev.filter((v) => v.id !== id));
       setVerifiedOtps((prev) => {
         const newOtps = { ...prev };
@@ -175,7 +173,6 @@ const VisitorCheckout = () => {
         return newOtps;
       });
 
-      // Navigate to success page with checkoutId (optional)
       navigate("/success", { state: { checkoutId: checkoutData.data.checkoutId } });
     } catch (error) {
       toast.error(error.message, { position: "top-right", autoClose: 3000 });
@@ -208,80 +205,60 @@ const VisitorCheckout = () => {
   };
 
   return (
-    <Box sx={{ p: { xs: 1, sm: 2 }, bgcolor: "#f5f5f5", minHeight: "100vh" }}>
-      <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 1 }}>
-        <Typography variant="h6" gutterBottom>
-          Visitor Checkout
-        </Typography>
-
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Typography color="error" sx={{ textAlign: "center", py: 2 }}>
-            {error}
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Box 
+        sx={{ 
+          flexGrow: 1, 
+          p: { xs: 1, sm: 2 }, 
+          bgcolor: "#f5f5f5", 
+          mb: 1
+        }}
+      >
+        <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 1 }}>
+          <Typography variant="h6" gutterBottom>
+            Visitor Checkout
           </Typography>
-        ) : (
-          <>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                gap: 2,
-                mb: 2,
-              }}
-            >
-              <TextField
-                label="Search Visitor"
-                variant="outlined"
-                fullWidth
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <TextField
-                label="Filter by Date"
-                type="date"
-                variant="outlined"
-                size="small"
-                InputLabelProps={{ shrink: true }}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                sx={{ minWidth: { xs: "auto", sm: 150 } }}
-              />
-            </Box>
 
-            <Box sx={{ overflowX: "auto" }}>
+          {loading ? (
+            <Box sx={{ display: "flex", justifyContent: "center", py: 2 }}>
+              <CircularProgress />
+            </Box>
+          ) : error ? (
+            <Typography color="error" sx={{ textAlign: "center", py: 2 }}>
+              {error}
+            </Typography>
+          ) : (
+            <>
               <Box
                 sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "repeat(8, minmax(100px, 1fr))",
-                    sm: "40px 150px 200px 150px 100px 120px 150px 300px",
-                  },
-                  gap: 1,
-                  bgcolor: "#e0e0e0",
-                  p: 1,
-                  borderRadius: 1,
-                  fontWeight: "bold",
-                  alignItems: "center",
-                  minWidth: "1270px",
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
+                  gap: 2,
+                  mb: 2,
                 }}
               >
-                <Box>ID</Box>
-                <Box>Name</Box>
-                <Box>Email</Box>
-                <Box>Phone</Box>
-                <Box>Check In</Box>
-                <Box>Host</Box>
-                <Box>Company</Box>
-                <Box textAlign="center">Actions</Box>
+                <TextField
+                  label="Search Visitor"
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <TextField
+                  label="Filter by Date"
+                  type="date"
+                  variant="outlined"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  sx={{ minWidth: { xs: "auto", sm: 150 } }}
+                />
               </Box>
 
-              {paginatedVisitors.map((visitor) => (
+              <Box sx={{ overflowX: "auto" }}>
                 <Box
-                  key={visitor.id}
                   sx={{
                     display: "grid",
                     gridTemplateColumns: {
@@ -289,147 +266,177 @@ const VisitorCheckout = () => {
                       sm: "40px 150px 200px 150px 100px 120px 150px 300px",
                     },
                     gap: 1,
+                    bgcolor: "#e0e0e0",
                     p: 1,
-                    borderBottom: "1px solid #e0e0e0",
+                    borderRadius: 1,
+                    fontWeight: "bold",
                     alignItems: "center",
                     minWidth: "1270px",
                   }}
                 >
+                  <Box>ID</Box>
+                  <Box>Name</Box>
+                  <Box>Email</Box>
+                  <Box>Phone</Box>
+                  <Box>Check In</Box>
+                  <Box>Host</Box>
+                  <Box>Company</Box>
+                  <Box textAlign="center">Actions</Box>
+                </Box>
+
+                {paginatedVisitors.map((visitor) => (
                   <Box
+                    key={visitor.id}
                     sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "repeat(8, minmax(100px, 1fr))",
+                        sm: "40px 150px 200px 150px 100px 120px 150px 300px",
+                      },
+                      gap: 1,
+                      p: 1,
+                      borderBottom: "1px solid #e0e0e0",
+                      alignItems: "center",
+                      minWidth: "1270px",
                     }}
                   >
-                    {visitor.id.slice(-4)}
-                  </Box>
-                  <Box
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visitor.name}
-                  </Box>
-                  <Box
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visitor.email}
-                  </Box>
-                  <Box
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visitor.phone}
-                  </Box>
-                  <Box
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visitor.checkIn}
-                  </Box>
-                  <Box
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visitor.host}
-                  </Box>
-                  <Box
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {visitor.company}
-                  </Box>
-                  <Box>
                     <Box
                       sx={{
-                        display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                        gap: 1,
-                        justifyContent: "center",
-                        alignItems: "center",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      <TextField
-                        size="small"
-                        value={otpInputs[visitor.id] || ""}
-                        onChange={(e) =>
-                          handleOtpChange(visitor.id, e.target.value)
-                        }
-                        placeholder="Enter OTP"
-                        sx={{ width: { xs: "150px", sm: "150px" } }}
-                        inputProps={{ maxLength: 6 }}
-                      />
-                      <Button
-                        variant="contained"
-                        size="small"
+                      {visitor.id.slice(-4)}
+                    </Box>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {visitor.name}
+                    </Box>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {visitor.email}
+                    </Box>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {visitor.phone}
+                    </Box>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {visitor.checkIn}
+                    </Box>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {visitor.host}
+                    </Box>
+                    <Box
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {visitor.company}
+                    </Box>
+                    <Box>
+                      <Box
                         sx={{
-                          ...buttonStyles,
-                          bgcolor: "blue",
-                          color: "white",
-                          "&:hover": { bgcolor: "darkblue" },
+                          display: "flex",
+                          flexDirection: { xs: "column", sm: "row" },
+                          gap: 1,
+                          justifyContent: "center",
+                          alignItems: "center",
                         }}
-                        onClick={() => handleVerifyOtp(visitor.id)}
                       >
-                        Verify
-                      </Button>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          ...buttonStyles,
-                          bgcolor: "green",
-                          color: "white",
-                          "&:hover": { bgcolor: "darkgreen" },
-                        }}
-                        onClick={() => handleCheckout(visitor.id)}
-                      >
-                        Checkout
-                      </Button>
+                        <TextField
+                          size="small"
+                          value={otpInputs[visitor.id] || ""}
+                          onChange={(e) =>
+                            handleOtpChange(visitor.id, e.target.value)
+                          }
+                          placeholder="Enter OTP"
+                          sx={{ width: { xs: "150px", sm: "150px" } }}
+                          inputProps={{ maxLength: 6 }}
+                        />
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            ...buttonStyles,
+                            bgcolor: "blue",
+                            color: "white",
+                            "&:hover": { bgcolor: "darkblue" },
+                          }}
+                          onClick={() => handleVerifyOtp(visitor.id)}
+                        >
+                          Verify
+                        </Button>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          sx={{
+                            ...buttonStyles,
+                            bgcolor: "green",
+                            color: "white",
+                            "&:hover": { bgcolor: "darkgreen" },
+                          }}
+                          onClick={() => handleCheckout(visitor.id)}
+                        >
+                          Checkout
+                        </Button>
+                      </Box>
                     </Box>
                   </Box>
-                </Box>
-              ))}
-            </Box>
+                ))}
+              </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-              <Pagination
-                count={Math.ceil(filteredVisitors.length / rowsPerPage)}
-                page={page}
-                onChange={handleChangePage}
-                color="primary"
-                size="small"
-              />
-            </Box>
-          </>
-        )}
-      </Paper>
-      <ToastContainer />
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <Pagination
+                  count={Math.ceil(filteredVisitors.length / rowsPerPage)}
+                  page={page}
+                  onChange={handleChangePage}
+                  color="primary"
+                  size="small"
+                />
+              </Box>
+            </>
+          )}
+        </Paper>
+        <ToastContainer />
+      </Box>
+      <Footer /> {/* Kept only here */}
     </Box>
   );
 };
 
 const SuccessPage = () => {
   const navigate = useNavigate();
-  const { state } = useLocation(); // Access checkoutId from navigation state
+  const { state } = useLocation();
   const checkoutId = state?.checkoutId;
 
   useEffect(() => {
@@ -481,7 +488,7 @@ const Checkout = () => {
         <Route path="/" element={<VisitorCheckout />} />
         <Route path="/success" element={<SuccessPage />} />
       </Routes>
-      <Footer/>
+      {/* Removed Footer from here */}
     </>
   );
 };

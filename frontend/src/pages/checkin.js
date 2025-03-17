@@ -1,4 +1,9 @@
-import React, { useState, useEffect } from "react";
+
+
+//checkin.js
+
+
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TextField,
@@ -9,8 +14,16 @@ import {
   Box,
   IconButton,
   Modal,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TablePagination,
 } from "@mui/material";
-import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
+import { AddCircle, RemoveCircle, UploadFile, CameraAlt } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
@@ -32,6 +45,7 @@ const Checkin = () => {
   const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
   const [photo, setPhoto] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [hosts, setHosts] = useState([]);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -56,6 +70,18 @@ const Checkin = () => {
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [openTeamModal, setOpenTeamModal] = useState(false);
   const [openAssetsModal, setOpenAssetsModal] = useState(false);
+  const [openPrescheduleModal, setOpenPrescheduleModal] = useState(false);
+  const [openSelfCheckinModal, setOpenSelfCheckinModal] = useState(false);
+  const [openWebcamModal, setOpenWebcamModal] = useState(false);
+  const [prescheduledVisitors, setPrescheduledVisitors] = useState([]);
+  const [selfCheckinVisitors, setSelfCheckinVisitors] = useState([]);
+  const [filteredPrescheduleVisitors, setFilteredPrescheduleVisitors] = useState([]);
+  const [filteredSelfCheckinVisitors, setFilteredSelfCheckinVisitors] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const videoRef = useRef(null);
+  const [stream, setStream] = useState(null);
 
   useEffect(() => {
     const fetchHosts = async () => {
@@ -63,18 +89,191 @@ const Checkin = () => {
         const response = await fetch("http://localhost:5000/api/users");
         if (!response.ok) throw new Error("Failed to fetch users");
         const data = await response.json();
-        const hostUsers = data.filter(
-          (user) => user.role.toLowerCase() === "host"
-        );
+        const hostUsers = data.filter((user) => user.role.toLowerCase() === "host");
         setHosts(hostUsers);
       } catch (error) {
         console.error("Error fetching hosts:", error);
-        toast.error("Failed to load hosts. Please try again later.");
+        toast.error("Failed to load hosts.");
+      }
+    };
+
+    const fetchPrescheduledVisitors = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/preschedules");
+        if (!response.ok) throw new Error("Failed to fetch prescheduled visitors");
+        const data = await response.json();
+        const approvedVisitors = data
+          .filter((visitor) => visitor.status === "Approved")
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setPrescheduledVisitors(approvedVisitors);
+        setFilteredPrescheduleVisitors(approvedVisitors);
+      } catch (error) {
+        console.error("Error fetching prescheduled visitors:", error);
+        toast.error("Failed to load prescheduled visitors.");
+      }
+    };
+
+    const fetchSelfCheckinVisitors = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/self-checkins/status");
+        if (!response.ok) throw new Error("Failed to fetch self-checkin visitors");
+        const data = await response.json();
+        const sortedVisitors = data.sort((a, b) => new Date(b.checkInTime) - new Date(a.checkInTime));
+        setSelfCheckinVisitors(sortedVisitors);
+        setFilteredSelfCheckinVisitors(sortedVisitors);
+      } catch (error) {
+        console.error("Error fetching self-checkin visitors:", error);
+        toast.error("Failed to load self-checkin history.");
       }
     };
 
     fetchHosts();
-  }, []);
+    fetchPrescheduledVisitors();
+    fetchSelfCheckinVisitors();
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [stream, photoPreview]);
+
+  const handleSearch = (e, type) => {
+    const query = e.target.value.toLowerCase();
+    setSearchQuery(query);
+    if (type === "preschedule") {
+      const filtered = prescheduledVisitors.filter(
+        (visitor) =>
+          visitor.name.toLowerCase().includes(query) ||
+          visitor.host.toLowerCase().includes(query)
+      );
+      setFilteredPrescheduleVisitors(filtered);
+    } else if (type === "selfcheckin") {
+      const filtered = selfCheckinVisitors.filter(
+        (visitor) =>
+          visitor.fullName.toLowerCase().includes(query) ||
+          visitor.personToVisit.toLowerCase().includes(query)
+      );
+      setFilteredSelfCheckinVisitors(filtered);
+    }
+    setPage(0);
+  };
+
+  const handlePrescheduleSelect = (visitor) => {
+    setFormData({
+      fullName: visitor.name,
+      email: visitor.email,
+      phoneNumber: visitor.phoneNumber,
+      designation: visitor.designation,
+      visitType: visitor.visitType,
+      expectedDurationHours: visitor.expectedDuration.hours.toString(),
+      expectedDurationMinutes: visitor.expectedDuration.minutes.toString(),
+      documentDetails: "",
+      reasonForVisit: visitor.purpose,
+      otp: "",
+      visitorCompany: "",
+      personToVisit: visitor.host,
+      submittedDocument: "",
+      hasAssets: visitor.hasAssets,
+      assets: visitor.assets || [],
+      hasTeamMembers: visitor.teamMembers.length > 0 ? "yes" : "no",
+      department: visitor.department,
+    });
+    setTeamMembers(visitor.teamMembers || []);
+    setOpenPrescheduleModal(false);
+    toast.success(`Data for ${visitor.name} has been loaded.`);
+  };
+
+  const handleSelfCheckinSelect = (visitor) => {
+    setFormData({
+      fullName: visitor.fullName,
+      email: visitor.email,
+      phoneNumber: visitor.phoneNumber,
+      designation: visitor.designation,
+      visitType: visitor.visitType,
+      expectedDurationHours: visitor.expectedDuration.hours.toString(),
+      expectedDurationMinutes: visitor.expectedDuration.minutes.toString(),
+      documentDetails: visitor.documentDetails,
+      reasonForVisit: visitor.reasonForVisit,
+      otp: "",
+      visitorCompany: visitor.visitorCompany,
+      personToVisit: visitor.personToVisit,
+      submittedDocument: visitor.submittedDocument,
+      hasAssets: visitor.hasAssets,
+      assets: visitor.assets || [],
+      hasTeamMembers: visitor.hasTeamMembers,
+      department: visitor.department,
+    });
+    setTeamMembers(visitor.teamMembers || []);
+    setPhotoPreview(visitor.photoUrl || null);
+    setOpenSelfCheckinModal(false);
+    toast.success(`Data for ${visitor.fullName} has been loaded.`);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const startWebcam = async () => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      setStream(mediaStream);
+      setOpenWebcamModal(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+        }
+      }, 100);
+    } catch (error) {
+      console.error("Error accessing webcam:", error);
+      toast.error("Failed to access webcam.");
+    }
+  };
+
+  const stopWebcam = () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setOpenWebcamModal(false);
+  };
+
+  const capturePhoto = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      const file = new File([blob], "webcam-photo.jpg", { type: "image/jpeg" });
+      setPhoto(file);
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
+      stopWebcam();
+      toast.success("Photo captured successfully!");
+    }, "image/jpeg");
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhoto(file);
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+      const previewUrl = URL.createObjectURL(file);
+      setPhotoPreview(previewUrl);
+    }
+  };
 
   const validateField = (name, value) => {
     let error = "";
@@ -155,14 +354,14 @@ const Checkin = () => {
 
   const handleAssetChange = (index, field, value) => {
     const updatedAssets = [...formData.assets];
-    updatedAssets[index][field] = value; // No sanitization for quantity
+    updatedAssets[index][field] = value;
     setFormData((prev) => ({ ...prev, assets: updatedAssets }));
   };
 
   const handleAddAsset = () => {
     setFormData((prev) => ({
       ...prev,
-      assets: [...prev.assets, { type: "", serialNumber: "" }], // Removed quantity
+      assets: [...prev.assets, { type: "", serialNumber: "" }],
     }));
   };
 
@@ -204,13 +403,13 @@ const Checkin = () => {
 
   const handleTeamMemberAssetChange = (memberIndex, assetIndex, field, value) => {
     const updatedMembers = [...teamMembers];
-    updatedMembers[memberIndex].assets[assetIndex][field] = value; // No sanitization for quantity
+    updatedMembers[memberIndex].assets[assetIndex][field] = value;
     setTeamMembers(updatedMembers);
   };
 
   const handleAddTeamMemberAsset = (index) => {
     const updatedMembers = [...teamMembers];
-    updatedMembers[index].assets.push({ type: "", serialNumber: "" }); // Removed quantity
+    updatedMembers[index].assets.push({ type: "", serialNumber: "" });
     setTeamMembers(updatedMembers);
   };
 
@@ -303,7 +502,6 @@ const Checkin = () => {
     } else if (formData.hasAssets === "yes") {
       formData.assets.forEach((asset, index) => {
         ["type", "serialNumber"].forEach((field) => {
-          // Removed quantity from validation
           const error = validateAssetField(asset, field);
           if (error) newErrors[`asset_${index}_${field}`] = error;
         });
@@ -324,7 +522,6 @@ const Checkin = () => {
         } else if (member.hasAssets === "yes") {
           member.assets.forEach((asset, assetIndex) => {
             ["type", "serialNumber"].forEach((field) => {
-              // Removed quantity from validation
               const error = validateAssetField(asset, field);
               if (error)
                 newErrors[`teamMember_${memberIndex}_asset_${assetIndex}_${field}`] = error;
@@ -385,7 +582,6 @@ const Checkin = () => {
         method: "POST",
         body: visitorData,
       });
-
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || "Submission failed");
@@ -440,6 +636,18 @@ const Checkin = () => {
     overflowY: "auto",
   };
 
+  const webcamModalStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "50%",
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    p: 4,
+    textAlign: "center",
+  };
+
   return (
     <>
       <Navbar />
@@ -455,9 +663,25 @@ const Checkin = () => {
         }}
       >
         <ToastContainer position="top-right" autoClose={3000} />
-        <Typography variant="h5" align="center" fontWeight="bold" mb={4}>
+        <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
           Visitor Check-In
         </Typography>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 4 }}>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={() => setOpenPrescheduleModal(true)}
+          >
+            Preschedule
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setOpenSelfCheckinModal(true)}
+          >
+            Self Check-in History
+          </Button>
+        </Box>
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
@@ -639,7 +863,7 @@ const Checkin = () => {
             </Grid>
 
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={8}>
+              <Grid item xs={6}>
                 <Button
                   variant="contained"
                   component="label"
@@ -650,15 +874,34 @@ const Checkin = () => {
                   <input
                     type="file"
                     hidden
-                    onChange={(e) => setPhoto(e.target.files[0])}
+                    onChange={handlePhotoUpload}
                     accept="image/*"
                   />
                 </Button>
               </Grid>
-              <Grid item xs={4}>
-                {photo && <Typography>{photo.name}</Typography>}
+              <Grid item xs={6}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<CameraAlt />}
+                  onClick={startWebcam}
+                >
+                  Click Now
+                </Button>
+              </Grid>
+              <Grid item xs={12}>
+                {photoPreview && (
+                  <Box mt={2} textAlign="center">
+                    <img
+                      src={photoPreview}
+                      alt="Visitor preview"
+                      style={{ maxWidth: "100%", maxHeight: "200px" }}
+                    />
+                  </Box>
+                )}
               </Grid>
             </Grid>
+
             <TextField
               fullWidth
               label="Reason for Visit*"
@@ -762,6 +1005,146 @@ const Checkin = () => {
             </TextField>
           </Grid>
         </Grid>
+
+        <Modal open={openPrescheduleModal} onClose={() => setOpenPrescheduleModal(false)}>
+          <Box sx={modalStyle}>
+            <Typography variant="h6" mb={2}>
+              Approved Pre-Scheduled Visitors
+            </Typography>
+            <TextField
+              fullWidth
+              label="Search Visitors"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e, "preschedule")}
+              sx={{ mb: 2 }}
+              placeholder="Search by visitor name or host name"
+            />
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Date</TableCell>
+                    <TableCell>Purpose</TableCell>
+                    <TableCell>Host</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredPrescheduleVisitors
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((visitor) => (
+                      <TableRow key={visitor._id}>
+                        <TableCell>{visitor.name}</TableCell>
+                        <TableCell>{visitor.email}</TableCell>
+                        <TableCell>{visitor.date}</TableCell>
+                        <TableCell>{visitor.purpose}</TableCell>
+                        <TableCell>{visitor.host}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handlePrescheduleSelect(visitor)}
+                          >
+                            Select
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredPrescheduleVisitors.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenPrescheduleModal(false)}
+              sx={{ mt: 2, display: "block", mx: "auto" }}
+            >
+              Close
+            </Button>
+          </Box>
+        </Modal>
+
+        <Modal open={openSelfCheckinModal} onClose={() => setOpenSelfCheckinModal(false)}>
+          <Box sx={modalStyle}>
+            <Typography variant="h6" mb={2}>
+              Self Check-in History
+            </Typography>
+            <TextField
+              fullWidth
+              label="Search Visitors"
+              value={searchQuery}
+              onChange={(e) => handleSearch(e, "selfcheckin")}
+              sx={{ mb: 2 }}
+              placeholder="Search by visitor name or host name"
+            />
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Check-in Time</TableCell>
+                    <TableCell>Reason</TableCell>
+                    <TableCell>Host</TableCell>
+                    <TableCell>Action</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredSelfCheckinVisitors
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((visitor) => (
+                      <TableRow key={visitor._id}>
+                        <TableCell>{visitor.fullName}</TableCell>
+                        <TableCell>{visitor.email}</TableCell>
+                        <TableCell>
+                          {new Date(visitor.checkInTime).toLocaleString()}
+                        </TableCell>
+                        <TableCell>{visitor.reasonForVisit}</TableCell>
+                        <TableCell>{visitor.personToVisit}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => handleSelfCheckinSelect(visitor)}
+                          >
+                            Select
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[5, 10, 25]}
+              component="div"
+              count={filteredSelfCheckinVisitors.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenSelfCheckinModal(false)}
+              sx={{ mt: 2, display: "block", mx: "auto" }}
+            >
+              Close
+            </Button>
+          </Box>
+        </Modal>
 
         <Modal open={openTeamModal} onClose={handleCloseTeamModal}>
           <Box sx={modalStyle}>
@@ -983,6 +1366,28 @@ const Checkin = () => {
             >
               Close
             </Button>
+          </Box>
+        </Modal>
+
+        <Modal open={openWebcamModal} onClose={stopWebcam}>
+          <Box sx={webcamModalStyle}>
+            <Typography variant="h6" mb={2}>
+              Capture Photo
+            </Typography>
+            <video ref={videoRef} autoPlay style={{ width: "100%", maxHeight: "50vh" }} />
+            <Box mt={2}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={capturePhoto}
+                sx={{ mr: 2 }}
+              >
+                Capture
+              </Button>
+              <Button variant="outlined" color="secondary" onClick={stopWebcam}>
+                Cancel
+              </Button>
+            </Box>
           </Box>
         </Modal>
 

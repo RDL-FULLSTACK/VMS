@@ -27,7 +27,6 @@ const SelfCheckinSchema = new mongoose.Schema({
   documentDetails: { type: String, required: true },
   photoUrl: { type: String }, // Optional now
   reasonForVisit: { type: String, required: true },
-  otp: { type: String }, // Optional now
   visitorCompany: { type: String, required: true },
   personToVisit: { type: String, required: true },
   submittedDocument: { type: String, required: true },

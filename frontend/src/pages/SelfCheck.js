@@ -683,7 +683,7 @@ const SelfCheck = () => {
               error={!!errors.submittedDocument}
               helperText={errors.submittedDocument}
               required
-              sx={ { mb: 2 }}
+              sx={{ mb: 2 }}
               variant="outlined"
               InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             >
@@ -1003,7 +1003,10 @@ const SelfCheck = () => {
           Submit
         </Button>
       </Box>
-      <Footer />
+      {/* Adding space before Footer */}
+      <Box sx={{ mt: 4 }}>
+        <Footer />
+      </Box>
     </>
   );
 };

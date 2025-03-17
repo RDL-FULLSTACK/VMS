@@ -991,7 +991,7 @@ function Home() {
         { name: "Checked-In", value: checkedIn || 0, color: "#0088FE" },
         { name: "Checked-Out", value: checkedOut || 0, color: "#00C49F" },
         { name: "Pending", value: pending || 0, color: "#FFBB28" },
-      ].filter((data) => data.value > 0); // Filter out zero values
+      ].filter((data) => data.value > 0);
       setMeterData(updatedMeterData);
 
       const dateRange = getDateRange(7);
@@ -1070,29 +1070,52 @@ function Home() {
 
       if (!response.ok) throw new Error("Failed to delete visitor");
 
-      setVisitors((prevVisitors) =>
-        prevVisitors.filter((visitor) => visitor.id !== selectedVisitorId)
+      // Update visitors state first
+      const updatedVisitors = visitors.filter(
+        (visitor) => visitor.id !== selectedVisitorId
       );
+      setVisitors(updatedVisitors);
 
-      const checkedIn = visitors.filter(
+      // Recalculate checkedIn and checkedOut based on updated visitors
+      const checkedIn = updatedVisitors.filter(
         (v) => v.checkIn !== "N/A" && v.checkOut === "N/A"
       ).length;
-      const checkedOut = visitors.filter((v) => v.checkOut !== "N/A").length;
+      const checkedOut = updatedVisitors.filter(
+        (v) => v.checkOut !== "N/A"
+      ).length;
       const totalVisitors = checkedIn + checkedOut;
 
+      // Update stats
       setStats((prevStats) => [
         { ...prevStats[0], value: totalVisitors },
         { ...prevStats[1], value: checkedIn },
         { ...prevStats[2], value: checkedOut },
-        prevStats[3],
-        prevStats[4],
+        { ...prevStats[3] }, // Pending remains unchanged
+        { ...prevStats[4] }, // Vehicle checked-in remains unchanged
       ]);
 
-      setMeterData((prevMeterData) => [
-        { ...prevMeterData[0], value: checkedIn },
-        { ...prevMeterData[1], value: checkedOut },
-        prevMeterData[2],
-      ].filter((data) => data.value > 0)); // Filter out zero values after deletion
+      // Fetch the latest pending count to ensure consistency
+      const prescheduleResponse = await fetch(
+        "http://localhost:5000/api/preschedules"
+      );
+      if (!prescheduleResponse.ok)
+        throw new Error("Failed to fetch preschedule data");
+      const rawPrescheduleData = await prescheduleResponse.json();
+      const prescheduleData = Array.isArray(rawPrescheduleData)
+        ? rawPrescheduleData
+        : rawPrescheduleData.data || [];
+      const pending = prescheduleData.filter((preschedule) => {
+        const isPending = preschedule.status?.toLowerCase() === "pending";
+        return isPending;
+      }).length;
+
+      // Recompute meterData from scratch
+      const updatedMeterData = [
+        { name: "Checked-In", value: checkedIn, color: "#0088FE" },
+        { name: "Checked-Out", value: checkedOut, color: "#00C49F" },
+        { name: "Pending", value: pending, color: "#FFBB28" },
+      ].filter((data) => data.value > 0);
+      setMeterData(updatedMeterData);
     } catch (err) {
       console.error("Error deleting visitor:", err);
       setError(err.message);

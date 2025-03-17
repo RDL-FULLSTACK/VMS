@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
@@ -53,19 +52,16 @@ const VisitorCard = () => {
     fetchVisitorData();
   }, [visitorId]);
 
-  // Utility to get last 4 digits of ID
   const getLastFourDigits = (id) => {
     const idStr = (id || "").toString();
     return idStr.slice(-4);
   };
 
-  // Format check-in time
   const formatTime = (date) => {
     if (!date) return "N/A";
     return new Date(date).toLocaleString();
   };
 
-  // Download E-Pass as PNG
   const downloadEPass = () => {
     html2canvas(visitorRef.current).then((canvas) => {
       const link = document.createElement("a");
@@ -75,90 +71,191 @@ const VisitorCard = () => {
     });
   };
 
-  // Print E-Pass (include full card content)
   const printEPass = () => {
     if (!visitor) return;
 
-    // Get the QR code canvas and convert it to an image
-    const qrCanvas = document.querySelector("canvas"); // Select the QR Code Canvas
+    const qrCanvas = document.querySelector("canvas");
     if (!qrCanvas) {
       alert("QR Code not found!");
       return;
     }
-    const qrDataUrl = qrCanvas.toDataURL("image/png"); // Convert QR Code to an image
+    const qrDataUrl = qrCanvas.toDataURL("image/png");
 
-    // Preload the profile image to ensure it’s available
     const preloadImage = (url) => {
       return new Promise((resolve) => {
         const img = new Image();
         img.src = url || "/default-avatar.png";
         img.onload = () => resolve(img.src);
-        img.onerror = () => resolve("/default-avatar.png"); // Fallback to default if loading fails
+        img.onerror = () => resolve("/default-avatar.png");
       });
     };
 
-    // Open the print window after preloading the image
     preloadImage(visitor.photoUrl).then((photoUrl) => {
       const printWindow = window.open("", "_blank");
       printWindow.document.write(`
-        <html>
-          <head>
-            <title>Print Visitor E-Pass</title>
-            <style>
-              body { font-family: Arial, sans-serif; text-align: center; background-color: #EDE7F6; }
-              .e-pass { max-width: 800px; margin: auto; padding: 20px; background-color: #fff; border-radius: 8px; }
-              .header { background-color: #D1C4E9; padding: 10px; border-radius: 4px; }
-              img { border-radius: 50%; }
-              .qr-code-container {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 15px auto;
-              }
-              .qr-code-container img {
-                width: 130px;
-                height: 130px;
-                padding: 10px;
-                background: white;
-                border-radius: 8px;
-              }
-              .qr-label {
-                font-size: 14px;
-                color: #333;
-                font-weight: bold;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="e-pass">
-              <h2 class="header">VISITOR E-PASS</h2>
-              <div style="display: flex; align-items: center; gap: 20px;">
-                <img src="${photoUrl}" alt="Visitor Photo" width="100" height="100" />
-                <div style="text-align: left;">
-                  <h3>${visitor.fullName}</h3>
-                  <p><strong>ID:</strong> ${visitor._id}</p>
-                  <p><strong>Time:</strong> ${new Date(visitor.checkInTime).toLocaleString()}</p>
-                </div>
-              </div>
+<!DOCTYPE html>
+<html lang="en">
 
-              <p><strong>Purpose:</strong> ${visitor.reasonForVisit}</p>
-              <p><strong>Visitor Designation:</strong> ${visitor.designation}</p>
-              <p><strong>Company:</strong> ${visitor.visitorCompany}</p>
-              <p><strong>Host:</strong> ${visitor.personToVisit}</p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visitor Hall Ticket</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+    }
 
-              <!-- QR Code Display -->
-              <div class="qr-code-container">
-                <img src="${qrDataUrl}" alt="QR Code" />
-              </div>
-              <p class="qr-label">Scan QR CODE to verify E-pass</p>
+    .hall-ticket {
+      width: 450px;
+      min-height: 350px;
+      padding: 15px;
+      box-sizing: border-box;
+      background-color: #fff;
+      border: 2px solid #5F3B91;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
 
-              <p style="color: #5F3B91; font-weight: bold;">This E-pass is valid for one-time entry only</p>
-            </div>
-          </body>
-        </html>
+    .header {
+      background-color: #5F3B91;
+      color: #fff;
+      padding: 10px;
+      text-align: center;
+      border-radius: 4px 4px 0 0;
+      margin: -15px -15px 0 -15px;
+      font-size: 18px;
+    }
+
+    .content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .left-section {
+      text-align: left;
+      font-size: 14px;
+      max-width: 55%;
+    }
+
+    .right-section {
+      text-align: center;
+    }
+
+    img.photo {
+      border-radius: 50%;
+      border: 2px solid #D1C4E9;
+      width: 70px;
+      height: 70px;
+    }
+
+    .qr-code-container img {
+      width: 80px;
+      height: 80px;
+      padding: 5px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .qr-label {
+      font-size: 12px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .signature-section {
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .signature-box {
+      width: 150px;
+      height: 30px;
+      border: 1.5px solid #5F3B91;
+      margin: 5px auto;
+      text-align: center;
+      line-height: 30px;
+      font-style: italic;
+      color: #999;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #5F3B91;
+      font-weight: bold;
+      border-top: 1.5px dashed #5F3B91;
+      padding-top: 5px;
+    }
+
+    p {
+      margin: 5px 0;
+    }
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="hall-ticket">
+    <div class="header">
+      <h2>VISITOR HALL TICKET</h2>
+    </div>
+    <div class="content">
+      <div class="left-section">
+        <h3>${visitor.fullName}</h3>
+        <p><strong>ID:</strong> ${visitor._id}</p>
+        <p><strong>Check-In Time:</strong> ${new Date(visitor.checkInTime).toLocaleString()}</p>
+        <p><strong>Purpose:</strong> ${visitor.reasonForVisit}</p>
+        <p><strong>Designation:</strong> ${visitor.designation}</p>
+        <p><strong>Company:</strong> ${visitor.visitorCompany}</p>
+        <p><strong>Host:</strong> ${visitor.personToVisit}</p>
+      </div>
+      <div class="right-section">
+        <img src="${photoUrl}" alt="Visitor Photo" class="photo" />
+        <div class="qr-code-container">
+          <img src="${qrDataUrl}" alt="QR Code" />
+          <p class="qr-label">Scan to Verify</p>
+        </div>
+      </div>
+    </div>
+    <div class="signature-section">
+      <p>Host Signature</p>
+      <div class="signature-box">__________________</div>
+    </div>
+    <div class="footer">
+      <p>This hall ticket is valid for one-time entry only</p>
+    </div>
+  </div>
+</body>
+
+</html>
+
+
       `);
 
-      // Ensure the content is fully loaded before printing
       printWindow.document.close();
       printWindow.onload = () => {
         printWindow.print();
@@ -172,36 +269,56 @@ const VisitorCard = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ textAlign: "center", mt: 12 }}>
-        <Typography variant="h6">Loading Visitor Details...</Typography>
-      </Container>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Navbar />
+        <Container maxWidth="md" sx={{ textAlign: "center", mt: 12, flexGrow: 1 }}>
+          <Typography variant="h6">Loading Visitor Details...</Typography>
+        </Container>
+        <Footer />
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <Container maxWidth="md" sx={{ textAlign: "center", mt: 12 }}>
-        <Typography variant="h6" color="error">
-          {error}
-        </Typography>
-      </Container>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Navbar />
+        <Container maxWidth="md" sx={{ textAlign: "center", mt: 12, flexGrow: 1 }}>
+          <Typography variant="h6" color="error">
+            {error}
+          </Typography>
+        </Container>
+        <Footer />
+      </Box>
     );
   }
 
   if (!visitor) {
     return (
-      <Container maxWidth="md" sx={{ textAlign: "center", mt: 12 }}>
-        <Typography variant="h6">No Visitor Data Available</Typography>
-      </Container>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Navbar />
+        <Container maxWidth="md" sx={{ textAlign: "center", mt: 12, flexGrow: 1 }}>
+          <Typography variant="h6">No Visitor Data Available</Typography>
+        </Container>
+        <Footer />
+      </Box>
     );
   }
 
   const visitorIdStr = getLastFourDigits(visitor._id);
 
   return (
-    <>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Navbar />
-      <Container maxWidth="md" sx={{ textAlign: "center", mt: 12 }}>
+      <Container 
+        maxWidth="md" 
+        sx={{ 
+          textAlign: "center", 
+          mt: 12, 
+          mb: 4, // Added margin-bottom to create space before Footer
+          flexGrow: 1 
+        }}
+      >
         <Card
           ref={visitorRef}
           sx={{
@@ -309,8 +426,8 @@ const VisitorCard = () => {
           </Grid>
         </Card>
       </Container>
-      <Footer/>
-    </>
+      <Footer />
+    </Box>
   );
 };
 

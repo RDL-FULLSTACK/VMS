@@ -27,6 +27,26 @@ const VisitorReport = () => {
   const [tempEndDate, setTempEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [maxPageButtons, setMaxPageButtons] = useState(5); // Dynamic max buttons
+
+  // Function to determine maxPageButtons based on screen width
+  const updateMaxPageButtons = useCallback(() => {
+    const width = window.innerWidth;
+    if (width < 600) {
+      setMaxPageButtons(3); // Mobile: 3 buttons
+    } else if (width < 900) {
+      setMaxPageButtons(5); // Tablet: 5 buttons
+    } else {
+      setMaxPageButtons(7); // Desktop: 7 buttons
+    }
+  }, []);
+
+  // Set initial value and listen for resize
+  useEffect(() => {
+    updateMaxPageButtons(); // Set initial value
+    window.addEventListener("resize", updateMaxPageButtons);
+    return () => window.removeEventListener("resize", updateMaxPageButtons); // Cleanup
+  }, [updateMaxPageButtons]);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -54,6 +74,25 @@ const VisitorReport = () => {
     setLoading(false);
   }, [page, sortBy, order, startDate, endDate, searchQuery]);
 
+  // Fetch all reports for CSV export (without pagination)
+  const fetchAllReports = useCallback(async () => {
+    try {
+      const params = {
+        sortBy,
+        order,
+        ...(startDate && endDate ? { startDate, endDate } : {}),
+        ...(searchQuery ? { search: searchQuery } : {}),
+        export: true, // Add export flag to bypass pagination
+      };
+
+      const { data } = await axios.get(`http://localhost:5000/api/visitors/report`, { params });
+      return data.visitors || [];
+    } catch (err) {
+      console.error("Error fetching all visitors for CSV:", err);
+      return [];
+    }
+  }, [sortBy, order, startDate, endDate, searchQuery]);
+
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
@@ -63,8 +102,19 @@ const VisitorReport = () => {
     setOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
   };
 
-  const downloadCSV = () => {
-    if (reports.length === 0) {
+  // Custom function to format date as DD/MM/YYYY
+  const formatDateDDMMYYYY = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const downloadCSV = async () => {
+    const allReports = await fetchAllReports();
+
+    if (allReports.length === 0) {
       alert("No data available for export!");
       return;
     }
@@ -74,15 +124,16 @@ const VisitorReport = () => {
       "Company Name",
       "Purpose",
       "Host",
-      "Check-In Date",
-      "Check-Out Date",
+      "Date",
+      "Check-In Time",
+      "Check-Out Time",
       "Duration",
       "Attendees",
     ];
 
     const csvRows = [
       headers.join(","),
-      ...reports.map((report) => {
+      ...allReports.map((report) => {
         const duration = report.meetingDuration
           ? `${report.meetingDuration.hours}h ${report.meetingDuration.minutes}m`
           : "N/A";
@@ -91,23 +142,16 @@ const VisitorReport = () => {
           report.visitorCompany || "N/A",
           report.reasonForVisit || "N/A",
           report.personToVisit || "N/A",
-          new Date(report.checkInTime).toLocaleString("en-US", {
-            month: "numeric",
-            day: "numeric",
-            year: "numeric",
+          formatDateDDMMYYYY(report.checkInTime),
+          new Date(report.checkInTime).toLocaleTimeString("en-US", {
             hour: "numeric",
             minute: "numeric",
-            second: "numeric",
             hour12: true,
           }),
           report.checkOutTime
-            ? new Date(report.checkOutTime).toLocaleString("en-US", {
-                month: "numeric",
-                day: "numeric",
-                year: "numeric",
+            ? new Date(report.checkOutTime).toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
-                second: "numeric",
                 hour12: true,
               })
             : "N/A",
@@ -135,8 +179,7 @@ const VisitorReport = () => {
     setEndDate(tempEndDate);
   };
 
-  // Pagination logic to display page numbers
-  const maxPageButtons = 5;
+  // Dynamic Pagination Logic
   const pageNumbers = [];
   let startPage = Math.max(1, page - Math.floor(maxPageButtons / 2));
   let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -151,7 +194,7 @@ const VisitorReport = () => {
 
   return (
     <div>
-      {/* Search and Filters */}
+      {/* Search and Filters (Unchanged) */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
         <TextField
           label="Search Visitor Name"
@@ -210,13 +253,16 @@ const VisitorReport = () => {
                 <b>Host {sortBy === "personToVisit" ? (order === "asc" ? "▲" : "▼") : ""}</b>
               </TableCell>
               <TableCell onClick={() => toggleSort("checkInTime")} style={{ cursor: "pointer" }}>
-                <b>Check-In {sortBy === "checkInTime" ? (order === "asc" ? "▲" : "▼") : ""}</b>
+                <b>Date {sortBy === "checkInTime" ? (order === "asc" ? "▲" : "▼") : ""}</b>
+              </TableCell>
+              <TableCell>
+                <b>Check-In</b> {/* No sorting */}
               </TableCell>
               <TableCell onClick={() => toggleSort("checkOutTime")} style={{ cursor: "pointer" }}>
                 <b>Check-Out {sortBy === "checkOutTime" ? (order === "asc" ? "▲" : "▼") : ""}</b>
               </TableCell>
               <TableCell>
-                <b>Duration</b> {/* Not sortable as it's calculated */}
+                <b>Duration</b>
               </TableCell>
               <TableCell onClick={() => toggleSort("teamMembersCount")} style={{ cursor: "pointer" }}>
                 <b>Attendees {sortBy === "teamMembersCount" ? (order === "asc" ? "▲" : "▼") : ""}</b>
@@ -226,19 +272,19 @@ const VisitorReport = () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={9} align="center">
                   <CircularProgress size={24} />
                 </TableCell>
               </TableRow>
             ) : error ? (
               <TableRow>
-                <TableCell colSpan={8} align="center" style={{ color: "red" }}>
+                <TableCell colSpan={9} align="center" style={{ color: "red" }}>
                   {error}
                 </TableCell>
               </TableRow>
             ) : reports.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={9} align="center">
                   No reports found.
                 </TableCell>
               </TableRow>
@@ -250,25 +296,20 @@ const VisitorReport = () => {
                   <TableCell>{report.reasonForVisit || "N/A"}</TableCell>
                   <TableCell>{report.personToVisit || "N/A"}</TableCell>
                   <TableCell>
-                    {new Date(report.checkInTime).toLocaleString("en-US", {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
+                    {formatDateDDMMYYYY(report.checkInTime)}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(report.checkInTime).toLocaleTimeString("en-US", {
                       hour: "numeric",
                       minute: "numeric",
-                      second: "numeric",
                       hour12: true,
                     })}
                   </TableCell>
                   <TableCell>
                     {report.checkOutTime
-                      ? new Date(report.checkOutTime).toLocaleString("en-US", {
-                          month: "numeric",
-                          day: "numeric",
-                          year: "numeric",
+                      ? new Date(report.checkOutTime).toLocaleTimeString("en-US", {
                           hour: "numeric",
                           minute: "numeric",
-                          second: "numeric",
                           hour12: true,
                         })
                       : "N/A"}
@@ -286,6 +327,7 @@ const VisitorReport = () => {
         </Table>
       </TableContainer>
 
+      {/* Dynamic Pagination (Unchanged) */}
       <div
         style={{
           marginTop: "10px",

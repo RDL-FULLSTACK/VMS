@@ -1,5 +1,3 @@
-// visitorController.js
-
 const mongoose = require("mongoose");
 const Visitor = require("../models/Visitor");
 const Checkout = require("../models/Checkout");
@@ -446,7 +444,7 @@ exports.verifyEmailOtp = async (req, res) => {
 exports.getVisitors = async (req, res) => {
   try {
     let query = {};
-    const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search } = req.query;
+    const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search, export: isExport } = req.query;
 
     // Date range filter
     if (startDate && endDate) {
@@ -462,21 +460,30 @@ exports.getVisitors = async (req, res) => {
     }
 
     const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    const skip = (pageNum - 1) * limitNum;
+    const limitNum = isExport ? 0 : parseInt(limit); // Disable limit for export
+    const skip = isExport ? 0 : (pageNum - 1) * limitNum;
     const sortOrder = order === "asc" ? 1 : -1;
 
     const fields = "_id fullName checkInTime checkOutTime reasonForVisit personToVisit teamMembers visitorCompany";
 
-    const visitors = await Visitor.find(query)
-      .select(fields)
-      .sort({ [sortBy]: sortOrder })
-      .limit(limitNum)
-      .skip(skip);
+    let visitors;
+    if (isExport) {
+      // Fetch all records for export
+      visitors = await Visitor.find(query)
+        .select(fields)
+        .sort({ [sortBy]: sortOrder });
+    } else {
+      // Paginated fetch for regular requests
+      visitors = await Visitor.find(query)
+        .select(fields)
+        .sort({ [sortBy]: sortOrder })
+        .limit(limitNum)
+        .skip(skip);
+    }
 
     const totalVisitors = await Visitor.countDocuments(query);
 
-    if (!visitors.length) {
+    if (!visitors.length && !isExport) {
       return res.status(200).json({
         visitors: [],
         totalPages: 0,
@@ -509,6 +516,10 @@ exports.getVisitors = async (req, res) => {
         visitorCompany: visitor.visitorCompany,
       };
     });
+
+    if (isExport) {
+      return res.status(200).json({ visitors: formattedVisitors });
+    }
 
     res.status(200).json({
       visitors: formattedVisitors,

@@ -1,4 +1,3 @@
-// controllers/vehicleController.js
 const Vehicle = require("../models/Vehicle");
 
 // Existing functions remain unchanged...
@@ -85,7 +84,7 @@ exports.deleteVehicle = async (req, res) => {
 // New function for vehicle reports with pagination, sorting, and filtering
 exports.getVehicleReports = async (req, res) => {
   try {
-    const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search } = req.query;
+    const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search, export: isExport } = req.query;
 
     let query = {};
     // Filter by date range if provided
@@ -100,16 +99,32 @@ exports.getVehicleReports = async (req, res) => {
       query.vehicleNumber = { $regex: search, $options: "i" }; // Case-insensitive search on vehicleNumber
     }
 
-    const vehicles = await Vehicle.find(query)
-      .sort({ [sortBy]: order === "asc" ? 1 : -1 })
-      .skip((page - 1) * limit)
-      .limit(limit);
+    const pageNum = parseInt(page);
+    const limitNum = isExport ? 0 : parseInt(limit); // Disable limit for export
+    const skip = isExport ? 0 : (pageNum - 1) * limitNum;
+
+    let vehicles;
+    if (isExport) {
+      // Fetch all records for export
+      vehicles = await Vehicle.find(query)
+        .sort({ [sortBy]: order === "asc" ? 1 : -1 });
+    } else {
+      // Paginated fetch for regular requests
+      vehicles = await Vehicle.find(query)
+        .sort({ [sortBy]: order === "asc" ? 1 : -1 })
+        .skip(skip)
+        .limit(limitNum);
+    }
 
     const total = await Vehicle.countDocuments(query);
-    const totalPages = Math.ceil(total / limit);
+    const totalPages = isExport ? 1 : Math.ceil(total / limitNum);
 
     if (vehicles.length === 0) {
       return res.status(404).json({ message: "No vehicle reports found", vehicles: [], totalPages });
+    }
+
+    if (isExport) {
+      return res.status(200).json({ vehicles });
     }
 
     res.status(200).json({ vehicles, totalPages });

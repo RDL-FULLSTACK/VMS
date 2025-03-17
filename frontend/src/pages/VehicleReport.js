@@ -19,7 +19,7 @@ const VehicleReport = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortBy, setSortBy] = useState("checkInTime");
+  const [sortBy, setSortBy] = useState("date");
   const [order, setOrder] = useState("desc");
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,6 +27,26 @@ const VehicleReport = () => {
   const [tempEndDate, setTempEndDate] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [maxPageButtons, setMaxPageButtons] = useState(5); // Dynamic max buttons
+
+  // Function to determine maxPageButtons based on screen width
+  const updateMaxPageButtons = useCallback(() => {
+    const width = window.innerWidth;
+    if (width < 600) {
+      setMaxPageButtons(3); // Mobile: 3 buttons
+    } else if (width < 900) {
+      setMaxPageButtons(5); // Tablet: 5 buttons
+    } else {
+      setMaxPageButtons(7); // Desktop: 7 buttons
+    }
+  }, []);
+
+  // Set initial value and listen for resize
+  useEffect(() => {
+    updateMaxPageButtons(); // Set initial value
+    window.addEventListener("resize", updateMaxPageButtons);
+    return () => window.removeEventListener("resize", updateMaxPageButtons); // Cleanup
+  }, [updateMaxPageButtons]);
 
   const fetchReports = useCallback(async () => {
     setLoading(true);
@@ -54,6 +74,25 @@ const VehicleReport = () => {
     setLoading(false);
   }, [page, sortBy, order, startDate, endDate, searchQuery]);
 
+  // Fetch all reports for CSV export (without pagination)
+  const fetchAllReports = useCallback(async () => {
+    try {
+      const params = {
+        sortBy,
+        order,
+        ...(startDate && endDate ? { startDate, endDate } : {}),
+        ...(searchQuery ? { search: searchQuery } : {}),
+        export: true, // Add export flag to bypass pagination
+      };
+
+      const { data } = await axios.get(`http://localhost:5000/api/vehicles/report`, { params });
+      return data.vehicles || [];
+    } catch (err) {
+      console.error("Error fetching all vehicles for CSV:", err);
+      return [];
+    }
+  }, [sortBy, order, startDate, endDate, searchQuery]);
+
   useEffect(() => {
     fetchReports();
   }, [fetchReports]);
@@ -63,8 +102,19 @@ const VehicleReport = () => {
     setOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
   };
 
-  const downloadCSV = () => {
-    if (reports.length === 0) {
+  // Custom function to format date as DD/MM/YYYY
+  const formatDateDDMMYYYY = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const downloadCSV = async () => {
+    const allReports = await fetchAllReports();
+
+    if (allReports.length === 0) {
       alert("No data available for export!");
       return;
     }
@@ -79,25 +129,15 @@ const VehicleReport = () => {
 
     const csvRows = [
       headers.join(","),
-      ...reports.map((report) =>
-        [
-          report.vehicleNumber,
-          report.purpose,
-          new Date(report.date).toLocaleString("en-US", {
-            month: "numeric",
-            day: "numeric",
-            year: "numeric",
-            hour: "numeric",
-            minute: "numeric",
-            second: "numeric",
-            hour12: true,
-          }),
-          report.checkInTime,
-          report.checkOutTime || "N/A",
-        ]
-          .map((value) => `"${value}"`)
-          .join(",")
-      ),
+      ...allReports.map((report) => [
+        report.vehicleNumber,
+        report.purpose,
+        formatDateDDMMYYYY(report.date),
+        report.checkInTime,
+        report.checkOutTime || "N/A",
+      ]
+        .map((value) => `"${value}"`)
+        .join(",")),
     ];
 
     const csvContent = csvRows.join("\n");
@@ -116,8 +156,7 @@ const VehicleReport = () => {
     setEndDate(tempEndDate);
   };
 
-  // Pagination logic to display page numbers
-  const maxPageButtons = 5;
+  // Dynamic Pagination Logic
   const pageNumbers = [];
   let startPage = Math.max(1, page - Math.floor(maxPageButtons / 2));
   let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -132,7 +171,7 @@ const VehicleReport = () => {
 
   return (
     <div>
-      {/* Search and Filters */}
+      {/* Search and Filters (Unchanged) */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "10px", alignItems: "center" }}>
         <TextField
           label="Search Vehicle Number"
@@ -220,15 +259,7 @@ const VehicleReport = () => {
                   <TableCell>{report.vehicleNumber}</TableCell>
                   <TableCell>{report.purpose}</TableCell>
                   <TableCell>
-                    {new Date(report.date).toLocaleString("en-US", {
-                      month: "numeric",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "numeric",
-                      second: "numeric",
-                      hour12: true,
-                    })}
+                    {formatDateDDMMYYYY(report.date)}
                   </TableCell>
                   <TableCell>{report.checkInTime}</TableCell>
                   <TableCell>{report.checkOutTime || "N/A"}</TableCell>
@@ -239,7 +270,16 @@ const VehicleReport = () => {
         </Table>
       </TableContainer>
 
-      <div style={{ marginTop: "10px", display: "flex", alignItems: "center", gap: "8px", justifyContent: "center" }}>
+      {/* Dynamic Pagination */}
+      <div
+        style={{
+          marginTop: "10px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          justifyContent: "center",
+        }}
+      >
         <Button
           disabled={page === 1}
           onClick={() => setPage(page - 1)}

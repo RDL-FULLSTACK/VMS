@@ -1,14 +1,8 @@
-//server.js
-
-
-
-
-
-
+// server.js
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const path = require("path"); // Added for serving static files
+const path = require("path");
 const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const vehicleRoutes = require("./src/routes/vehicleRoutes");
@@ -18,6 +12,7 @@ const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const userRoutes = require("./src/routes/userRoutes");
 const reportRoutes = require("./src/routes/reportRoutes");
+const selfCheckinRoutes = require("./src/routes/selfCheckinRoutes"); // Add this line
 
 // Initialize Express App
 const app = express();
@@ -43,15 +38,13 @@ app.use(
 app.use(express.json()); // Parse JSON
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, 
+    origin: process.env.FRONTEND_URL,
     credentials: true, // Allow session cookies
   })
 );
 
 // Serve static files (for uploaded photos)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-
 
 // Connect to Database
 connectDB();
@@ -63,6 +56,8 @@ app.use("/api/visitors", visitorRoutes);
 app.use("/api", preScheduleRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/self-checkins", selfCheckinRoutes); // Add this line
+
 // Health Check Endpoint (optional but useful)
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "Server is running" });

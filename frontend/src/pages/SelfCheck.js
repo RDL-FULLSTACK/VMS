@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -29,7 +28,6 @@ const departments = [
 ];
 
 const SelfCheck = () => {
-  const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
   const [hosts, setHosts] = useState([]);
   const [formData, setFormData] = useState({
@@ -53,6 +51,7 @@ const SelfCheck = () => {
   const [errors, setErrors] = useState({});
   const [openTeamModal, setOpenTeamModal] = useState(false);
   const [openAssetsModal, setOpenAssetsModal] = useState(false);
+  const [openSuccessModal, setOpenSuccessModal] = useState(false);
 
   useEffect(() => {
     const fetchHosts = async () => {
@@ -215,6 +214,29 @@ const SelfCheck = () => {
     setTeamMembers(updatedMembers);
   };
 
+  const resetForm = () => {
+    setFormData({
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      designation: "",
+      visitType: "",
+      expectedDurationHours: "",
+      expectedDurationMinutes: "",
+      documentDetails: "",
+      reasonForVisit: "",
+      visitorCompany: "",
+      personToVisit: "",
+      submittedDocument: "",
+      hasAssets: "",
+      assets: [],
+      hasTeamMembers: "",
+      department: "",
+    });
+    setTeamMembers([]);
+    setErrors({});
+  };
+
   const handleSubmit = async () => {
     const newErrors = {};
     Object.keys(formData).forEach((field) => {
@@ -316,8 +338,8 @@ const SelfCheck = () => {
 
       if (!response.ok) throw new Error(data.message || "Self check-in failed");
 
-      toast.success("Self check-in successful!");
-      setTimeout(() => navigate("/visitorcard"), 2000);
+      setOpenSuccessModal(true);
+      resetForm();
     } catch (error) {
       toast.error(error.message || "Submission error");
     }
@@ -345,6 +367,10 @@ const SelfCheck = () => {
     setOpenAssetsModal(false);
   };
 
+  const handleCloseSuccessModal = () => {
+    setOpenSuccessModal(false);
+  };
+
   const handleViewTeamMembers = () => {
     setOpenTeamModal(true);
   };
@@ -358,12 +384,26 @@ const SelfCheck = () => {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "80%",
+    width: { xs: "90%", sm: "80%", md: "60%" },
     maxHeight: "80vh",
     bgcolor: "background.paper",
     boxShadow: 24,
-    p: 4,
+    p: { xs: 2, sm: 4 },
+    borderRadius: 2,
     overflowY: "auto",
+  };
+
+  const successModalStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: { xs: 300, sm: 400 },
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    p: { xs: 2, sm: 4 },
+    borderRadius: 2,
+    textAlign: "center",
   };
 
   return (
@@ -371,21 +411,28 @@ const SelfCheck = () => {
       <Navbar />
       <Box
         sx={{
-          width: "80%",
+          width: { xs: "90%", sm: "80%", md: "70%" },
           margin: "auto",
-          mt: 6,
-          p: 4,
+          mt: { xs: 4, sm: 6 },
+          p: { xs: 2, sm: 4 },
           borderRadius: 2,
           boxShadow: 3,
           bgcolor: "#fff",
+          border: "1px solid #e0e0e0",
         }}
       >
         <ToastContainer position="top-right" autoClose={3000} />
-        <Typography variant="h5" align="center" fontWeight="bold" mb={4}>
+        <Typography
+          variant="h5"
+          align="center"
+          fontWeight="bold"
+          mb={4}
+          sx={{ fontSize: { xs: "1.5rem", sm: "2rem" } }}
+        >
           Self Check-In
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -396,6 +443,8 @@ const SelfCheck = () => {
               helperText={errors.fullName}
               required
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
             <TextField
               fullWidth
@@ -406,6 +455,8 @@ const SelfCheck = () => {
               helperText={errors.email}
               required
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
             <TextField
               fullWidth
@@ -417,6 +468,8 @@ const SelfCheck = () => {
               required
               inputProps={{ maxLength: 10 }}
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
             <TextField
               select
@@ -428,6 +481,8 @@ const SelfCheck = () => {
               helperText={errors.designation}
               required
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             >
               <MenuItem value="Manager">Manager</MenuItem>
               <MenuItem value="Employee">Employee</MenuItem>
@@ -443,6 +498,8 @@ const SelfCheck = () => {
               helperText={errors.visitType}
               required
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             >
               <MenuItem value="Business">Business</MenuItem>
               <MenuItem value="Personal">Personal</MenuItem>
@@ -457,6 +514,8 @@ const SelfCheck = () => {
                   error={!!errors.expectedDurationHours}
                   helperText={errors.expectedDurationHours}
                   required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -468,6 +527,8 @@ const SelfCheck = () => {
                   error={!!errors.expectedDurationMinutes}
                   helperText={errors.expectedDurationMinutes}
                   required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                 />
               </Grid>
             </Grid>
@@ -479,76 +540,89 @@ const SelfCheck = () => {
               error={!!errors.documentDetails}
               helperText={errors.documentDetails}
               required
-              sx={{ mt: 2 }}
+              sx={{ mt: 2, mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-              <Grid item xs={12}>
-                <Grid container spacing={1} alignItems="center">
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Team Members?*"
-                      value={formData.hasTeamMembers}
-                      onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
-                      error={!!errors.hasTeamMembers}
-                      helperText={errors.hasTeamMembers}
-                      required
-                      variant="outlined"
-                    >
-                      <MenuItem value="yes">Yes</MenuItem>
-                      <MenuItem value="no">No</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item>
-                    {formData.hasTeamMembers === "yes" && (
-                      <Button
-                        variant="outlined"
-                        onClick={handleViewTeamMembers}
-                        size="small"
-                        sx={{ ml: 1, height: "40px" }}
-                      >
-                        View
-                      </Button>
-                    )}
-                  </Grid>
-                </Grid>
+            {/* Team Members */}
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={formData.hasTeamMembers === "yes" ? 8 : 12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Team Members?*"
+                  value={formData.hasTeamMembers}
+                  onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
+                  error={!!errors.hasTeamMembers}
+                  helperText={errors.hasTeamMembers}
+                  required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+                >
+                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </TextField>
               </Grid>
-              <Grid item xs={12}>
-                <Grid container spacing={1} alignItems="center">
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Assets?*"
-                      value={formData.hasAssets}
-                      onChange={(e) => handleInputChange("hasAssets", e.target.value)}
-                      error={!!errors.hasAssets}
-                      helperText={errors.hasAssets}
-                      required
-                      variant="outlined"
-                    >
-                      <MenuItem value="yes">Yes</MenuItem>
-                      <MenuItem value="no">No</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item>
-                    {formData.hasAssets === "yes" && (
-                      <Button
-                        variant="outlined"
-                        onClick={handleViewAssets}
-                        size="small"
-                        sx={{ ml: 1, height: "40px" }}
-                      >
-                        View
-                      </Button>
-                    )}
-                  </Grid>
+              {formData.hasTeamMembers === "yes" && (
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleViewTeamMembers}
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: "40px",
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#115293", color: "#115293" },
+                    }}
+                  >
+                    View
+                  </Button>
                 </Grid>
+              )}
+            </Grid>
+
+            {/* Assets */}
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={formData.hasAssets === "yes" ? 8 : 12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Assets?*"
+                  value={formData.hasAssets}
+                  onChange={(e) => handleInputChange("hasAssets", e.target.value)}
+                  error={!!errors.hasAssets}
+                  helperText={errors.hasAssets}
+                  required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+                >
+                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </TextField>
               </Grid>
+              {formData.hasAssets === "yes" && (
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleViewAssets}
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: "40px",
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#115293", color: "#115293" },
+                    }}
+                  >
+                    View
+                  </Button>
+                </Grid>
+              )}
             </Grid>
 
             <TextField
@@ -560,6 +634,8 @@ const SelfCheck = () => {
               helperText={errors.reasonForVisit}
               required
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
             <TextField
               fullWidth
@@ -570,6 +646,8 @@ const SelfCheck = () => {
               helperText={errors.visitorCompany}
               required
               sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
             <TextField
               select
@@ -584,6 +662,8 @@ const SelfCheck = () => {
               required
               sx={{ mb: 2 }}
               disabled={hosts.length === 0}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             >
               <MenuItem value="" disabled>
                 Select Host
@@ -603,7 +683,9 @@ const SelfCheck = () => {
               error={!!errors.submittedDocument}
               helperText={errors.submittedDocument}
               required
-              sx={{ mb: 2 }}
+              sx={ { mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             >
               <MenuItem value="ID Proof">ID Proof</MenuItem>
               <MenuItem value="Passport">Passport</MenuItem>
@@ -617,6 +699,8 @@ const SelfCheck = () => {
               error={!!errors.department}
               helperText={errors.department}
               required
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             >
               <MenuItem value="" disabled>
                 Select Department
@@ -632,19 +716,28 @@ const SelfCheck = () => {
 
         <Modal open={openTeamModal} onClose={handleCloseTeamModal}>
           <Box sx={modalStyle}>
-            <Typography variant="h6" mb={2}>
+            <Typography variant="h6" mb={2} fontWeight="bold">
               Team Members
             </Typography>
             <Button
               startIcon={<AddCircle />}
               variant="contained"
               onClick={handleAddTeamMember}
+              sx={{ mb: 2, bgcolor: "#1976d2", "&:hover": { bgcolor: "#115293" } }}
             >
               Add Member
             </Button>
             {teamMembers.map((member, index) => (
-              <Box key={index} mt={3} p={3} border={1} borderRadius={2}>
-                <Grid container spacing={3}>
+              <Box
+                key={index}
+                mt={3}
+                p={2}
+                border={1}
+                borderColor="grey.300"
+                borderRadius={2}
+                bgcolor="#f9f9f9"
+              >
+                <Grid container spacing={2}>
                   <Grid item xs={12} sm={4}>
                     <TextField
                       fullWidth
@@ -654,6 +747,8 @@ const SelfCheck = () => {
                       error={!!errors[`teamMember_${index}_name`]}
                       helperText={errors[`teamMember_${index}_name`]}
                       required
+                      variant="outlined"
+                      InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={4}>
@@ -665,6 +760,8 @@ const SelfCheck = () => {
                       error={!!errors[`teamMember_${index}_email`]}
                       helperText={errors[`teamMember_${index}_email`]}
                       required
+                      variant="outlined"
+                      InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={3}>
@@ -678,6 +775,8 @@ const SelfCheck = () => {
                       error={!!errors[`teamMember_${index}_documentDetail`]}
                       helperText={errors[`teamMember_${index}_documentDetail`]}
                       required
+                      variant="outlined"
+                      InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                     />
                   </Grid>
                   <Grid item xs={12} sm={1}>
@@ -698,7 +797,9 @@ const SelfCheck = () => {
                   error={!!errors[`teamMember_${index}_hasAssets`]}
                   helperText={errors[`teamMember_${index}_hasAssets`]}
                   required
-                  sx={{ mt: 3, maxWidth: 200 }}
+                  sx={{ mt: 2, maxWidth: 200 }}
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                 >
                   <MenuItem value="yes">Yes</MenuItem>
                   <MenuItem value="no">No</MenuItem>
@@ -706,7 +807,7 @@ const SelfCheck = () => {
                 {member.hasAssets === "yes" && (
                   <Box mt={2}>
                     {member.assets.map((asset, assetIndex) => (
-                      <Grid container spacing={3} key={assetIndex} mt={1} alignItems="center">
+                      <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
                         <Grid item xs={12} sm={5}>
                           <TextField
                             fullWidth
@@ -718,6 +819,8 @@ const SelfCheck = () => {
                             required
                             error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
                             helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                            variant="outlined"
+                            InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                           />
                         </Grid>
                         <Grid item xs={12} sm={6}>
@@ -740,6 +843,8 @@ const SelfCheck = () => {
                             helperText={
                               errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]
                             }
+                            variant="outlined"
+                            InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                           />
                         </Grid>
                         <Grid item xs={12} sm={1}>
@@ -756,7 +861,12 @@ const SelfCheck = () => {
                       startIcon={<AddCircle />}
                       variant="outlined"
                       onClick={() => handleAddTeamMemberAsset(index)}
-                      sx={{ mt: 2 }}
+                      sx={{
+                        mt: 2,
+                        borderColor: "#1976d2",
+                        color: "#1976d2",
+                        "&:hover": { borderColor: "#115293", color: "#115293" },
+                      }}
                     >
                       Add Asset
                     </Button>
@@ -766,9 +876,14 @@ const SelfCheck = () => {
             ))}
             <Button
               variant="contained"
-              color="primary"
               onClick={handleCloseTeamModal}
-              sx={{ mt: 4, display: "block", mx: "auto" }}
+              sx={{
+                mt: 4,
+                display: "block",
+                mx: "auto",
+                bgcolor: "#1976d2",
+                "&:hover": { bgcolor: "#115293" },
+              }}
             >
               Close
             </Button>
@@ -777,13 +892,13 @@ const SelfCheck = () => {
 
         <Modal open={openAssetsModal} onClose={handleCloseAssetsModal}>
           <Box sx={modalStyle}>
-            <Typography variant="h6" mb={2}>
+            <Typography variant="h6" mb={2} fontWeight="bold">
               Assets
             </Typography>
             {formData.hasAssets === "yes" && (
               <Box>
                 {formData.assets.map((asset, index) => (
-                  <Grid container spacing={3} key={index} mt={1} alignItems="center">
+                  <Grid container spacing={2} key={index} mt={1} alignItems="center">
                     <Grid item xs={12} sm={5}>
                       <TextField
                         fullWidth
@@ -793,6 +908,8 @@ const SelfCheck = () => {
                         required
                         error={!!errors[`asset_${index}_type`]}
                         helperText={errors[`asset_${index}_type`]}
+                        variant="outlined"
+                        InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -804,6 +921,8 @@ const SelfCheck = () => {
                         required
                         error={!!errors[`asset_${index}_serialNumber`]}
                         helperText={errors[`asset_${index}_serialNumber`]}
+                        variant="outlined"
+                        InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                       />
                     </Grid>
                     <Grid item xs={12} sm={1}>
@@ -817,7 +936,12 @@ const SelfCheck = () => {
                   startIcon={<AddCircle />}
                   variant="outlined"
                   onClick={handleAddAsset}
-                  sx={{ mt: 2 }}
+                  sx={{
+                    mt: 2,
+                    borderColor: "#1976d2",
+                    color: "#1976d2",
+                    "&:hover": { borderColor: "#115293", color: "#115293" },
+                  }}
                 >
                   Add Asset
                 </Button>
@@ -825,20 +949,56 @@ const SelfCheck = () => {
             )}
             <Button
               variant="contained"
-              color="primary"
               onClick={handleCloseAssetsModal}
-              sx={{ mt: 4, display: "block", mx: "auto" }}
+              sx={{
+                mt: 4,
+                display: "block",
+                mx: "auto",
+                bgcolor: "#1976d2",
+                "&:hover": { bgcolor: "#115293" },
+              }}
             >
               Close
             </Button>
           </Box>
         </Modal>
 
+        <Modal open={openSuccessModal} onClose={handleCloseSuccessModal}>
+          <Box sx={successModalStyle}>
+            <Typography variant="h6" color="success.main" gutterBottom>
+              Checkin Done Successfully
+            </Typography>
+            <Typography variant="body1" gutterBottom>
+              Go to receptionist to collect the pass.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={handleCloseSuccessModal}
+              sx={{
+                mt: 2,
+                bgcolor: "#1976d2",
+                "&:hover": { bgcolor: "#115293" },
+              }}
+            >
+              OK
+            </Button>
+          </Box>
+        </Modal>
+
         <Button
           variant="contained"
-          color="primary"
-          sx={{ mt: 4, display: "block", mx: "auto" }}
           onClick={handleSubmit}
+          sx={{
+            mt: 4,
+            display: "block",
+            mx: "auto",
+            bgcolor: "#1976d2",
+            "&:hover": { bgcolor: "#115293" },
+            borderRadius: "20px",
+            padding: "10px 30px",
+            fontSize: "1rem",
+            fontWeight: "bold",
+          }}
         >
           Submit
         </Button>

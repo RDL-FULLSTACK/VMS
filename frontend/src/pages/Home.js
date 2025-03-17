@@ -667,7 +667,7 @@ function Home() {
             }}
           >
             <Paper
-              elevation  elevation={4}
+              elevation={4}
               sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}
             >
               <Typography

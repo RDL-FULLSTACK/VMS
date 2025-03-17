@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { 
   Box, Paper, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
-  TextField, Pagination, CircularProgress
+  TextField, Pagination, CircularProgress, useMediaQuery, useTheme
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -15,9 +15,24 @@ const VisitorList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
-  const rowsPerPage = 7;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Get theme and media queries for responsive design
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Small screens (e.g., <600px)
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md")); // Medium screens (e.g., 600px - 960px)
+  const isDesktop = useMediaQuery(theme.breakpoints.up("md")); // Large screens (e.g., >960px)
+
+  // Dynamically set rowsPerPage based on screen size
+  const getRowsPerPage = () => {
+    if (isMobile) return 3; // Show 3 rows on mobile
+    if (isTablet) return 5; // Show 5 rows on tablet
+    if (isDesktop) return 10; // Show 10 rows on desktop
+    return 5; // Default fallback
+  };
+
+  const rowsPerPage = getRowsPerPage();
 
   useEffect(() => {
     const fetchVisitors = async () => {
@@ -121,7 +136,7 @@ const VisitorList = () => {
   };
 
   useEffect(() => {
-    setPage(1);
+    setPage(1); // Reset to first page when searchTerm or selectedDate changes
   }, [searchTerm, selectedDate]);
 
   const filteredVisitors = visitors.filter((visitor) => {
@@ -150,7 +165,7 @@ const VisitorList = () => {
           flexGrow: 1, 
           p: { xs: 1, sm: 2 }, 
           bgcolor: '#f5f5f5', 
-          mb: 1 // Reduced margin-bottom from default or implicit spacing
+          mb: 1 
         }}
       >
         <Paper sx={{ p: { xs: 1, sm: 2 }, borderRadius: 1 }}>

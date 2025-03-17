@@ -1138,9 +1138,7 @@ function Home() {
     }
   };
 
-  const handleAddVisitor = () => {
-    navigate("/visitor-management");
-  };
+ 
 
   const visitorColumns = [
     {
@@ -1450,14 +1448,7 @@ function Home() {
                     No visitors yet! Start by adding a new visitor in the
                     'Visitor Management' tab.
                   </Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={handleAddVisitor}
-                    sx={{ mt: 2 }}
-                  >
-                    Add Visitor
-                  </Button>
+                  
                 </Box>
               ) : (
                 <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>

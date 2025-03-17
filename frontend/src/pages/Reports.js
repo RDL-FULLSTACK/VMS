@@ -17,15 +17,15 @@ const Reports = () => {
       <Navbar />
       <div style={{ padding: "20px" }}>
         <Paper elevation={3} style={{ padding: "20px", borderRadius: "8px" }}>
-          {/* <Typography variant="h5" gutterBottom>
+          <Typography variant="h5" gutterBottom>
             Reports
-          </Typography> */}
+          </Typography>
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
             indicatorColor="primary"
             textColor="primary"
-            style={{ justifyContent: "flex-start" }} // Align tabs to the left
+            style={{ justifyContent: "flex-start" }}
           >
             <Tab
               label="Visitor Report"
@@ -53,7 +53,7 @@ const Reports = () => {
           </Box>
         </Paper>
       </div>
-      <Footer/>
+      <Footer />
     </>
   );
 };

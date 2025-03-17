@@ -1,12 +1,9 @@
-
-
 const express = require("express");
 const router = express.Router();
-const PreSchedule = require("../models/PreSchedule");
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-// MongoDB Connection Check (ensure this is in your main app.js or before routes)
+// MongoDB Connection
 const mongoose = require("mongoose");
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -14,6 +11,45 @@ mongoose.connect(process.env.MONGO_URI, {
 })
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
+
+// Schemas and Model
+const AssetSchema = new mongoose.Schema({
+  quantity: { type: Number, required: true },
+  type: { type: String, required: true },
+  serialNumber: { type: String, required: true },
+});
+
+const TeamMemberSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  documentDetail: { type: String, required: true },
+  documentUrl: { type: String },
+  hasAssets: { type: String, enum: ["yes", "no"], required: true },
+  assets: [AssetSchema],
+});
+
+const preScheduleSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  date: { type: String, required: true },
+  purpose: { type: String, required: true },
+  host: { type: String, required: true },
+  email: { type: String, required: true },
+  department: { type: String, required: true },
+  Time: { type: String, required: true },
+  status: { type: String, default: "Pending" },
+  phoneNumber: { type: String, required: true },
+  designation: { type: String, required: true },
+  visitType: { type: String, required: true },
+  expectedDuration: {
+    hours: { type: Number, required: true },
+    minutes: { type: Number, required: true },
+  },
+  hasAssets: { type: String, enum: ["yes", "no"], required: true },
+  assets: [AssetSchema],
+  teamMembers: [TeamMemberSchema],
+}, { timestamps: true });
+
+const PreSchedule = mongoose.model("PreSchedule", preScheduleSchema);
 
 // Nodemailer configuration
 const transporter = nodemailer.createTransport({
@@ -51,13 +87,65 @@ const sendEmail = (mailOptions) => {
 // POST /api/preschedule - Save pre-scheduling data
 router.post("/preschedule", async (req, res) => {
   try {
-    const { name, date, purpose, host, email, department } = req.body;
+    const {
+      name,
+      date,
+      purpose,
+      host,
+      email,
+      department,
+      phoneNumber,
+      designation,
+      visitType,
+      expectedDuration,
+      hasAssets,
+      assets,
+      teamMembers, // Added teamMembers
+    } = req.body;
 
     // Validate all required fields
-    if (!name || !date || !purpose || !host || !email || !department) {
-      return res.status(400).json({ 
-        message: "All fields (name, date, purpose, host, email, department) are required" 
+    if (
+      !name ||
+      !date ||
+      !purpose ||
+      !host ||
+      !email ||
+      !department ||
+      !phoneNumber ||
+      !designation ||
+      !visitType ||
+      !expectedDuration ||
+      !expectedDuration.hours ||
+      !expectedDuration.minutes ||
+      !hasAssets
+    ) {
+      return res.status(400).json({
+        message:
+          "All fields (name, date, purpose, host, email, department, phoneNumber, designation, visitType, expectedDuration (hours and minutes), hasAssets) are required",
       });
+    }
+
+    // Validate assets if hasAssets is "yes"
+    if (hasAssets === "yes" && (!assets || !Array.isArray(assets) || assets.length === 0)) {
+      return res.status(400).json({
+        message: "Assets are required when hasAssets is 'yes'",
+      });
+    }
+
+    // Validate team members if provided
+    if (teamMembers && Array.isArray(teamMembers)) {
+      for (const member of teamMembers) {
+        if (!member.name || !member.email || !member.documentDetail || !member.hasAssets) {
+          return res.status(400).json({
+            message: "All team members must have name, email, documentDetail, and hasAssets",
+          });
+        }
+        if (member.hasAssets === "yes" && (!member.assets || !Array.isArray(member.assets) || member.assets.length === 0)) {
+          return res.status(400).json({
+            message: "Assets are required for team member when their hasAssets is 'yes'",
+          });
+        }
+      }
     }
 
     const preSchedule = new PreSchedule({
@@ -66,12 +154,22 @@ router.post("/preschedule", async (req, res) => {
       purpose,
       host,
       email,
-      department, // Added department
+      department,
+      phoneNumber,
+      designation,
+      visitType,
+      expectedDuration: {
+        hours: expectedDuration.hours,
+        minutes: expectedDuration.minutes,
+      },
+      hasAssets,
+      assets: hasAssets === "yes" ? assets : [],
+      teamMembers: teamMembers || [], // Add team members (empty array if not provided)
       Time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     });
 
     const savedSchedule = await preSchedule.save();
-   
+
     res.status(201).json(savedSchedule);
   } catch (error) {
     console.error("Error saving pre-scheduling data:", {
@@ -87,7 +185,6 @@ router.post("/preschedule", async (req, res) => {
 router.get("/preschedules", async (req, res) => {
   try {
     const preSchedules = await PreSchedule.find({});
-   
     res.status(200).json(preSchedules);
   } catch (error) {
     console.error("Error fetching pre-schedules:", error);
@@ -95,7 +192,7 @@ router.get("/preschedules", async (req, res) => {
   }
 });
 
-// PUT /api/preschedules/:id/approve - Approve and send email with OTP
+// PUT /api/preschedules/:id/approve - Approve and send email
 router.put("/preschedules/:id/approve", async (req, res) => {
   try {
     const preSchedule = await PreSchedule.findById(req.params.id);
@@ -107,11 +204,18 @@ router.put("/preschedules/:id/approve", async (req, res) => {
     preSchedule.status = "Approved";
     await preSchedule.save();
 
+    // Include team members in the email if they exist
+    const teamMembersText = preSchedule.teamMembers.length > 0 
+      ? `\n\nTeam Members:\n${preSchedule.teamMembers.map(m => 
+          `${m.name} (${m.email}) - Document: ${m.documentDetail}${m.hasAssets === 'yes' ? ', Has Assets' : ''}`
+        ).join('\n')}`
+      : '';
+
     const approvalMailOptions = {
       from: process.env.EMAIL_USER,
       to: preSchedule.email,
       subject: "Visit Request Approved",
-      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been approved by ${preSchedule.host}.\n\nDepartment: ${preSchedule.department}\n\nRegards,\nTeam`,
+      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been approved by ${preSchedule.host}.\n\nDepartment: ${preSchedule.department}\nVisit Type: ${preSchedule.visitType}\nDuration: ${preSchedule.expectedDuration.hours}h ${preSchedule.expectedDuration.minutes}m${teamMembersText}\n\nRegards,\nTeam`,
     };
 
     await sendEmail(approvalMailOptions);
@@ -123,7 +227,7 @@ router.put("/preschedules/:id/approve", async (req, res) => {
   }
 });
 
-// PUT /api/preschedules/:id/reject - Reject and send email with purpose
+// PUT /api/preschedules/:id/reject - Reject and send email
 router.put("/preschedules/:id/reject", async (req, res) => {
   try {
     const preSchedule = await PreSchedule.findById(req.params.id);
@@ -134,16 +238,21 @@ router.put("/preschedules/:id/reject", async (req, res) => {
 
     preSchedule.status = "Rejected";
     await preSchedule.save();
-    // console.log("Pre-schedule rejected and retained in DB:", preSchedule);
+
+    // Include team members in the email if they exist
+    const teamMembersText = preSchedule.teamMembers.length > 0 
+      ? `\n\nTeam Members:\n${preSchedule.teamMembers.map(m => 
+          `${m.name} (${m.email}) - Document: ${m.documentDetail}${m.hasAssets === 'yes' ? ', Has Assets' : ''}`
+        ).join('\n')}`
+      : '';
 
     const rejectionMailOptions = {
       from: process.env.EMAIL_USER,
       to: preSchedule.email,
       subject: "Visit Request Rejected",
-      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been rejected by ${preSchedule.host}.\n\nDepartment: ${preSchedule.department}\n\nRegards,\nTeam`,
+      text: `Dear ${preSchedule.name},\n\nYour visit request for "${preSchedule.purpose}" on ${preSchedule.date} at ${preSchedule.Time} has been rejected by ${preSchedule.host}.\n\nDepartment: ${preSchedule.department}\nVisit Type: ${preSchedule.visitType}\nDuration: ${preSchedule.expectedDuration.hours}h ${preSchedule.expectedDuration.minutes}m${teamMembersText}\n\nRegards,\nTeam`,
     };
 
-    // console.log("Sending rejection email to:", preSchedule.email);
     await sendEmail(rejectionMailOptions);
 
     res.status(200).json({ message: "Pre-schedule rejected, email sent, and record retained in DB", preSchedule });

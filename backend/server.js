@@ -63,7 +63,6 @@ app.use("/api/visitors", visitorRoutes);
 app.use("/api", preScheduleRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reports", reportRoutes);
-
 // Health Check Endpoint (optional but useful)
 app.get("/health", (req, res) => {
   res.status(200).json({ message: "Server is running" });

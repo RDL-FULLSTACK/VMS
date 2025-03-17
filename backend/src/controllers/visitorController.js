@@ -5,7 +5,6 @@ const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const { v4: uuidv4 } = require("uuid");
 
-// Setup Nodemailer Transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -83,7 +82,7 @@ exports.getVisitorById = async (req, res) => {
   }
 };
 
-// 🔹 Add Visitor
+// 🔹 Add Visitor (Updated to match Checkin component)
 exports.addVisitor = async (req, res) => {
   try {
     const {
@@ -101,7 +100,9 @@ exports.addVisitor = async (req, res) => {
       submittedDocument,
       hasAssets,
       assets: assetsString,
+      hasTeamMembers,
       teamMembers: teamMembersString,
+      department,
     } = req.body;
 
     const photoUrl = req.file
@@ -135,6 +136,7 @@ exports.addVisitor = async (req, res) => {
       personToVisit,
       submittedDocument,
       hasAssets,
+      department,
     };
 
     const missingFields = Object.entries(requiredFields)
@@ -180,26 +182,33 @@ exports.addVisitor = async (req, res) => {
     }
     if (hasAssets === "yes") {
       for (const asset of assets) {
-        if (!asset.quantity || !asset.type || !asset.serialNumber) {
+        if (!asset.type || !asset.serialNumber) {
           return res.status(400).json({
             success: false,
-            message: "All asset fields (quantity, type, serialNumber) are required",
+            message: "Asset fields (type, serialNumber) are required",
           });
         }
       }
     }
 
-    if (teamMembers && teamMembers.length > 0) {
+    if (hasTeamMembers === "yes" && (!teamMembers || teamMembers.length === 0)) {
+      return res.status(400).json({
+        success: false,
+        message: "Team members are required if hasTeamMembers is 'yes'",
+      });
+    }
+    if (hasTeamMembers === "yes") {
       for (const member of teamMembers) {
-        if (
-          !member.name ||
-          !member.email ||
-          !member.documentDetail ||
-          !["yes", "no"].includes(member.hasAssets)
-        ) {
+        if (!member.name || !member.email || !member.documentDetail || !member.hasAssets) {
           return res.status(400).json({
             success: false,
             message: "All team member fields (name, email, documentDetail, hasAssets) are required",
+          });
+        }
+        if (!["yes", "no"].includes(member.hasAssets)) {
+          return res.status(400).json({
+            success: false,
+            message: "Team member hasAssets must be 'yes' or 'no'",
           });
         }
         if (member.hasAssets === "yes" && (!member.assets || member.assets.length === 0)) {
@@ -210,10 +219,10 @@ exports.addVisitor = async (req, res) => {
         }
         if (member.hasAssets === "yes") {
           for (const asset of member.assets) {
-            if (!asset.quantity || !asset.type || !asset.serialNumber) {
+            if (!asset.type || !asset.serialNumber) {
               return res.status(400).json({
                 success: false,
-                message: "All team member asset fields (quantity, type, serialNumber) are required",
+                message: "All team member asset fields (type, serialNumber) are required",
               });
             }
           }
@@ -249,24 +258,25 @@ exports.addVisitor = async (req, res) => {
       personToVisit,
       submittedDocument,
       hasAssets,
-      assets,
-      teamMembers,
+      assets: hasAssets === "yes" ? assets : [],
+      teamMembers: hasTeamMembers === "yes" ? teamMembers : [],
       photoUrl,
       checkInTime: new Date(),
+      department,
     });
 
     await newVisitor.save();
 
     res.status(201).json({
       success: true,
-      message: "Visitor added successfully",
+      message: "Visitor checked in successfully",
       data: newVisitor,
     });
   } catch (error) {
     console.error(error);
     res.status(400).json({
       success: false,
-      message: "Error adding visitor",
+      message: "Error checking in visitor",
       error: error.message,
     });
   }
@@ -440,13 +450,12 @@ exports.verifyEmailOtp = async (req, res) => {
   }
 };
 
-// 🔹 Get Visitors (Updated to include the visitor in teamMembersCount)
+// 🔹 Get Visitors
 exports.getVisitors = async (req, res) => {
   try {
     let query = {};
     const { page = 1, limit = 10, sortBy = "checkInTime", order = "desc", startDate, endDate, search, export: isExport } = req.query;
 
-    // Date range filter
     if (startDate && endDate) {
       query.checkInTime = {
         $gte: new Date(startDate),
@@ -454,26 +463,23 @@ exports.getVisitors = async (req, res) => {
       };
     }
 
-    // Search filter on fullName
     if (search) {
-      query.fullName = { $regex: new RegExp(search, "i") }; // Case-insensitive search
+      query.fullName = { $regex: new RegExp(search, "i") };
     }
 
     const pageNum = parseInt(page);
-    const limitNum = isExport ? 0 : parseInt(limit); // Disable limit for export
+    const limitNum = isExport ? 0 : parseInt(limit);
     const skip = isExport ? 0 : (pageNum - 1) * limitNum;
     const sortOrder = order === "asc" ? 1 : -1;
 
-    const fields = "_id fullName checkInTime checkOutTime reasonForVisit personToVisit teamMembers visitorCompany";
+    const fields = "_id fullName checkInTime checkOutTime reasonForVisit personToVisit teamMembers visitorCompany department";
 
     let visitors;
     if (isExport) {
-      // Fetch all records for export
       visitors = await Visitor.find(query)
         .select(fields)
         .sort({ [sortBy]: sortOrder });
     } else {
-      // Paginated fetch for regular requests
       visitors = await Visitor.find(query)
         .select(fields)
         .sort({ [sortBy]: sortOrder })
@@ -511,9 +517,10 @@ exports.getVisitors = async (req, res) => {
         checkOutTime: visitor.checkOutTime,
         reasonForVisit: visitor.reasonForVisit,
         personToVisit: visitor.personToVisit,
-        teamMembersCount: (visitor.teamMembers ? visitor.teamMembers.length : 0) + 1, // Add 1 to include the visitor
+        teamMembersCount: (visitor.teamMembers ? visitor.teamMembers.length : 0) + 1,
         meetingDuration,
         visitorCompany: visitor.visitorCompany,
+        department: visitor.department,
       };
     });
 
@@ -531,7 +538,7 @@ exports.getVisitors = async (req, res) => {
   }
 };
 
-// 🔹 Store Checkout Data (Updated for hrs and min)
+// 🔹 Store Checkout Data
 exports.storeCheckoutData = async (req, res) => {
   try {
     const visitorId = req.params.id;
@@ -571,6 +578,7 @@ exports.storeCheckoutData = async (req, res) => {
       checkOutTime: checkOutTime,
       purpose: visitor.reasonForVisit,
       otp: visitor.otp,
+      department: visitor.department,
       meetingDuration: { hours, minutes },
     };
 
@@ -589,6 +597,7 @@ exports.storeCheckoutData = async (req, res) => {
         checkOutTime: newCheckout.checkOutTime,
         purpose: newCheckout.purpose,
         otp: newCheckout.otp,
+        department: newCheckout.department,
         meetingDuration: newCheckout.meetingDuration,
         createdAt: newCheckout.createdAt,
         updatedAt: newCheckout.updatedAt,

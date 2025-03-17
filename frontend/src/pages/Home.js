@@ -769,6 +769,10 @@ import {
   Menu,
   MenuItem,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import {
@@ -833,6 +837,7 @@ function Home() {
   const [currentDate, setCurrentDate] = useState("");
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedVisitorId, setSelectedVisitorId] = useState(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // State for delete confirmation dialog
 
   const [stats, setStats] = useState([
     { title: "Total Visitors", value: 0, icon: <People />, color: "#673ab7" },
@@ -1051,6 +1056,15 @@ function Home() {
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedVisitorId(null);
+    setOpenDeleteDialog(false); // Close dialog if menu is closed
+  };
+
+  const handleOpenDeleteDialog = () => {
+    setOpenDeleteDialog(true); // Open the confirmation dialog
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false); // Close the confirmation dialog
   };
 
   const handleEditCheckIn = (visitorId) => {
@@ -1214,7 +1228,7 @@ function Home() {
               Edit
             </MenuItem>
             <MenuItem
-              onClick={handleDelete}
+              onClick={handleOpenDeleteDialog} // Open dialog instead of directly deleting
               sx={{
                 color: "red",
                 "&:hover": {
@@ -1543,6 +1557,32 @@ function Home() {
           </Container>
         </Grid>
       </Grid>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+        aria-labelledby="delete-confirmation-dialog"
+      >
+        <DialogTitle id="delete-confirmation-dialog">
+          Confirm Deletion
+        </DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this visitor? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Footer />
     </>
   );

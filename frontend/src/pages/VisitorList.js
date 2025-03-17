@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Box, Paper, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, 
-  TextField, Pagination, CircularProgress, useMediaQuery, useTheme
+  TextField, Pagination, CircularProgress
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -15,24 +15,55 @@ const VisitorList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10); // Initial value, will be updated dynamically
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Get theme and media queries for responsive design
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Small screens (e.g., <600px)
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md")); // Medium screens (e.g., 600px - 960px)
-  const isDesktop = useMediaQuery(theme.breakpoints.up("md")); // Large screens (e.g., >960px)
+  // Function to calculate rowsPerPage based on window dimensions
+  const updateRowsPerPage = useCallback(() => {
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
 
-  // Dynamically set rowsPerPage based on screen size
-  const getRowsPerPage = () => {
-    if (isMobile) return 3; // Show 3 rows on mobile
-    if (isTablet) return 5; // Show 5 rows on tablet
-    if (isDesktop) return 10; // Show 10 rows on desktop
-    return 5; // Default fallback
-  };
+    // Estimated heights (adjust these based on your UI)
+    const navbarHeight = 64; // Approximate height of the Navbar
+    const footerHeight = 64; // Approximate height of the Footer
+    const searchBarHeight = 80; // Approximate height of the search bar and filter section
+    const paginationHeight = 52; // Approximate height of the Pagination component
+    const headerHeight = 48; // Approximate height of the grid header
+    const paddingMargin = 32; // Additional padding/margin around the Paper component
+    const rowHeight = 48; // Approximate height of each row (including padding)
 
-  const rowsPerPage = getRowsPerPage();
+    // Calculate available height for the list
+    const availableHeight = windowHeight - (navbarHeight + footerHeight + searchBarHeight + paginationHeight + headerHeight + paddingMargin);
+
+    // Calculate how many rows can fit in the available height
+    let calculatedRows = Math.floor(availableHeight / rowHeight);
+
+    // Apply minimum and maximum row limits
+    const minRows = 3; // Minimum number of rows to display
+    const maxRows = 20; // Maximum number of rows to display
+
+    calculatedRows = Math.max(minRows, Math.min(maxRows, calculatedRows));
+
+    // Optionally, adjust based on width for very narrow screens (mobile)
+    if (windowWidth < 600) {
+      calculatedRows = Math.min(calculatedRows, 5); // Cap at 5 rows for mobile
+    } else if (windowWidth < 960) {
+      calculatedRows = Math.min(calculatedRows, 10); // Cap at 10 rows for tablet
+    }
+
+    setRowsPerPage(calculatedRows);
+  }, []);
+
+  // Update rowsPerPage on mount and on window resize
+  useEffect(() => {
+    updateRowsPerPage(); // Initial calculation
+    window.addEventListener("resize", updateRowsPerPage); // Update on resize
+
+    return () => {
+      window.removeEventListener("resize", updateRowsPerPage); // Cleanup
+    };
+  }, [updateRowsPerPage]);
 
   useEffect(() => {
     const fetchVisitors = async () => {

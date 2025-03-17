@@ -231,6 +231,7 @@ const VisitorCard = () => {
         <p><strong>Purpose:</strong> ${visitor.reasonForVisit}</p>
         <p><strong>Designation:</strong> ${visitor.designation}</p>
         <p><strong>Company:</strong> ${visitor.visitorCompany}</p>
+        <p><strong>Department:</strong> ${visitor.department}</p>
         <p><strong>Host:</strong> ${visitor.personToVisit}</p>
       </div>
       <div class="right-section">
@@ -252,8 +253,6 @@ const VisitorCard = () => {
 </body>
 
 </html>
-
-
       `);
 
       printWindow.document.close();
@@ -315,7 +314,7 @@ const VisitorCard = () => {
         sx={{ 
           textAlign: "center", 
           mt: 12, 
-          mb: 4, // Added margin-bottom to create space before Footer
+          mb: 4,
           flexGrow: 1 
         }}
       >
@@ -377,6 +376,7 @@ const VisitorCard = () => {
                 Visitor Designation: {visitor.designation}
               </Typography>
               <Typography>Company Name: {visitor.visitorCompany}</Typography>
+              <Typography>Department: {visitor.department}</Typography>
             </Grid>
           </Grid>
           <hr />
@@ -392,6 +392,7 @@ const VisitorCard = () => {
                 <Typography>Host Designation: {visitor.designation}</Typography>
                 <Typography>Mobile: {visitor.phoneNumber}</Typography>
                 <Typography>Email: {visitor.email}</Typography>
+                <Typography>Department: {visitor.department}</Typography>
               </Grid>
               <Grid item>
                 <QRCodeCanvas value={visitor._id} size={100} />

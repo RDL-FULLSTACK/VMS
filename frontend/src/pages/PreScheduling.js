@@ -13,7 +13,7 @@ import {
   IconButton,
   Modal,
 } from "@mui/material";
-import { AddCircle, RemoveCircle, UploadFile } from "@mui/icons-material";
+import { AddCircle, RemoveCircle } from "@mui/icons-material";
 
 const departments = [
   "Human Resources (HR)",
@@ -67,12 +67,11 @@ const PreScheduling = () => {
     const fetchHosts = async () => {
       try {
         setFetchingHosts(true);
-        const response = await axios.get("http://localhost:5000/api/users", {
-          withCredentials: true,
-        });
-        const hostUsers = response.data.filter(
-          (user) => user.role.toLowerCase() === "host"
-        );
+        const hostUsers = (
+          await axios.get("http://localhost:5000/api/users", {
+            withCredentials: true,
+          })
+        ).data.filter((user) => user.role.toLowerCase() === "host");
         setHosts(hostUsers);
         setFetchingHosts(false);
       } catch (error) {
@@ -276,14 +275,11 @@ const PreScheduling = () => {
         teamMembers: formData.teamMembers,
       };
 
-      const response = await axios.post(
-        "http://localhost:5000/api/preschedule", // Updated port to match backend
-        payload,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      // Removed unused 'response' variable
+      await axios.post("http://localhost:5000/api/preschedule", payload, {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      });
 
       toast.success(
         `Form submitted!\nName: ${formData.name}\nDate: ${formData.date}\nPurpose: ${formData.purpose}\nHost: ${selectedHost}\nEmail: ${formData.email}\nDepartment: ${formData.department}\nPhone: ${formData.phoneNumber}\nDesignation: ${formData.designation}\nVisit Type: ${formData.visitType}\nDuration: ${formData.expectedDuration.hours}h ${formData.expectedDuration.minutes}m\nAssets: ${formData.hasAssets}`,

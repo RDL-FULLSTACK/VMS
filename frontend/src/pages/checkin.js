@@ -263,17 +263,7 @@ const Checkin = () => {
     }, "image/jpeg");
   };
 
-  const handlePhotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setPhoto(file);
-      if (photoPreview) {
-        URL.revokeObjectURL(photoPreview);
-      }
-      const previewUrl = URL.createObjectURL(file);
-      setPhotoPreview(previewUrl);
-    }
-  };
+
 
   const validateField = (name, value) => {
     let error = "";
@@ -908,20 +898,7 @@ const Checkin = () => {
 
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={6}>
-                <Button
-                  variant="contained"
-                  component="label"
-                  fullWidth
-                  startIcon={<UploadFile />}
-                >
-                  Upload Photo
-                  <input
-                    type="file"
-                    hidden
-                    onChange={handlePhotoUpload}
-                    accept="image/*"
-                  />
-                </Button>
+           
               </Grid>
               <Grid item xs={6}>
                 <Button

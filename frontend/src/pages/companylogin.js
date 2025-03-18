@@ -133,7 +133,7 @@ const CompanyRegister = ({ onClose }) => {
               <MenuItem value="Admin">Admin</MenuItem>
               <MenuItem value="Receptionist">Receptionist</MenuItem>
               <MenuItem value="Security">Security</MenuItem>
-              <MenuItem value="Employee">Employee</MenuItem>
+              <MenuItem value="host">Employee</MenuItem>
             </Select>
           </FormControl>
           <Button

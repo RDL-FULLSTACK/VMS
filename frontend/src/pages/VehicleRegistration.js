@@ -14,7 +14,8 @@ const VehicleRegistration = ({ onAddVehicle }) => {
 
   const handleVehicleNumberChange = (e) => {
     let input = e.target.value.toUpperCase();
-    input = input.replace(/[^A-Z0-9]/g, "");
+    // Allow only alphanumeric characters and limit length to 10
+    input = input.replace(/[^A-Z0-9]/g, "").slice(0, 10);
     setVehicleNumber(input);
     validateField("vehicleNumber", input);
   };
@@ -35,7 +36,15 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     let tempErrors = { ...errors };
     switch (field) {
       case "vehicleNumber":
-        tempErrors.vehicleNumber = value.trim() ? "" : "Vehicle number is required";
+        // Indian RTO format: 2 letters (state), 2 digits (RTO), 1-2 letters (type), 1-4 digits (number)
+        const rtoFormat = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{1,4}$/;
+        if (!value.trim()) {
+          tempErrors.vehicleNumber = "Vehicle number is required";
+        } else if (!rtoFormat.test(value)) {
+          tempErrors.vehicleNumber = "Enter a valid Indian RTO format (e.g., MH02AB1234)";
+        } else {
+          tempErrors.vehicleNumber = "";
+        }
         break;
       case "purpose":
         tempErrors.purpose = value ? "" : "Purpose of visit is required";
@@ -51,8 +60,12 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     const newErrors = { vehicleNumber: "", purpose: "" };
 
     console.log("Validating:", { vehicleNumber, purpose });
+    const rtoFormat = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{1,4}$/;
     if (!vehicleNumber.trim()) {
       newErrors.vehicleNumber = "Vehicle number is required";
+      isValid = false;
+    } else if (!rtoFormat.test(vehicleNumber)) {
+      newErrors.vehicleNumber = "Enter a valid Indian RTO format (e.g., MH02AB1234)";
       isValid = false;
     }
 
@@ -70,7 +83,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
     console.log("handleGenerateTicket: Starting");
     if (!validateForm()) {
       console.log("Validation failed");
-      toast.error("Please fill in all required fields!", {
+      toast.error("Please fill in all required fields correctly!", {
         toastId: "register-error",
         autoClose: 3000,
         onOpen: () => console.log("Error toast opened"),
@@ -81,7 +94,10 @@ const VehicleRegistration = ({ onAddVehicle }) => {
 
     const currentDate = new Date();
     const date = currentDate.toISOString().split("T")[0];
-    const checkInTime = `${currentDate.getHours().toString().padStart(2, '0')}:${currentDate.getMinutes().toString().padStart(2, '0')} ${currentDate.getHours() >= 12 ? 'PM' : 'AM'}`;
+    const checkInTime = `${currentDate.getHours().toString().padStart(2, "0")}:${currentDate
+      .getMinutes()
+      .toString()
+      .padStart(2, "0")} ${currentDate.getHours() >= 12 ? "PM" : "AM"}`;
 
     const newVehicle = {
       vehicleNumber,
@@ -153,7 +169,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
             margin="normal"
             inputProps={{ maxLength: 10 }}
             error={!!errors.vehicleNumber}
-            helperText={errors.vehicleNumber}
+            helperText={errors.vehicleNumber || "Format: MH02AB1234"}
             sx={{
               mb: 2,
               "& .MuiInputLabel-root": { color: errors.vehicleNumber ? "#d32f2f" : "#2D3748" },
@@ -162,7 +178,7 @@ const VehicleRegistration = ({ onAddVehicle }) => {
                 "&:hover fieldset": { borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE" },
                 "&.Mui-focused fieldset": { borderColor: errors.vehicleNumber ? "#d32f2f" : "#3182CE" },
               },
-              "& .MuiFormHelperText-root": { color: "#d32f2f", fontSize: "0.75rem", fontWeight: 400 },
+              "& .MuiFormHelperText-root": { color: errors.vehicleNumber ? "#d32f2f" : "#666", fontSize: "0.75rem", fontWeight: 400 },
             }}
           />
           <TextField

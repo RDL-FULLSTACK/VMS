@@ -49,6 +49,23 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
+// Role mapping for display purposes
+const roleDisplayMap = {
+  host: "Employee",
+  admin: "Admin",
+  receptionist: "Receptionist",
+  security: "Security",
+  employee: "Employee", // In case there are any actual "employee" roles
+};
+
+// Reverse mapping for filtering (from display value to backend value)
+const roleFilterMap = {
+  Employee: "host",
+  Admin: "admin",
+  Receptionist: "receptionist",
+  Security: "security",
+};
+
 const UserList = () => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -115,7 +132,7 @@ const UserList = () => {
       formatValue(user.username).toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole =
       filterRole === "All" ||
-      formatValue(user.role).toLowerCase() === filterRole.toLowerCase();
+      formatValue(user.role).toLowerCase() === (roleFilterMap[filterRole] || filterRole.toLowerCase());
     return matchesSearch && matchesRole;
   });
 
@@ -292,10 +309,10 @@ const UserList = () => {
             sx={{ minWidth: 150, backgroundColor: "#fff" }}
           >
             <MenuItem value="All">All Roles</MenuItem>
-            <MenuItem value="admin">Admin</MenuItem>
-            <MenuItem value="employee">Employee</MenuItem>
-            <MenuItem value="security">Security</MenuItem>
-            <MenuItem value="receptionist">Receptionist</MenuItem>
+            <MenuItem value="Admin">Admin</MenuItem>
+            <MenuItem value="Receptionist">Receptionist</MenuItem>
+            <MenuItem value="Security">Security</MenuItem>
+            <MenuItem value="Employee">Employee</MenuItem> {/* Changed from "host" to "Employee" */}
           </Select>
           <Button
             variant="contained"
@@ -339,7 +356,9 @@ const UserList = () => {
                   <StyledTableRow key={user._id || "unknown"}>
                     <TableCell sx={{ padding: 1.5 }}>{getLastFourDigits(user._id)}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{formatValue(user.username)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.role)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>
+                      {roleDisplayMap[user.role] || formatValue(user.role)}
+                    </TableCell>
                     <TableCell sx={{ padding: 1.5 }}>
                       <IconButton onClick={(event) => handleMenuOpen(event, user)} size="small">
                         <MoreVertIcon />

@@ -104,26 +104,26 @@ const PreScheduling = () => {
     }
 
     let error = "";
-    if (name === "name" && !value) error = "Name is required";
-    if (name === "date" && !value) error = "Date is required";
-    if (name === "purpose" && !value) error = "Purpose is required";
-    if (name === "host" && !value) error = "Host is required";
-    if (name === "email" && !value) error = "Email is required";
+    if (name === "name" && value === "") error = "Name is required";
+    if (name === "date" && value === "") error = "Date is required";
+    if (name === "purpose" && value === "") error = "Purpose is required";
+    if (name === "host" && value === "") error = "Host is required";
+    if (name === "email" && value === "") error = "Email is required";
     else if (name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
       error = "Invalid email format";
-    if (name === "department" && !value) error = "Department is required";
-    if (name === "phoneNumber" && !value) error = "Phone number is required";
+    if (name === "department" && value === "") error = "Department is required";
+    if (name === "phoneNumber" && value === "") error = "Phone number is required";
     else if (name === "phoneNumber" && !/^\d{10}$/.test(value))
       error = "10 digits required";
-    if (name === "designation" && !value) error = "Designation is required";
-    if (name === "visitType" && !value) error = "Visit type is required";
-    if (name === "hours" && !value) error = "Hours are required";
-    else if (name === "hours" && (!/^\d+$/.test(value) || parseInt(value) > 23))
+    if (name === "designation" && value === "") error = "Designation is required";
+    if (name === "visitType" && value === "") error = "Visit type is required";
+    if (name === "hours" && value === "") error = "Hours are required";
+    else if (name === "hours" && (!/^\d+$/.test(value) || parseInt(value) > 23 || parseInt(value) < 0))
       error = "0-23 only";
-    if (name === "minutes" && !value) error = "Minutes are required";
-    else if (name === "minutes" && (!/^\d+$/.test(value) || parseInt(value) > 59))
+    if (name === "minutes" && value === "") error = "Minutes are required";
+    else if (name === "minutes" && (!/^\d+$/.test(value) || parseInt(value) > 59 || parseInt(value) < 0))
       error = "0-59 only";
-    if (name === "hasAssets" && !value) error = "Required";
+    if (name === "hasAssets" && value === "") error = "Required";
 
     setErrors((prev) => ({ ...prev, [name]: error }));
 
@@ -134,34 +134,36 @@ const PreScheduling = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = "Name is required";
-    if (!formData.date) newErrors.date = "Date is required";
-    if (!formData.purpose) newErrors.purpose = "Purpose is required";
-    if (!formData.host) newErrors.host = "Host is required";
-    if (!formData.email) newErrors.email = "Email is required";
+    if (formData.name === "") newErrors.name = "Name is required";
+    if (formData.date === "") newErrors.date = "Date is required";
+    if (formData.purpose === "") newErrors.purpose = "Purpose is required";
+    if (formData.host === "") newErrors.host = "Host is required";
+    if (formData.email === "") newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = "Invalid email format";
-    if (!formData.department) newErrors.department = "Department is required";
-    if (!formData.phoneNumber) newErrors.phoneNumber = "Phone number is required";
+    if (formData.department === "") newErrors.department = "Department is required";
+    if (formData.phoneNumber === "") newErrors.phoneNumber = "Phone number is required";
     else if (!/^\d{10}$/.test(formData.phoneNumber))
       newErrors.phoneNumber = "10 digits required";
-    if (!formData.designation) newErrors.designation = "Designation is required";
-    if (!formData.visitType) newErrors.visitType = "Visit type is required";
-    if (!formData.expectedDuration.hours)
+    if (formData.designation === "") newErrors.designation = "Designation is required";
+    if (formData.visitType === "") newErrors.visitType = "Visit type is required";
+    if (formData.expectedDuration.hours === "")
       newErrors.hours = "Hours are required";
     else if (
       !/^\d+$/.test(formData.expectedDuration.hours) ||
-      parseInt(formData.expectedDuration.hours) > 23
+      parseInt(formData.expectedDuration.hours) > 23 ||
+      parseInt(formData.expectedDuration.hours) < 0
     )
       newErrors.hours = "0-23 only";
-    if (!formData.expectedDuration.minutes)
+    if (formData.expectedDuration.minutes === "")
       newErrors.minutes = "Minutes are required";
     else if (
       !/^\d+$/.test(formData.expectedDuration.minutes) ||
-      parseInt(formData.expectedDuration.minutes) > 59
+      parseInt(formData.expectedDuration.minutes) > 59 ||
+      parseInt(formData.expectedDuration.minutes) < 0
     )
       newErrors.minutes = "0-59 only";
-    if (!formData.hasAssets) newErrors.hasAssets = "Required";
+    if (formData.hasAssets === "") newErrors.hasAssets = "Required";
     if (formData.hasAssets === "yes" && formData.assets.length === 0)
       newErrors.assets = "At least one asset is required";
 

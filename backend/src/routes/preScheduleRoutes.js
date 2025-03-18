@@ -1,8 +1,7 @@
-// prescheduleRoutes.js
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
-require("dotenv").config();
+require("dotenv").config;
 
 // MongoDB Connection
 const mongoose = require("mongoose");
@@ -104,6 +103,7 @@ router.post("/preschedule", async (req, res) => {
       teamMembers,
     } = req.body;
 
+    // Validate that all top-level fields are present and not empty strings
     if (
       !name ||
       !date ||
@@ -115,14 +115,22 @@ router.post("/preschedule", async (req, res) => {
       !designation ||
       !visitType ||
       !expectedDuration ||
-      !expectedDuration.hours ||
-      !expectedDuration.minutes ||
+      typeof expectedDuration.hours !== "number" ||
+      typeof expectedDuration.minutes !== "number" ||
       !hasAssets
     ) {
       return res.status(400).json({
         message:
-          "All fields (name, date, purpose, host, email, department, phoneNumber, designation, visitType, expectedDuration (hours and minutes), hasAssets) are required",
+          "All fields (name, date, purpose, host, email, department, phoneNumber, designation, visitType, expectedDuration (hours and minutes), hasAssets) are required and must be valid",
       });
+    }
+
+    // Ensure hours and minutes are within valid ranges (optional, but recommended)
+    if (expectedDuration.hours < 0 || expectedDuration.hours > 23) {
+      return res.status(400).json({ message: "Hours must be between 0 and 23" });
+    }
+    if (expectedDuration.minutes < 0 || expectedDuration.minutes > 59) {
+      return res.status(400).json({ message: "Minutes must be between 0 and 59" });
     }
 
     if (hasAssets === "yes" && (!assets || !Array.isArray(assets) || assets.length === 0)) {

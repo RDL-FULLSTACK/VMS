@@ -1,8 +1,4 @@
-
-
-//checkin.js
-
-
+// Checkin.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -80,6 +76,8 @@ const Checkin = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [selectedSelfCheckinId, setSelectedSelfCheckinId] = useState(null);
+  const [selectedPrescheduleId, setSelectedPrescheduleId] = useState(null); // New state for pre-schedule
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
 
@@ -183,6 +181,7 @@ const Checkin = () => {
       department: visitor.department,
     });
     setTeamMembers(visitor.teamMembers || []);
+    setSelectedPrescheduleId(visitor._id); // Store the selected pre-schedule ID
     setOpenPrescheduleModal(false);
     toast.success(`Data for ${visitor.name} has been loaded.`);
   };
@@ -209,6 +208,7 @@ const Checkin = () => {
     });
     setTeamMembers(visitor.teamMembers || []);
     setPhotoPreview(visitor.photoUrl || null);
+    setSelectedSelfCheckinId(visitor._id);
     setOpenSelfCheckinModal(false);
     toast.success(`Data for ${visitor.fullName} has been loaded.`);
   };
@@ -585,6 +585,50 @@ const Checkin = () => {
       const data = await response.json();
 
       if (!response.ok) throw new Error(data.message || "Submission failed");
+
+      // Delete self-checkin record if it exists
+      if (selectedSelfCheckinId) {
+        const deleteSelfCheckinResponse = await fetch(
+          `http://localhost:5000/api/self-checkins/checkin/${selectedSelfCheckinId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!deleteSelfCheckinResponse.ok) {
+          const deleteData = await deleteSelfCheckinResponse.json();
+          throw new Error(deleteData.message || "Failed to delete self-checkin");
+        }
+
+        setSelfCheckinVisitors((prev) =>
+          prev.filter((visitor) => visitor._id !== selectedSelfCheckinId)
+        );
+        setFilteredSelfCheckinVisitors((prev) =>
+          prev.filter((visitor) => visitor._id !== selectedSelfCheckinId)
+        );
+        setSelectedSelfCheckinId(null);
+      }
+
+      // Delete pre-scheduled record if it exists
+      if (selectedPrescheduleId) {
+        const deletePrescheduleResponse = await fetch(
+          `http://localhost:5000/api/preschedules/${selectedPrescheduleId}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!deletePrescheduleResponse.ok) {
+          const deleteData = await deletePrescheduleResponse.json();
+          throw new Error(deleteData.message || "Failed to delete pre-scheduled visitor");
+        }
+
+        setPrescheduledVisitors((prev) =>
+          prev.filter((visitor) => visitor._id !== selectedPrescheduleId)
+        );
+        setFilteredPrescheduleVisitors((prev) =>
+          prev.filter((visitor) => visitor._id !== selectedPrescheduleId)
+        );
+        setSelectedPrescheduleId(null);
+      }
 
       toast.success("Check-in successful!");
       setTimeout(() => navigate("/visitorcard"), 2000);

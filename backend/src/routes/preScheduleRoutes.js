@@ -1,3 +1,4 @@
+// prescheduleRoutes.js
 const express = require("express");
 const router = express.Router();
 const nodemailer = require("nodemailer");
@@ -100,10 +101,9 @@ router.post("/preschedule", async (req, res) => {
       expectedDuration,
       hasAssets,
       assets,
-      teamMembers, // Added teamMembers
+      teamMembers,
     } = req.body;
 
-    // Validate all required fields
     if (
       !name ||
       !date ||
@@ -125,14 +125,12 @@ router.post("/preschedule", async (req, res) => {
       });
     }
 
-    // Validate assets if hasAssets is "yes"
     if (hasAssets === "yes" && (!assets || !Array.isArray(assets) || assets.length === 0)) {
       return res.status(400).json({
         message: "Assets are required when hasAssets is 'yes'",
       });
     }
 
-    // Validate team members if provided
     if (teamMembers && Array.isArray(teamMembers)) {
       for (const member of teamMembers) {
         if (!member.name || !member.email || !member.documentDetail || !member.hasAssets) {
@@ -164,7 +162,7 @@ router.post("/preschedule", async (req, res) => {
       },
       hasAssets,
       assets: hasAssets === "yes" ? assets : [],
-      teamMembers: teamMembers || [], // Add team members (empty array if not provided)
+      teamMembers: teamMembers || [],
       Time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     });
 
@@ -204,7 +202,6 @@ router.put("/preschedules/:id/approve", async (req, res) => {
     preSchedule.status = "Approved";
     await preSchedule.save();
 
-    // Include team members in the email if they exist
     const teamMembersText = preSchedule.teamMembers.length > 0 
       ? `\n\nTeam Members:\n${preSchedule.teamMembers.map(m => 
           `${m.name} (${m.email}) - Document: ${m.documentDetail}${m.hasAssets === 'yes' ? ', Has Assets' : ''}`
@@ -239,7 +236,6 @@ router.put("/preschedules/:id/reject", async (req, res) => {
     preSchedule.status = "Rejected";
     await preSchedule.save();
 
-    // Include team members in the email if they exist
     const teamMembersText = preSchedule.teamMembers.length > 0 
       ? `\n\nTeam Members:\n${preSchedule.teamMembers.map(m => 
           `${m.name} (${m.email}) - Document: ${m.documentDetail}${m.hasAssets === 'yes' ? ', Has Assets' : ''}`
@@ -259,6 +255,22 @@ router.put("/preschedules/:id/reject", async (req, res) => {
   } catch (error) {
     console.error("Error rejecting pre-schedule:", error);
     res.status(500).json({ message: "Error rejecting pre-schedule", error });
+  }
+});
+
+// DELETE /api/preschedules/:id - Delete a pre-scheduled visitor
+router.delete("/preschedules/:id", async (req, res) => {
+  try {
+    const preSchedule = await PreSchedule.findById(req.params.id);
+    if (!preSchedule) {
+      return res.status(404).json({ message: "Pre-scheduled visitor not found" });
+    }
+
+    await PreSchedule.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Pre-scheduled visitor deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting pre-scheduled visitor:", error);
+    res.status(500).json({ message: "Error deleting pre-scheduled visitor", error: error.message });
   }
 });
 

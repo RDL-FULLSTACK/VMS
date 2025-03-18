@@ -1,7 +1,9 @@
+// selfCheckinRoutes.js
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
 const mongoose = require("mongoose");
+const path = require("path"); // Added path import
 require("dotenv").config();
 
 // MongoDB Connection
@@ -12,7 +14,7 @@ mongoose.connect(process.env.MONGO_URI, {
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// SelfCheckin Model (assuming it's in ../models/SelfCheckin.js)
+// SelfCheckin Model
 const SelfCheckin = require("../models/SelfCheckin");
 
 // Multer configuration
@@ -51,14 +53,13 @@ router.post(
         assets,
         hasTeamMembers,
         teamMembers,
-        department
+        department,
       } = req.body;
 
       // Validate required fields
       if (
         !fullName || !email || !phoneNumber || !designation || !visitType ||
-        !expectedDuration || !expectedDuration.hours || !expectedDuration.minutes ||
-        !documentDetails || !reasonForVisit || !visitorCompany || 
+        !expectedDuration || !documentDetails || !reasonForVisit || !visitorCompany || 
         !personToVisit || !submittedDocument || !hasAssets || !hasTeamMembers || !department
       ) {
         return res.status(400).json({
@@ -67,14 +68,14 @@ router.post(
       }
 
       // Validate assets if hasAssets is "yes"
-      if (hasAssets === "yes" && (!assets || !Array.isArray(assets) || assets.length === 0)) {
+      if (hasAssets === "yes" && (!assets || !Array.isArray(JSON.parse(assets)) || JSON.parse(assets).length === 0)) {
         return res.status(400).json({
           message: "Assets are required when hasAssets is 'yes'"
         });
       }
 
       // Validate team members if hasTeamMembers is "yes"
-      if (hasTeamMembers === "yes" && (!teamMembers || !Array.isArray(teamMembers) || teamMembers.length === 0)) {
+      if (hasTeamMembers === "yes" && (!teamMembers || !Array.isArray(JSON.parse(teamMembers)) || JSON.parse(teamMembers).length === 0)) {
         return res.status(400).json({
           message: "Team members are required when hasTeamMembers is 'yes'"
         });
@@ -176,4 +177,20 @@ router.put("/checkin/:id", async (req, res) => {
   }
 });
 
-module.exports = router;  
+// DELETE /checkin/:id - Delete self-checkin
+router.delete("/checkin/:id", async (req, res) => {
+  try {
+    const selfCheckin = await SelfCheckin.findById(req.params.id);
+    if (!selfCheckin) {
+      return res.status(404).json({ message: "Self-checkin not found" });
+    }
+    
+    await SelfCheckin.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "Self-checkin deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting self-checkin:", error);
+    res.status(500).json({ message: "Error deleting self-checkin", error: error.message });
+  }
+});
+
+module.exports = router;

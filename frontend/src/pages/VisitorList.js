@@ -16,7 +16,6 @@ const VisitorList = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalRows, setTotalRows] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const rowRef = useRef(null); // Ref to measure row height dynamically
@@ -134,7 +133,6 @@ const VisitorList = () => {
         });
 
         setVisitors(transformedVisitors);
-        setTotalRows(transformedVisitors.length);
       } catch (err) {
         setError(err.message);
       } finally {

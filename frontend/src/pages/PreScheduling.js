@@ -390,7 +390,7 @@ const PreScheduling = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Full Name*"
+                  label="Full Name"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
@@ -402,7 +402,7 @@ const PreScheduling = () => {
                 />
                 <TextField
                   fullWidth
-                  label="Email*"
+                  label="Email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -414,7 +414,7 @@ const PreScheduling = () => {
                 />
                 <TextField
                   fullWidth
-                  label="Phone Number*"
+                  label="Phone Number"
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
@@ -428,7 +428,7 @@ const PreScheduling = () => {
                 <TextField
                   select
                   fullWidth
-                  label="Designation*"
+                  label="Designation"
                   name="designation"
                   value={formData.designation}
                   onChange={handleChange}
@@ -445,7 +445,7 @@ const PreScheduling = () => {
                 <TextField
                   select
                   fullWidth
-                  label="Visit Type*"
+                  label="Visit Type"
                   name="visitType"
                   value={formData.visitType}
                   onChange={handleChange}
@@ -462,7 +462,7 @@ const PreScheduling = () => {
                   <Grid item xs={6}>
                     <TextField
                       fullWidth
-                      label="Hours*"
+                      label="Hours"
                       name="hours"
                       value={formData.expectedDuration.hours}
                       onChange={handleChange}
@@ -475,7 +475,7 @@ const PreScheduling = () => {
                   <Grid item xs={6}>
                     <TextField
                       fullWidth
-                      label="Minutes*"
+                      label="Minutes"
                       name="minutes"
                       value={formData.expectedDuration.minutes}
                       onChange={handleChange}
@@ -491,7 +491,7 @@ const PreScheduling = () => {
               <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Purpose*"
+                  label="Purpose"
                   name="purpose"
                   value={formData.purpose}
                   onChange={handleChange}
@@ -504,7 +504,7 @@ const PreScheduling = () => {
                 <TextField
                   select
                   fullWidth
-                  label="Host*"
+                  label="Host"
                   name="host"
                   value={formData.host}
                   onChange={handleChange}
@@ -526,7 +526,7 @@ const PreScheduling = () => {
                 <TextField
                   select
                   fullWidth
-                  label="Department*"
+                  label="Department"
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
@@ -547,7 +547,7 @@ const PreScheduling = () => {
                 </TextField>
                 <TextField
                   fullWidth
-                  label="Date*"
+                  label="Date"
                   type="date"
                   name="date"
                   value={formData.date}
@@ -565,7 +565,7 @@ const PreScheduling = () => {
                     <TextField
                       select
                       fullWidth
-                      label="Assets?*"
+                      label="Assets?"
                       name="hasAssets"
                       value={formData.hasAssets}
                       onChange={handleChange}
@@ -622,7 +622,7 @@ const PreScheduling = () => {
                       <Grid item xs={12} sm={3}>
                         <TextField
                           fullWidth
-                          label="Name*"
+                          label="Name"
                           value={member.name}
                           onChange={(e) =>
                             handleTeamMemberChange(index, "name", e.target.value)
@@ -634,7 +634,7 @@ const PreScheduling = () => {
                       <Grid item xs={12} sm={3}>
                         <TextField
                           fullWidth
-                          label="Email*"
+                          label="Email"
                           value={member.email}
                           onChange={(e) =>
                             handleTeamMemberChange(index, "email", e.target.value)
@@ -646,7 +646,7 @@ const PreScheduling = () => {
                       <Grid item xs={12} sm={3}>
                         <TextField
                           fullWidth
-                          label="Document Detail*"
+                          label="Document Detail"
                           value={member.documentDetail}
                           onChange={(e) =>
                             handleTeamMemberChange(index, "documentDetail", e.target.value)
@@ -679,7 +679,7 @@ const PreScheduling = () => {
                     <TextField
                       select
                       fullWidth
-                      label="Assets?*"
+                      label="Assets?"
                       value={member.hasAssets}
                       onChange={(e) =>
                         handleTeamMemberChange(index, "hasAssets", e.target.value)
@@ -704,7 +704,7 @@ const PreScheduling = () => {
                             <Grid item xs={12} sm={2}>
                               <TextField
                                 fullWidth
-                                label="Quantity*"
+                                label="Quantity"
                                 value={asset.quantity}
                                 onChange={(e) =>
                                   handleTeamMemberAssetChange(
@@ -721,7 +721,7 @@ const PreScheduling = () => {
                             <Grid item xs={12} sm={4}>
                               <TextField
                                 fullWidth
-                                label="Type*"
+                                label="Type"
                                 value={asset.type}
                                 onChange={(e) =>
                                   handleTeamMemberAssetChange(
@@ -738,7 +738,7 @@ const PreScheduling = () => {
                             <Grid item xs={12} sm={5}>
                               <TextField
                                 fullWidth
-                                label="Serial Number*"
+                                label="Serial Number"
                                 value={asset.serialNumber}
                                 onChange={(e) =>
                                   handleTeamMemberAssetChange(
@@ -808,7 +808,7 @@ const PreScheduling = () => {
                         <Grid item xs={12} sm={2}>
                           <TextField
                             fullWidth
-                            label="Quantity*"
+                            label="Quantity"
                             value={asset.quantity}
                             onChange={(e) =>
                               handleAssetChange(index, "quantity", e.target.value)
@@ -820,7 +820,7 @@ const PreScheduling = () => {
                         <Grid item xs={12} sm={4}>
                           <TextField
                             fullWidth
-                            label="Type*"
+                            label="Type"
                             value={asset.type}
                             onChange={(e) =>
                               handleAssetChange(index, "type", e.target.value)
@@ -832,7 +832,7 @@ const PreScheduling = () => {
                         <Grid item xs={12} sm={5}>
                           <TextField
                             fullWidth
-                            label="Serial Number*"
+                            label="Serial Number"
                             value={asset.serialNumber}
                             onChange={(e) =>
                               handleAssetChange(index, "serialNumber", e.target.value)

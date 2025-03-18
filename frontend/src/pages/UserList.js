@@ -21,6 +21,8 @@ import {
   Snackbar,
   Alert,
   InputAdornment,
+  styled,
+  Typography,
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
@@ -29,7 +31,23 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import CompanyRegister from "./companylogin"; // Updated import
+import CompanyRegister from "./companylogin";
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  color: "#fff",
+  fontWeight: "bold",
+  backgroundColor: "#5a3d91",
+  padding: theme.spacing(1.5),
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.action.hover,
+  },
+  "&:hover": {
+    backgroundColor: theme.palette.action.selected,
+  },
+}));
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -233,13 +251,36 @@ const UserList = () => {
   return (
     <>
       {!openCompanyLoginDialog && <Navbar />}
-      <Container maxWidth="lg" sx={{ padding: 3, backgroundColor: "#f9f9f9", borderRadius: 2 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+      <Container
+        maxWidth={false} // Disable maxWidth to use full screen width
+        sx={{
+          padding: 2,
+          backgroundColor: "#fff",
+          borderRadius: 0, // Remove border radius for full-width effect
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          minHeight: "80vh",
+          width: "100%", // Ensure full width
+          margin: 0, // Remove default margins
+          paddingLeft: "16px", // Custom padding for content
+          paddingRight: "16px", // Custom padding for content
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+            flexWrap: "wrap",
+            gap: 2,
+            width: "100%", // Ensure full width
+          }}
+        >
           <TextField
             label="Search Username"
             variant="outlined"
-            fullWidth
-            sx={{ mr: 2 }}
+            size="small"
+            sx={{ minWidth: 200, flexGrow: 1, backgroundColor: "#fff" }}
             value={searchQuery}
             onChange={handleSearchChange}
           />
@@ -247,7 +288,8 @@ const UserList = () => {
             value={filterRole}
             onChange={handleFilterChange}
             variant="outlined"
-            sx={{ minWidth: 200, mr: 2 }}
+            size="small"
+            sx={{ minWidth: 150, backgroundColor: "#fff" }}
           >
             <MenuItem value="All">All Roles</MenuItem>
             <MenuItem value="admin">Admin</MenuItem>
@@ -257,47 +299,60 @@ const UserList = () => {
           </Select>
           <Button
             variant="contained"
-            sx={{ backgroundColor: "#5a3d91", color: "white", "&:hover": { backgroundColor: "#4a2f77" } }}
+            size="medium"
+            sx={{
+              backgroundColor: "#5a3d91",
+              color: "#fff",
+              "&:hover": { backgroundColor: "#4a2f77" },
+              padding: "8px 16px",
+            }}
             onClick={handleCompanyLogin}
           >
             Add User
           </Button>
         </div>
 
-        <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 3 }}>
+        <TableContainer
+          component={Paper}
+          sx={{ borderRadius: 2, boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", overflow: "auto", width: "100%" }}
+        >
           <Table>
-            <TableHead sx={{ backgroundColor: "#5a3d91" }}>
+            <TableHead>
               <TableRow>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Username</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Role</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold" }}>Actions</TableCell>
+                <StyledTableCell>ID</StyledTableCell>
+                <StyledTableCell>Username</StyledTableCell>
+                <StyledTableCell>Role</StyledTableCell>
+                <StyledTableCell>Actions</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ textAlign: "center" }}>
-                    Loading...
+                  <TableCell colSpan={4} sx={{ textAlign: "center", py: 2 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      Loading...
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
-                  <TableRow key={user._id || "unknown"}>
-                    <TableCell>{getLastFourDigits(user._id)}</TableCell>
-                    <TableCell>{formatValue(user.username)}</TableCell>
-                    <TableCell>{formatValue(user.role)}</TableCell>
-                    <TableCell>
-                      <IconButton onClick={(event) => handleMenuOpen(event, user)}>
+                  <StyledTableRow key={user._id || "unknown"}>
+                    <TableCell sx={{ padding: 1.5 }}>{getLastFourDigits(user._id)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.username)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.role)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>
+                      <IconButton onClick={(event) => handleMenuOpen(event, user)} size="small">
                         <MoreVertIcon />
                       </IconButton>
                     </TableCell>
-                  </TableRow>
+                  </StyledTableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ textAlign: "center", fontSize: "1.2rem", fontWeight: "bold", color: "gray" }}>
-                    No User Found
+                  <TableCell colSpan={4} sx={{ textAlign: "center", py: 4 }}>
+                    <Typography variant="h6" color="text.secondary">
+                      No User Found
+                    </Typography>
                   </TableCell>
                 </TableRow>
               )}
@@ -311,10 +366,13 @@ const UserList = () => {
           onClose={handleMenuClose}
           PaperProps={{
             elevation: 3,
-            sx: { minWidth: 150 },
+            sx: { minWidth: 150, borderRadius: 1 },
           }}
         >
-          <MenuItem onClick={handleEdit} sx={{ color: "#5a3d91", "&:hover": { backgroundColor: "#f5f5f5" } }}>
+          <MenuItem
+            onClick={handleEdit}
+            sx={{ color: "#5a3d91", "&:hover": { backgroundColor: "#f5f5f5" } }}
+          >
             <EditIcon fontSize="small" sx={{ mr: 1 }} />
             Edit
           </MenuItem>
@@ -324,11 +382,21 @@ const UserList = () => {
           </MenuItem>
         </Menu>
 
-        <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
+        <Dialog
+          open={openEditDialog}
+          onClose={handleCloseEditDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" },
+          }}
+        >
+          <DialogTitle
+            sx={{ bgcolor: "#5a3d91", color: "#fff", fontWeight: "bold", p: 2 }}
+          >
             Edit User (ID: {getLastFourDigits(selectedUser?._id)})
           </DialogTitle>
-          <DialogContent sx={{ mt: 2 }}>
+          <DialogContent sx={{ p: 3 }}>
             {selectedUser && (
               <>
                 <TextField
@@ -338,6 +406,8 @@ const UserList = () => {
                   margin="normal"
                   value={formatValue(selectedUser.username)}
                   disabled
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: 1 } }}
                 />
                 <TextField
                   label="New Password"
@@ -347,17 +417,7 @@ const UserList = () => {
                   type={showPassword ? "text" : "password"}
                   value={passwords.newPassword}
                   onChange={handleEditChange}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-                      "&:hover fieldset": {
-                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-                      },
-                    },
-                  }}
+                  variant="outlined"
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -366,6 +426,16 @@ const UserList = () => {
                         </IconButton>
                       </InputAdornment>
                     ),
+                    sx: {
+                      borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      "&:hover fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                      borderRadius: 1,
+                    },
                   }}
                 />
                 <TextField
@@ -376,17 +446,7 @@ const UserList = () => {
                   type={showPassword ? "text" : "password"}
                   value={passwords.confirmPassword}
                   onChange={handleEditChange}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-                      "&:hover fieldset": {
-                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
-                      },
-                    },
-                  }}
+                  variant="outlined"
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -395,19 +455,35 @@ const UserList = () => {
                         </IconButton>
                       </InputAdornment>
                     ),
+                    sx: {
+                      borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      "&:hover fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: isMatching === false ? "red" : isMatching === true ? "green" : "",
+                      },
+                      borderRadius: 1,
+                    },
                   }}
                 />
                 {isMatching === false && passwords.newPassword && passwords.confirmPassword && (
-                  <p style={{ color: "red", marginTop: "5px" }}>Passwords do not match</p>
+                  <Typography color="error" sx={{ mt: 1 }}>
+                    Passwords do not match
+                  </Typography>
                 )}
                 {isMatching === true && passwords.newPassword && passwords.confirmPassword && (
-                  <p style={{ color: "green", marginTop: "5px" }}>Password match successfully</p>
+                  <Typography color="success.main" sx={{ mt: 1 }}>
+                    Password match successfully
+                  </Typography>
                 )}
               </>
             )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseEditDialog} color="error">Cancel</Button>
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={handleCloseEditDialog} color="error" variant="outlined">
+              Cancel
+            </Button>
             <Button
               onClick={handleSaveChanges}
               color="primary"
@@ -419,19 +495,30 @@ const UserList = () => {
           </DialogActions>
         </Dialog>
 
-        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ bgcolor: "#d32f2f", color: "white" }}>
+        <Dialog
+          open={openDeleteDialog}
+          onClose={handleCloseDeleteDialog}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" },
+          }}
+        >
+          <DialogTitle
+            sx={{ bgcolor: "#d32f2f", color: "#fff", fontWeight: "bold", p: 2 }}
+          >
             Confirm Delete
           </DialogTitle>
-          <DialogContent sx={{ mt: 2 }}>
-            <p>
+          <DialogContent sx={{ p: 3 }}>
+            <Typography>
               Are you sure you want to delete the user{" "}
               <strong>{selectedUser ? formatValue(selectedUser.username) : ""}</strong> (ID:{" "}
-              {selectedUser ? getLastFourDigits(selectedUser._id) : ""})? This action cannot be undone.
-            </p>
+              {selectedUser ? getLastFourDigits(selectedUser._id) : ""})? This action cannot be
+              undone.
+            </Typography>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteDialog} color="primary">
+          <DialogActions sx={{ p: 2 }}>
+            <Button onClick={handleCloseDeleteDialog} color="primary" variant="outlined">
               Cancel
             </Button>
             <Button onClick={handleConfirmDelete} color="error" variant="contained">
@@ -445,12 +532,17 @@ const UserList = () => {
           onClose={handleCloseCompanyLogin}
           maxWidth="md"
           fullWidth
+          PaperProps={{
+            sx: { borderRadius: 2, boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)" },
+          }}
         >
-          <DialogTitle sx={{ bgcolor: "#5a3d91", color: "white" }}>
+          <DialogTitle
+            sx={{ bgcolor: "#5a3d91", color: "#fff", fontWeight: "bold", p: 2 }}
+          >
             Add User
             <IconButton
               onClick={handleCloseCompanyLogin}
-              sx={{ position: "absolute", right: 8, top: 8, color: "white" }}
+              sx={{ position: "absolute", right: 16, top: 16, color: "#fff" }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -473,8 +565,17 @@ const UserList = () => {
           </DialogContent>
         </Dialog>
 
-        <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            sx={{ width: "100%", borderRadius: 1 }}
+          >
             {snackbar.message}
           </Alert>
         </Snackbar>

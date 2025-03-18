@@ -731,7 +731,7 @@ const Checkin = () => {
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
-              label="Full Name*"
+              label="Full Name"
               value={formData.fullName}
               onChange={(e) => handleInputChange("fullName", e.target.value)}
               error={!!errors.fullName}
@@ -743,7 +743,7 @@ const Checkin = () => {
               <Grid item xs={8}>
                 <TextField
                   fullWidth
-                  label="Email*"
+                  label="Email"
                   value={formData.email}
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   error={!!errors.email}
@@ -764,7 +764,7 @@ const Checkin = () => {
             </Grid>
             <TextField
               fullWidth
-              label="Phone Number*"
+              label="Phone Number"
               value={formData.phoneNumber}
               onChange={(e) => handleInputChange("phoneNumber", e.target.value)}
               error={!!errors.phoneNumber}
@@ -776,7 +776,7 @@ const Checkin = () => {
             <TextField
               select
               fullWidth
-              label="Designation*"
+              label="Designation"
               value={formData.designation}
               onChange={(e) => handleInputChange("designation", e.target.value)}
               error={!!errors.designation}
@@ -806,7 +806,7 @@ const Checkin = () => {
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Hours*"
+                  label="Hours"
                   value={formData.expectedDurationHours}
                   onChange={(e) => handleInputChange("expectedDurationHours", e.target.value)}
                   error={!!errors.expectedDurationHours}
@@ -817,7 +817,7 @@ const Checkin = () => {
               <Grid item xs={6}>
                 <TextField
                   fullWidth
-                  label="Minutes*"
+                  label="Minutes"
                   value={formData.expectedDurationMinutes}
                   onChange={(e) => handleInputChange("expectedDurationMinutes", e.target.value)}
                   error={!!errors.expectedDurationMinutes}
@@ -828,7 +828,7 @@ const Checkin = () => {
             </Grid>
             <TextField
               fullWidth
-              label="Document Details*"
+              label="Document Details"
               value={formData.documentDetails}
               onChange={(e) => handleInputChange("documentDetails", e.target.value)}
               error={!!errors.documentDetails}
@@ -846,7 +846,7 @@ const Checkin = () => {
                     <TextField
                       select
                       fullWidth
-                      label="Team Members?*"
+                      label="Team Members?"
                       value={formData.hasTeamMembers}
                       onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
                       error={!!errors.hasTeamMembers}
@@ -878,7 +878,7 @@ const Checkin = () => {
                     <TextField
                       select
                       fullWidth
-                      label="Assets?*"
+                      label="Assets?"
                       value={formData.hasAssets}
                       onChange={(e) => handleInputChange("hasAssets", e.target.value)}
                       error={!!errors.hasAssets}
@@ -948,7 +948,7 @@ const Checkin = () => {
 
             <TextField
               fullWidth
-              label="Reason for Visit*"
+              label="Reason for Visit"
               value={formData.reasonForVisit}
               onChange={(e) => handleInputChange("reasonForVisit", e.target.value)}
               error={!!errors.reasonForVisit}
@@ -960,7 +960,7 @@ const Checkin = () => {
               <Grid item xs={8}>
                 <TextField
                   fullWidth
-                  label="OTP*"
+                  label="OTP"
                   value={formData.otp}
                   onChange={(e) => handleInputChange("otp", e.target.value)}
                   error={!!errors.otp}
@@ -983,7 +983,7 @@ const Checkin = () => {
             </Grid>
             <TextField
               fullWidth
-              label="Visitor Company*"
+              label="Visitor Company"
               value={formData.visitorCompany}
               onChange={(e) => handleInputChange("visitorCompany", e.target.value)}
               error={!!errors.visitorCompany}
@@ -994,7 +994,7 @@ const Checkin = () => {
             <TextField
               select
               fullWidth
-              label="Person to Visit*"
+              label="Person to Visit"
               value={formData.personToVisit}
               onChange={(e) => handleInputChange("personToVisit", e.target.value)}
               error={!!errors.personToVisit}
@@ -1017,7 +1017,7 @@ const Checkin = () => {
             <TextField
               select
               fullWidth
-              label="Submitted Document*"
+              label="Submitted Document"
               value={formData.submittedDocument}
               onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
               error={!!errors.submittedDocument}
@@ -1031,7 +1031,7 @@ const Checkin = () => {
             <TextField
               select
               fullWidth
-              label="Department*"
+              label="Department"
               value={formData.department}
               onChange={(e) => handleInputChange("department", e.target.value)}
               error={!!errors.department}
@@ -1208,7 +1208,7 @@ const Checkin = () => {
                   <Grid item xs={12} sm={3}>
                     <TextField
                       fullWidth
-                      label="Name*"
+                      label="Name"
                       value={member.name}
                       onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
                       error={!!errors[`teamMember_${index}_name`]}
@@ -1219,7 +1219,7 @@ const Checkin = () => {
                   <Grid item xs={12} sm={3}>
                     <TextField
                       fullWidth
-                      label="Email*"
+                      label="Email"
                       value={member.email}
                       onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
                       error={!!errors[`teamMember_${index}_email`]}
@@ -1230,7 +1230,7 @@ const Checkin = () => {
                   <Grid item xs={12} sm={3}>
                     <TextField
                       fullWidth
-                      label="Document*"
+                      label="Document"
                       value={member.documentDetail}
                       onChange={(e) =>
                         handleTeamMemberChange(index, "documentDetail", e.target.value)
@@ -1271,7 +1271,7 @@ const Checkin = () => {
                 <TextField
                   select
                   fullWidth
-                  label="Assets?*"
+                  label="Assets?"
                   value={member.hasAssets}
                   onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
                   error={!!errors[`teamMember_${index}_hasAssets`]}
@@ -1302,7 +1302,7 @@ const Checkin = () => {
                         <Grid item xs={12} sm={6}>
                           <TextField
                             fullWidth
-                            label="Serial*"
+                            label="Serial"
                             value={asset.serialNumber}
                             onChange={(e) =>
                               handleTeamMemberAssetChange(
@@ -1366,7 +1366,7 @@ const Checkin = () => {
                     <Grid item xs={12} sm={5}>
                       <TextField
                         fullWidth
-                        label="Type*"
+                        label="Type"
                         value={asset.type}
                         onChange={(e) => handleAssetChange(index, "type", e.target.value)}
                         required
@@ -1377,7 +1377,7 @@ const Checkin = () => {
                     <Grid item xs={12} sm={6}>
                       <TextField
                         fullWidth
-                        label="Serial*"
+                        label="Serial"
                         value={asset.serialNumber}
                         onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)}
                         required

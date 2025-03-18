@@ -29,7 +29,7 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import CompanyLogin from "./companylogin";
+import CompanyRegister from "./companylogin"; // Updated import
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -38,48 +38,47 @@ const UserList = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [openCompanyLoginDialog, setOpenCompanyLoginDialog] = useState(false);
   const [loading, setLoading] = useState(true);
   const [passwords, setPasswords] = useState({ newPassword: "", confirmPassword: "" });
-  const [isMatching, setIsMatching] = useState(null); // null: initial, false: mismatch, true: match
+  const [isMatching, setIsMatching] = useState(null);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setSnackbar({
+        open: true,
+        message: "Failed to load users",
+        severity: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token"); // Retrieve token for authentication
-        const response = await fetch("http://localhost:5000/api/users", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-        setUsers(data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-        setSnackbar({
-          open: true,
-          message: "Failed to load users",
-          severity: "error",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
   }, []);
 
-  // Utility to get last 4 digits of ID
   const getLastFourDigits = (id) => {
     const idStr = (id || "").toString();
     return idStr.slice(-4);
   };
 
-  // Utility to handle missing values
   const formatValue = (value) => {
     return value || "N/A";
   };
@@ -118,8 +117,8 @@ const UserList = () => {
 
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
-    setPasswords({ newPassword: "", confirmPassword: "" }); // Reset password fields
-    setIsMatching(null); // Reset matching status
+    setPasswords({ newPassword: "", confirmPassword: "" });
+    setIsMatching(null);
   };
 
   const handleEditChange = (event) => {
@@ -140,21 +139,21 @@ const UserList = () => {
 
   const handleSaveChanges = async () => {
     try {
-      const token = localStorage.getItem("token"); // Retrieve token for authentication
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Add authentication header
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ password: passwords.newPassword }), // Send only password
+        body: JSON.stringify({ password: passwords.newPassword }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to update user");
       }
 
-      const updatedUser = await response.json(); // Get the updated user data from response
+      const updatedUser = await response.json();
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user._id === selectedUser._id ? { ...user, ...updatedUser.user } : user
@@ -176,9 +175,18 @@ const UserList = () => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
+    setOpenDeleteDialog(true);
+    handleMenuClose();
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+  };
+
+  const handleConfirmDelete = async () => {
     try {
-      const token = localStorage.getItem("token"); // Retrieve token for authentication
+      const token = localStorage.getItem("token");
       const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
@@ -189,7 +197,7 @@ const UserList = () => {
       }
 
       setUsers((prevUsers) => prevUsers.filter((user) => user._id !== selectedUser._id));
-      handleMenuClose();
+      handleCloseDeleteDialog();
       setSnackbar({
         open: true,
         message: "User deleted successfully!",
@@ -211,6 +219,7 @@ const UserList = () => {
 
   const handleCloseCompanyLogin = () => {
     setOpenCompanyLoginDialog(false);
+    fetchUsers();
   };
 
   const handleCloseSnackbar = () => {
@@ -251,7 +260,7 @@ const UserList = () => {
             sx={{ backgroundColor: "#5a3d91", color: "white", "&:hover": { backgroundColor: "#4a2f77" } }}
             onClick={handleCompanyLogin}
           >
-          Add User
+            Add User
           </Button>
         </div>
 
@@ -309,7 +318,7 @@ const UserList = () => {
             <EditIcon fontSize="small" sx={{ mr: 1 }} />
             Edit
           </MenuItem>
-          <MenuItem onClick={handleDelete} sx={{ color: "#d32f2f" }}>
+          <MenuItem onClick={handleDeleteClick} sx={{ color: "#d32f2f" }}>
             <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
             Delete
           </MenuItem>
@@ -410,6 +419,27 @@ const UserList = () => {
           </DialogActions>
         </Dialog>
 
+        <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ bgcolor: "#d32f2f", color: "white" }}>
+            Confirm Delete
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2 }}>
+            <p>
+              Are you sure you want to delete the user{" "}
+              <strong>{selectedUser ? formatValue(selectedUser.username) : ""}</strong> (ID:{" "}
+              {selectedUser ? getLastFourDigits(selectedUser._id) : ""})? This action cannot be undone.
+            </p>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmDelete} color="error" variant="contained">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Dialog
           open={openCompanyLoginDialog}
           onClose={handleCloseCompanyLogin}
@@ -439,7 +469,7 @@ const UserList = () => {
             </IconButton>
           </DialogTitle>
           <DialogContent dividers sx={{ p: 0 }}>
-            <CompanyLogin />
+            <CompanyRegister onClose={handleCloseCompanyLogin} />
           </DialogContent>
         </Dialog>
 
@@ -449,7 +479,7 @@ const UserList = () => {
           </Alert>
         </Snackbar>
       </Container>
-      <Footer/>
+      <Footer />
     </>
   );
 };

@@ -737,7 +737,7 @@ function Home() {
                 borderRadius: "10px",
                 bgcolor: "#fff",
                 boxShadow: 4,
-                height: isMobile ? 280 : 320,
+                height: isMobile ? 280 : 298,
               }}
             >
               <Typography

@@ -1,3 +1,5 @@
+//visitorController.js
+
 const mongoose = require("mongoose");
 const Visitor = require("../models/Visitor");
 const Checkout = require("../models/Checkout");
@@ -15,6 +17,7 @@ const transporter = nodemailer.createTransport({
 });
 
 let c_otp = null;
+let otpEmail = null; // Store the email associated with the OTP
 
 // 🔹 Get All Visitors
 exports.getAllVisitors = async (req, res) => {
@@ -82,7 +85,50 @@ exports.getVisitorById = async (req, res) => {
   }
 };
 
-// 🔹 Add Visitor (Updated to match Checkin component)
+// 🔹 Verify OTP (New Endpoint)
+exports.verifyOtp = async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+
+    if (!otp || !email) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP and email are required",
+      });
+    }
+
+    if (!/^\d{6}$/.test(otp)) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP must be 6 digits",
+      });
+    }
+
+    if (!c_otp || c_otp !== otp || otpEmail !== email) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid or expired OTP",
+      });
+    }
+
+    // OTP is valid; clear it after verification to prevent reuse
+    c_otp = null;
+    otpEmail = null;
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error verifying OTP",
+      error: error.message,
+    });
+  }
+};
+
+// 🔹 Add Visitor (Updated to assume OTP is already verified)
 exports.addVisitor = async (req, res) => {
   try {
     const {
@@ -389,9 +435,11 @@ exports.sendEmailOtp = async (req, res) => {
     const otp = crypto.randomInt(100000, 999999).toString();
 
     c_otp = otp;
+    otpEmail = email; // Store the email associated with the OTP
     setTimeout(() => {
       c_otp = null;
-    }, 300000);
+      otpEmail = null;
+    }, 300000); // OTP expires after 5 minutes
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -411,40 +459,6 @@ exports.sendEmailOtp = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error sending OTP",
-      error: error.message,
-    });
-  }
-};
-
-// 🔹 Verify Email OTP
-exports.verifyEmailOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-
-    if (!email || !otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Email and OTP are required",
-      });
-    }
-
-    if (c_otp && c_otp === otp) {
-      c_otp = null;
-      return res.status(200).json({
-        success: true,
-        message: "OTP verified successfully!",
-      });
-    }
-
-    return res.status(400).json({
-      success: false,
-      message: "Invalid or expired OTP",
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Error verifying OTP",
       error: error.message,
     });
   }

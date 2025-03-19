@@ -62,12 +62,14 @@ const Checkin = () => {
     department: "",
   });
   const [errors, setErrors] = useState({});
+  const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [openTeamModal, setOpenTeamModal] = useState(false);
   const [openAssetsModal, setOpenAssetsModal] = useState(false);
   const [openPrescheduleModal, setOpenPrescheduleModal] = useState(false);
   const [openSelfCheckinModal, setOpenSelfCheckinModal] = useState(false);
   const [openWebcamModal, setOpenWebcamModal] = useState(false);
+  const [openPhotoPreviewModal, setOpenPhotoPreviewModal] = useState(false); // New state for photo preview modal
   const [prescheduledVisitors, setPrescheduledVisitors] = useState([]);
   const [selfCheckinVisitors, setSelfCheckinVisitors] = useState([]);
   const [filteredPrescheduleVisitors, setFilteredPrescheduleVisitors] = useState([]);
@@ -207,6 +209,7 @@ const Checkin = () => {
     });
     setTeamMembers(visitor.teamMembers || []);
     setPhotoPreview(visitor.photoUrl || null);
+    setPhoto(null); // Reset photo since we're not capturing it here
     setSelectedSelfCheckinId(visitor._id);
     setOpenSelfCheckinModal(false);
     toast.success(`Data for ${visitor.fullName} has been loaded.`);
@@ -258,7 +261,7 @@ const Checkin = () => {
       const previewUrl = URL.createObjectURL(file);
       setPhotoPreview(previewUrl);
       stopWebcam();
-      toast.success("Photo captured successfully!");
+      toast.success("Photo captured successfully! Click 'View' to see it.");
     }, "image/jpeg");
   };
 
@@ -314,7 +317,7 @@ const Checkin = () => {
     return !asset[field] ? "Required" : "";
   };
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = async (field, value) => {
     const sanitizedValue =
       field === "fullName" || field === "personToVisit"
         ? value.replace(/[^A-Za-z\s]/g, "")
@@ -330,6 +333,30 @@ const Checkin = () => {
       ...prev,
       [field]: validateField(field, sanitizedValue),
     }));
+
+    if (field === "otp" && sanitizedValue.length === 6 && isOtpSent) {
+      try {
+        const response = await fetch("http://localhost:5000/api/visitors/verify-otp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ otp: sanitizedValue, email: formData.email }),
+        });
+        const data = await response.json();
+
+        if (data.success) {
+          setIsOtpVerified(true);
+          toast.success("OTP verified successfully!");
+        } else {
+          setIsOtpVerified(false);
+          setFormData((prev) => ({ ...prev, otp: "" }));
+          toast.error(data.message || "Invalid or expired OTP");
+        }
+      } catch (error) {
+        setIsOtpVerified(false);
+        setFormData((prev) => ({ ...prev, otp: "" }));
+        toast.error("Error verifying OTP");
+      }
+    }
 
     if (field === "hasTeamMembers" && sanitizedValue === "yes") {
       setOpenTeamModal(true);
@@ -419,49 +446,19 @@ const Checkin = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:5000/api/visitors/send-email-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: formData.email }),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/visitors/send-email-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.email }),
+      });
 
       if (!response.ok) throw new Error("Failed to send OTP");
 
-      toast.success(`OTP sent to ${formData.email}!`);
+      setIsOtpSent(true);
+      setIsOtpVerified(false);
+      toast.success(`OTP sent to ${formData.email}! Enter the 6-digit OTP.`);
     } catch (error) {
       toast.error(error.message || "Error sending OTP");
-    }
-  };
-
-  const verifyOtp = async () => {
-    if (!formData.otp) {
-      toast.error("Please enter the OTP!");
-      return;
-    }
-
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/visitors/verify-email-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email: formData.email, otp: formData.otp }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.message);
-
-      toast.success("OTP verified successfully!");
-      setIsOtpVerified(true);
-    } catch (error) {
-      toast.error(error.message || "OTP verification failed");
-      setIsOtpVerified(false);
     }
   };
 
@@ -525,8 +522,13 @@ const Checkin = () => {
       return;
     }
 
+    if (!isOtpSent) {
+      toast.error("Please send OTP first!");
+      return;
+    }
+
     if (!isOtpVerified) {
-      toast.error("Please verify OTP before submitting!");
+      toast.error("Please enter and verify the OTP!");
       return;
     }
 
@@ -603,7 +605,7 @@ const Checkin = () => {
         );
         if (!deletePrescheduleResponse.ok) {
           const deleteData = await deletePrescheduleResponse.json();
-          throw new Error(deleteData.message || "Failed to delete pre-scheduled visitor");
+          throw new Error(data.message || "Failed to delete pre-scheduled visitor");
         }
 
         setPrescheduledVisitors((prev) =>
@@ -652,6 +654,10 @@ const Checkin = () => {
     setOpenAssetsModal(true);
   };
 
+  const handleViewPhotoPreview = () => {
+    setOpenPhotoPreviewModal(true);
+  };
+
   const modalStyle = {
     position: "absolute",
     top: "50%",
@@ -676,6 +682,19 @@ const Checkin = () => {
     boxShadow: 24,
     p: 4,
     textAlign: "center",
+  };
+
+  const photoPreviewModalStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: { xs: "90%", sm: "70%", md: "50%" },
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    p: 4,
+    textAlign: "center",
+    borderRadius: 2,
   };
 
   return (
@@ -750,31 +769,25 @@ const Checkin = () => {
                 </Button>
               </Grid>
             </Grid>
-            <Grid container spacing={2} alignItems="center" sx={{ mt: 2 }}>
-              <Grid item xs={8}>
-                <TextField
-                  fullWidth
-                  label="OTP"
-                  value={formData.otp}
-                  onChange={(e) => handleInputChange("otp", e.target.value)}
-                  error={!!errors.otp}
-                  helperText={errors.otp}
-                  required
-                  inputProps={{ maxLength: 6 }}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  onClick={verifyOtp}
-                  sx={{ height: "56px", minWidth: "120px" }}
-                >
-                  Verify OTP
-                </Button>
-              </Grid>
-            </Grid>
+            <TextField
+              fullWidth
+              label="OTP (Enter 6 digits)"
+              value={formData.otp}
+              onChange={(e) => handleInputChange("otp", e.target.value)}
+              error={!!errors.otp}
+              helperText={
+                errors.otp ||
+                (isOtpVerified
+                  ? "OTP verified"
+                  : isOtpSent
+                  ? "Enter OTP to verify automatically"
+                  : "")
+              }
+              required
+              inputProps={{ maxLength: 6 }}
+              sx={{ mt: 2, mb: 2 }}
+              disabled={isOtpVerified}
+            />
             <TextField
               fullWidth
               label="Phone Number"
@@ -853,8 +866,8 @@ const Checkin = () => {
 
           {/* Right Column */}
           <Grid item xs={12} sm={6}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={photoPreview ? 8 : 12}>
                 <Button
                   variant="contained"
                   fullWidth
@@ -865,6 +878,25 @@ const Checkin = () => {
                   Click Now
                 </Button>
               </Grid>
+              {photoPreview && (
+                <Grid item xs={4}>
+                  <Button
+                    variant="outlined"
+                    fullWidth
+                    onClick={handleViewPhotoPreview}
+                    sx={{
+                      height: "56px",
+                      mt: 2,
+                      mb: 2,
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#115293", color: "#115293" },
+                    }}
+                  >
+                    View
+                  </Button>
+                </Grid>
+              )}
               <Grid item xs={12}>
                 <TextField
                   select
@@ -881,17 +913,6 @@ const Checkin = () => {
                   <MenuItem value="Passport">Passport</MenuItem>
                 </TextField>
               </Grid>
-              {photoPreview && (
-                <Grid item xs={12}>
-                  <Box mt={2} mb={2} textAlign="center">
-                    <img
-                      src={photoPreview}
-                      alt="Visitor preview"
-                      style={{ maxWidth: "100%", maxHeight: "200px" }}
-                    />
-                  </Box>
-                </Grid>
-              )}
             </Grid>
             <TextField
               fullWidth
@@ -1415,10 +1436,41 @@ const Checkin = () => {
               >
                 Capture
               </Button>
-              <Button variant="outlined" color="secondary" onClick={stopWebcam} sx={{ height: "56px" }}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={stopWebcam}
+                sx={{ height: "56px" }}
+              >
                 Cancel
               </Button>
             </Box>
+          </Box>
+        </Modal>
+
+        <Modal
+          open={openPhotoPreviewModal}
+          onClose={() => setOpenPhotoPreviewModal(false)}
+        >
+          <Box sx={photoPreviewModalStyle}>
+            <Typography variant="h6" mb={2}>
+              Photo Preview
+            </Typography>
+            {photoPreview && (
+              <img
+                src={photoPreview}
+                alt="Captured preview"
+                style={{ maxWidth: "100%", maxHeight: "50vh" }}
+              />
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenPhotoPreviewModal(false)}
+              sx={{ mt: 2, height: "56px" }}
+            >
+              Close
+            </Button>
           </Box>
         </Modal>
 
@@ -1427,6 +1479,7 @@ const Checkin = () => {
           color="primary"
           sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
           onClick={handleSubmit}
+          disabled={!isOtpVerified}
         >
           Submit
         </Button>

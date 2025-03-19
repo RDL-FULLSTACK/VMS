@@ -14,7 +14,7 @@ const {
     checkOutVisitor,
     deleteVisitor,
     updateVisitor,
-    verifyEmailOtp,
+    verifyOtp,
     getVisitors,
     storeCheckoutData, // Added this
 } = require("../controllers/visitorController");
@@ -56,6 +56,6 @@ router.post("/checkout/:id", storeCheckoutData); // New route for simplified che
 router.put("/:id", updateVisitor);
 router.delete("/:id", deleteVisitor);
 router.post("/send-email-otp", sendEmailOtp);
-router.post("/verify-email-otp", verifyEmailOtp);
+router.post("/verify-otp",verifyOtp); // New route
 
 module.exports = router;

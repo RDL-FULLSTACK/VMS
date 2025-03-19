@@ -44,6 +44,7 @@ import {
   CartesianGrid,
   XAxis,
   YAxis,
+  Legend
 } from "recharts";
 import Footer from "../components/Footer";
 
@@ -667,68 +668,78 @@ function Home() {
             }}
           >
             <Paper
-              elevation={4}
-              sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}
-            >
-              <Typography
-                variant={isMobile ? "h6" : "h5"}
-                gutterBottom
-                sx={{
-                  textAlign: "center",
-                  fontWeight: "bold",
-                  color: "#333",
-                  mb: 2,
-                }}
-              >
-                Visitor Status Overview
-              </Typography>
-              {meterData.every((data) => data.value === 0) ? (
-                <Box
-                  display="flex"
-                  flexDirection="column"
-                  alignItems="center"
-                  justifyContent="center"
-                  height={isMobile ? 200 : 250}
-                  textAlign="center"
-                  p={2}
+                  elevation={4}
+                  sx={{ p: isMobile ? 2 : 3, borderRadius: 2, mb: 3 }}
                 >
-                  <Typography variant="body1" color="textSecondary">
-                    No visitors yet! Start by adding a new visitor in the
-                    'Visitor Management' tab.
+                  <Typography
+                    variant={isMobile ? "h6" : "h5"}
+                    gutterBottom
+                    sx={{
+                      textAlign: "center",
+                      fontWeight: "bold",
+                      color: "#333",
+                      mb: 2,
+                    }}
+                  >
+                    Visitor Status Overview
                   </Typography>
-                </Box>
-              ) : (
-                <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
-                  <PieChart>
-                    <Pie
-                      data={meterData}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={isMobile ? 80 : 90}
-                      label={({ name, value }) => `${name}: ${value}`}
-                      labelLine={true}
-                      paddingAngle={2}
+                  {meterData.every((data) => data.value === 0) ? (
+                    <Box
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      justifyContent="center"
+                      height={isMobile ? 200 : 250}
+                      textAlign="center"
+                      p={2}
                     >
-                      {meterData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        fontSize: isMobile ? 12 : 14,
-                        backgroundColor: "rgba(255, 255, 255, 0.95)",
-                        borderRadius: "8px",
-                        border: "1px solid #ddd",
-                        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-                      }}
-                      formatter={(value, name) => [`${value}`, name]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              )}
-            </Paper>
+                      <Typography variant="body1" color="textSecondary">
+                        No visitors yet! Start by adding a new visitor in the 'Visitor
+                        Management' tab.
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={isMobile ? 200 : 250}>
+                      <PieChart>
+                        <Pie
+                          data={meterData}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={isMobile ? 80 : 90} // Adjusted for better spacing
+                          labelLine={false} // Remove label lines since we're using legend
+                          paddingAngle={2}
+                        >
+                          {meterData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{
+                            fontSize: isMobile ? 12 : 14,
+                            backgroundColor: "rgba(255, 255, 255, 0.95)",
+                            borderRadius: "8px",
+                            border: "1px solid #ddd",
+                            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+                          }}
+                          formatter={(value, name) => [`${value}`, name]}
+                        />
+                        <Legend
+                          layout="horizontal"
+                          verticalAlign="bottom"
+                          align="center"
+                          wrapperStyle={{
+                            padding: 10,
+                            fontSize: isMobile ? 12 : 14,
+                            lineHeight: "24px",
+                          }}
+                          formatter={(value) => `${value}`} // Custom legend label
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </Paper>
 
             <Paper
               elevation={8}

@@ -433,6 +433,7 @@ const SelfCheck = () => {
         </Typography>
 
         <Grid container spacing={2}>
+          {/* Left Column (Desktop) */}
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -467,6 +468,18 @@ const SelfCheck = () => {
               helperText={errors.phoneNumber}
               required
               inputProps={{ maxLength: 10 }}
+              sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+            />
+            <TextField
+              fullWidth
+              label="Visitor Company"
+              value={formData.visitorCompany}
+              onChange={(e) => handleInputChange("visitorCompany", e.target.value)}
+              error={!!errors.visitorCompany}
+              helperText={errors.visitorCompany}
+              required
               sx={{ mb: 2 }}
               variant="outlined"
               InputLabelProps={{ style: { fontSize: "0.9rem" } }}
@@ -532,6 +545,26 @@ const SelfCheck = () => {
                 />
               </Grid>
             </Grid>
+          </Grid>
+
+          {/* Right Column (Desktop) */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              select
+              fullWidth
+              label="Submitted Document"
+              value={formData.submittedDocument}
+              onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
+              error={!!errors.submittedDocument}
+              helperText={errors.submittedDocument}
+              required
+              sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+            >
+              <MenuItem value="ID Proof">ID Proof</MenuItem>
+              <MenuItem value="Passport">Passport</MenuItem>
+            </TextField>
             <TextField
               fullWidth
               label="Document Details"
@@ -540,52 +573,69 @@ const SelfCheck = () => {
               error={!!errors.documentDetails}
               helperText={errors.documentDetails}
               required
-              sx={{ mt: 2, mb: 2 }}
+              sx={{ mb: 2 }}
               variant="outlined"
               InputLabelProps={{ style: { fontSize: "0.9rem" } }}
             />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            {/* Team Members */}
-            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={formData.hasTeamMembers === "yes" ? 8 : 12}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Team Members?"
-                  value={formData.hasTeamMembers}
-                  onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
-                  error={!!errors.hasTeamMembers}
-                  helperText={errors.hasTeamMembers}
-                  required
-                  variant="outlined"
-                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-                >
-                  <MenuItem value="yes">Yes</MenuItem>
-                  <MenuItem value="no">No</MenuItem>
-                </TextField>
-              </Grid>
-              {formData.hasTeamMembers === "yes" && (
-                <Grid item xs={12} sm={4}>
-                  <Button
-                    variant="outlined"
-                    onClick={handleViewTeamMembers}
-                    size="small"
-                    sx={{
-                      ml: 1,
-                      height: "40px",
-                      borderColor: "#1976d2",
-                      color: "#1976d2",
-                      "&:hover": { borderColor: "#115293", color: "#115293" },
-                    }}
-                  >
-                    View
-                  </Button>
-                </Grid>
-              )}
-            </Grid>
-
+            <TextField
+              select
+              fullWidth
+              label="Department"
+              value={formData.department}
+              onChange={(e) => handleInputChange("department", e.target.value)}
+              error={!!errors.department}
+              helperText={errors.department}
+              required
+              variant="outlined"
+              sx={{ mb: 2 }}
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+            >
+              <MenuItem value="" disabled>
+                Select Department
+              </MenuItem>
+              {departments.map((dept) => (
+                <MenuItem key={dept} value={dept}>
+                  {dept}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              fullWidth
+              label="Person to Visit"
+              value={formData.personToVisit}
+              onChange={(e) => handleInputChange("personToVisit", e.target.value)}
+              error={!!errors.personToVisit}
+              helperText={
+                errors.personToVisit || (hosts.length === 0 ? "No hosts available" : "")
+              }
+              required
+              sx={{ mb: 2 }}
+              disabled={hosts.length === 0}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+            >
+              <MenuItem value="" disabled>
+                Select Host
+              </MenuItem>
+              {hosts.map((host) => (
+                <MenuItem key={host.id} value={host.username}>
+                  {host.username}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              fullWidth
+              label="Reason for Visit"
+              value={formData.reasonForVisit}
+              onChange={(e) => handleInputChange("reasonForVisit", e.target.value)}
+              error={!!errors.reasonForVisit}
+              helperText={errors.reasonForVisit}
+              required
+              sx={{ mb: 2 }}
+              variant="outlined"
+              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+            />
             {/* Assets */}
             <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
               <Grid item xs={12} sm={formData.hasAssets === "yes" ? 8 : 12}>
@@ -624,93 +674,44 @@ const SelfCheck = () => {
                 </Grid>
               )}
             </Grid>
-
-            <TextField
-              fullWidth
-              label="Reason for Visit"
-              value={formData.reasonForVisit}
-              onChange={(e) => handleInputChange("reasonForVisit", e.target.value)}
-              error={!!errors.reasonForVisit}
-              helperText={errors.reasonForVisit}
-              required
-              sx={{ mb: 2 }}
-              variant="outlined"
-              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-            />
-            <TextField
-              fullWidth
-              label="Visitor Company"
-              value={formData.visitorCompany}
-              onChange={(e) => handleInputChange("visitorCompany", e.target.value)}
-              error={!!errors.visitorCompany}
-              helperText={errors.visitorCompany}
-              required
-              sx={{ mb: 2 }}
-              variant="outlined"
-              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-            />
-            <TextField
-              select
-              fullWidth
-              label="Person to Visit"
-              value={formData.personToVisit}
-              onChange={(e) => handleInputChange("personToVisit", e.target.value)}
-              error={!!errors.personToVisit}
-              helperText={
-                errors.personToVisit || (hosts.length === 0 ? "No hosts available" : "")
-              }
-              required
-              sx={{ mb: 2 }}
-              disabled={hosts.length === 0}
-              variant="outlined"
-              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-            >
-              <MenuItem value="" disabled>
-                Select Host
-              </MenuItem>
-              {hosts.map((host) => (
-                <MenuItem key={host.id} value={host.username}>
-                  {host.username}
-                </MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              fullWidth
-              label="Submitted Document"
-              value={formData.submittedDocument}
-              onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
-              error={!!errors.submittedDocument}
-              helperText={errors.submittedDocument}
-              required
-              sx={{ mb: 2 }}
-              variant="outlined"
-              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-            >
-              <MenuItem value="ID Proof">ID Proof</MenuItem>
-              <MenuItem value="Passport">Passport</MenuItem>
-            </TextField>
-            <TextField
-              select
-              fullWidth
-              label="Department"
-              value={formData.department}
-              onChange={(e) => handleInputChange("department", e.target.value)}
-              error={!!errors.department}
-              helperText={errors.department}
-              required
-              variant="outlined"
-              InputLabelProps={{ style: { fontSize: "0.9rem" } }}
-            >
-              <MenuItem value="" disabled>
-                Select Department
-              </MenuItem>
-              {departments.map((dept) => (
-                <MenuItem key={dept} value={dept}>
-                  {dept}
-                </MenuItem>
-              ))}
-            </TextField>
+            {/* Team Members */}
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={formData.hasTeamMembers === "yes" ? 8 : 12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Team Members?"
+                  value={formData.hasTeamMembers}
+                  onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
+                  error={!!errors.hasTeamMembers}
+                  helperText={errors.hasTeamMembers}
+                  required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+                >
+                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </TextField>
+              </Grid>
+              {formData.hasTeamMembers === "yes" && (
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleViewTeamMembers}
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: "40px",
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#115293", color: "#115293" },
+                    }}
+                  >
+                    View
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
           </Grid>
         </Grid>
 

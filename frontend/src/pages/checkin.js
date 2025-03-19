@@ -1,4 +1,3 @@
-// Checkin.js
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -77,7 +76,7 @@ const Checkin = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedSelfCheckinId, setSelectedSelfCheckinId] = useState(null);
-  const [selectedPrescheduleId, setSelectedPrescheduleId] = useState(null); // New state for pre-schedule
+  const [selectedPrescheduleId, setSelectedPrescheduleId] = useState(null);
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
 
@@ -181,7 +180,7 @@ const Checkin = () => {
       department: visitor.department,
     });
     setTeamMembers(visitor.teamMembers || []);
-    setSelectedPrescheduleId(visitor._id); // Store the selected pre-schedule ID
+    setSelectedPrescheduleId(visitor._id);
     setOpenPrescheduleModal(false);
     toast.success(`Data for ${visitor.name} has been loaded.`);
   };
@@ -262,8 +261,6 @@ const Checkin = () => {
       toast.success("Photo captured successfully!");
     }, "image/jpeg");
   };
-
-
 
   const validateField = (name, value) => {
     let error = "";
@@ -576,7 +573,6 @@ const Checkin = () => {
 
       if (!response.ok) throw new Error(data.message || "Submission failed");
 
-      // Delete self-checkin record if it exists
       if (selectedSelfCheckinId) {
         const deleteSelfCheckinResponse = await fetch(
           `http://localhost:5000/api/self-checkins/checkin/${selectedSelfCheckinId}`,
@@ -598,7 +594,6 @@ const Checkin = () => {
         setSelectedSelfCheckinId(null);
       }
 
-      // Delete pre-scheduled record if it exists
       if (selectedPrescheduleId) {
         const deletePrescheduleResponse = await fetch(
           `http://localhost:5000/api/preschedules/${selectedPrescheduleId}`,
@@ -662,11 +657,12 @@ const Checkin = () => {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "80%",
+    width: { xs: "90%", sm: "80%", md: "60%" },
     maxHeight: "80vh",
     bgcolor: "background.paper",
     boxShadow: 24,
-    p: 4,
+    p: { xs: 2, sm: 4 },
+    borderRadius: 2,
     overflowY: "auto",
   };
 
@@ -718,6 +714,7 @@ const Checkin = () => {
         </Box>
 
         <Grid container spacing={3}>
+          {/* Left Column */}
           <Grid item xs={12} sm={6}>
             <TextField
               fullWidth
@@ -747,8 +744,34 @@ const Checkin = () => {
                   variant="contained"
                   color="primary"
                   onClick={handleSendEmailOtp}
+                  sx={{ height: "56px", minWidth: "120px" }}
                 >
                   Send OTP
+                </Button>
+              </Grid>
+            </Grid>
+            <Grid container spacing={2} alignItems="center" sx={{ mt: 2 }}>
+              <Grid item xs={8}>
+                <TextField
+                  fullWidth
+                  label="OTP"
+                  value={formData.otp}
+                  onChange={(e) => handleInputChange("otp", e.target.value)}
+                  error={!!errors.otp}
+                  helperText={errors.otp}
+                  required
+                  inputProps={{ maxLength: 6 }}
+                />
+              </Grid>
+              <Grid item xs={4}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="primary"
+                  onClick={verifyOtp}
+                  sx={{ height: "56px", minWidth: "120px" }}
+                >
+                  Verify OTP
                 </Button>
               </Grid>
             </Grid>
@@ -762,6 +785,16 @@ const Checkin = () => {
               required
               inputProps={{ maxLength: 10 }}
               sx={{ mt: 2, mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Visitor Company"
+              value={formData.visitorCompany}
+              onChange={(e) => handleInputChange("visitorCompany", e.target.value)}
+              error={!!errors.visitorCompany}
+              helperText={errors.visitorCompany}
+              required
+              sx={{ mb: 2 }}
             />
             <TextField
               select
@@ -781,7 +814,7 @@ const Checkin = () => {
             <TextField
               select
               fullWidth
-              label="Visit Type*"
+              label="Visit Type"
               value={formData.visitType}
               onChange={(e) => handleInputChange("visitType", e.target.value)}
               error={!!errors.visitType}
@@ -816,6 +849,50 @@ const Checkin = () => {
                 />
               </Grid>
             </Grid>
+          </Grid>
+
+          {/* Right Column */}
+          <Grid item xs={12} sm={6}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<CameraAlt />}
+                  onClick={startWebcam}
+                  sx={{ height: "56px", mt: 2, mb: 2 }}
+                >
+                  Click Now
+                </Button>
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Submitted Document"
+                  value={formData.submittedDocument}
+                  onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
+                  error={!!errors.submittedDocument}
+                  helperText={errors.submittedDocument}
+                  required
+                  sx={{ mt: 2, mb: 2 }}
+                >
+                  <MenuItem value="ID Proof">ID Proof</MenuItem>
+                  <MenuItem value="Passport">Passport</MenuItem>
+                </TextField>
+              </Grid>
+              {photoPreview && (
+                <Grid item xs={12}>
+                  <Box mt={2} mb={2} textAlign="center">
+                    <img
+                      src={photoPreview}
+                      alt="Visitor preview"
+                      style={{ maxWidth: "100%", maxHeight: "200px" }}
+                    />
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
             <TextField
               fullWidth
               label="Document Details"
@@ -824,105 +901,8 @@ const Checkin = () => {
               error={!!errors.documentDetails}
               helperText={errors.documentDetails}
               required
-              sx={{ mt: 2 }}
+              sx={{ mb: 2 }}
             />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <Grid container spacing={2} alignItems="center" sx={{ mb: 2 }}>
-              <Grid item xs={12}>
-                <Grid container spacing={1} alignItems="center">
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Team Members?"
-                      value={formData.hasTeamMembers}
-                      onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
-                      error={!!errors.hasTeamMembers}
-                      helperText={errors.hasTeamMembers}
-                      required
-                      variant="outlined"
-                    >
-                      <MenuItem value="yes">Yes</MenuItem>
-                      <MenuItem value="no">No</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item>
-                    {formData.hasTeamMembers === "yes" && (
-                      <Button
-                        variant="outlined"
-                        onClick={handleViewTeamMembers}
-                        size="small"
-                        sx={{ ml: 1, height: "40px" }}
-                      >
-                        View
-                      </Button>
-                    )}
-                  </Grid>
-                </Grid>
-              </Grid>
-              <Grid item xs={12}>
-                <Grid container spacing={1} alignItems="center">
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Assets?"
-                      value={formData.hasAssets}
-                      onChange={(e) => handleInputChange("hasAssets", e.target.value)}
-                      error={!!errors.hasAssets}
-                      helperText={errors.hasAssets}
-                      required
-                      variant="outlined"
-                    >
-                      <MenuItem value="yes">Yes</MenuItem>
-                      <MenuItem value="no">No</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item>
-                    {formData.hasAssets === "yes" && (
-                      <Button
-                        variant="outlined"
-                        onClick={handleViewAssets}
-                        size="small"
-                        sx={{ ml: 1, height: "40px" }}
-                      >
-                        View
-                      </Button>
-                    )}
-                  </Grid>
-                </Grid>
-              </Grid>
-            </Grid>
-
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={6}>
-           
-              </Grid>
-              <Grid item xs={6}>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  startIcon={<CameraAlt />}
-                  onClick={startWebcam}
-                >
-                  Click Now
-                </Button>
-              </Grid>
-              <Grid item xs={12}>
-                {photoPreview && (
-                  <Box mt={2} textAlign="center">
-                    <img
-                      src={photoPreview}
-                      alt="Visitor preview"
-                      style={{ maxWidth: "100%", maxHeight: "200px" }}
-                    />
-                  </Box>
-                )}
-              </Grid>
-            </Grid>
-
             <TextField
               fullWidth
               label="Reason for Visit"
@@ -931,43 +911,28 @@ const Checkin = () => {
               error={!!errors.reasonForVisit}
               helperText={errors.reasonForVisit}
               required
-              sx={{ mt: 2, mb: 2 }}
-            />
-            <Grid container spacing={1} alignItems="center">
-              <Grid item xs={8}>
-                <TextField
-                  fullWidth
-                  label="OTP"
-                  value={formData.otp}
-                  onChange={(e) => handleInputChange("otp", e.target.value)}
-                  error={!!errors.otp}
-                  helperText={errors.otp}
-                  required
-                  inputProps={{ maxLength: 6 }}
-                  sx={{ mb: 2 }}
-                />
-              </Grid>
-              <Grid item xs={4}>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={verifyOtp}
-                  sx={{ height: "56px" }}
-                >
-                  Verify OTP
-                </Button>
-              </Grid>
-            </Grid>
-            <TextField
-              fullWidth
-              label="Visitor Company"
-              value={formData.visitorCompany}
-              onChange={(e) => handleInputChange("visitorCompany", e.target.value)}
-              error={!!errors.visitorCompany}
-              helperText={errors.visitorCompany}
-              required
               sx={{ mb: 2 }}
             />
+            <TextField
+              select
+              fullWidth
+              label="Department"
+              value={formData.department}
+              onChange={(e) => handleInputChange("department", e.target.value)}
+              error={!!errors.department}
+              helperText={errors.department}
+              required
+              sx={{ mb: 2 }}
+            >
+              <MenuItem value="" disabled>
+                Select Department
+              </MenuItem>
+              {departments.map((dept) => (
+                <MenuItem key={dept} value={dept}>
+                  {dept}
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               select
               fullWidth
@@ -991,39 +956,80 @@ const Checkin = () => {
                 </MenuItem>
               ))}
             </TextField>
-            <TextField
-              select
-              fullWidth
-              label="Submitted Document"
-              value={formData.submittedDocument}
-              onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
-              error={!!errors.submittedDocument}
-              helperText={errors.submittedDocument}
-              required
-              sx={{ mb: 2 }}
-            >
-              <MenuItem value="ID Proof">ID Proof</MenuItem>
-              <MenuItem value="Passport">Passport</MenuItem>
-            </TextField>
-            <TextField
-              select
-              fullWidth
-              label="Department"
-              value={formData.department}
-              onChange={(e) => handleInputChange("department", e.target.value)}
-              error={!!errors.department}
-              helperText={errors.department}
-              required
-            >
-              <MenuItem value="" disabled>
-                Select Department
-              </MenuItem>
-              {departments.map((dept) => (
-                <MenuItem key={dept} value={dept}>
-                  {dept}
-                </MenuItem>
-              ))}
-            </TextField>
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={formData.hasAssets === "yes" ? 8 : 12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Assets?"
+                  value={formData.hasAssets}
+                  onChange={(e) => handleInputChange("hasAssets", e.target.value)}
+                  error={!!errors.hasAssets}
+                  helperText={errors.hasAssets}
+                  required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+                >
+                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </TextField>
+              </Grid>
+              {formData.hasAssets === "yes" && (
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleViewAssets}
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: "56px",
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#115293", color: "#115293" },
+                    }}
+                  >
+                    View
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
+              <Grid item xs={12} sm={formData.hasTeamMembers === "yes" ? 8 : 12}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Team Members?"
+                  value={formData.hasTeamMembers}
+                  onChange={(e) => handleInputChange("hasTeamMembers", e.target.value)}
+                  error={!!errors.hasTeamMembers}
+                  helperText={errors.hasTeamMembers}
+                  required
+                  variant="outlined"
+                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
+                >
+                  <MenuItem value="yes">Yes</MenuItem>
+                  <MenuItem value="no">No</MenuItem>
+                </TextField>
+              </Grid>
+              {formData.hasTeamMembers === "yes" && (
+                <Grid item xs={12} sm={4}>
+                  <Button
+                    variant="outlined"
+                    onClick={handleViewTeamMembers}
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: "56px",
+                      borderColor: "#1976d2",
+                      color: "#1976d2",
+                      "&:hover": { borderColor: "#115293", color: "#115293" },
+                    }}
+                  >
+                    View
+                  </Button>
+                </Grid>
+              )}
+            </Grid>
           </Grid>
         </Grid>
 
@@ -1067,6 +1073,7 @@ const Checkin = () => {
                             variant="contained"
                             color="primary"
                             onClick={() => handlePrescheduleSelect(visitor)}
+                            sx={{ height: "56px" }}
                           >
                             Select
                           </Button>
@@ -1089,7 +1096,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={() => setOpenPrescheduleModal(false)}
-              sx={{ mt: 2, display: "block", mx: "auto" }}
+              sx={{ mt: 2, display: "block", mx: "auto", height: "56px" }}
             >
               Close
             </Button>
@@ -1138,6 +1145,7 @@ const Checkin = () => {
                             variant="contained"
                             color="primary"
                             onClick={() => handleSelfCheckinSelect(visitor)}
+                            sx={{ height: "56px" }}
                           >
                             Select
                           </Button>
@@ -1160,7 +1168,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={() => setOpenSelfCheckinModal(false)}
-              sx={{ mt: 2, display: "block", mx: "auto" }}
+              sx={{ mt: 2, display: "block", mx: "auto", height: "56px" }}
             >
               Close
             </Button>
@@ -1176,6 +1184,7 @@ const Checkin = () => {
               startIcon={<AddCircle />}
               variant="contained"
               onClick={handleAddTeamMember}
+              sx={{ height: "56px" }}
             >
               Add Member
             </Button>
@@ -1223,6 +1232,7 @@ const Checkin = () => {
                       component="label"
                       fullWidth
                       startIcon={<UploadFile />}
+                      sx={{ height: "56px" }}
                     >
                       Upload
                       <input
@@ -1312,7 +1322,7 @@ const Checkin = () => {
                       startIcon={<AddCircle />}
                       variant="outlined"
                       onClick={() => handleAddTeamMemberAsset(index)}
-                      sx={{ mt: 2 }}
+                      sx={{ mt: 2, height: "56px" }}
                     >
                       Add Asset
                     </Button>
@@ -1324,7 +1334,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={handleCloseTeamModal}
-              sx={{ mt: 4, display: "block", mx: "auto" }}
+              sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
             >
               Close
             </Button>
@@ -1373,7 +1383,7 @@ const Checkin = () => {
                   startIcon={<AddCircle />}
                   variant="outlined"
                   onClick={handleAddAsset}
-                  sx={{ mt: 2 }}
+                  sx={{ mt: 2, height: "56px" }}
                 >
                   Add Asset
                 </Button>
@@ -1383,7 +1393,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={handleCloseAssetsModal}
-              sx={{ mt: 4, display: "block", mx: "auto" }}
+              sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
             >
               Close
             </Button>
@@ -1401,11 +1411,11 @@ const Checkin = () => {
                 variant="contained"
                 color="primary"
                 onClick={capturePhoto}
-                sx={{ mr: 2 }}
+                sx={{ mr: 2, height: "56px" }}
               >
                 Capture
               </Button>
-              <Button variant="outlined" color="secondary" onClick={stopWebcam}>
+              <Button variant="outlined" color="secondary" onClick={stopWebcam} sx={{ height: "56px" }}>
                 Cancel
               </Button>
             </Box>
@@ -1415,7 +1425,7 @@ const Checkin = () => {
         <Button
           variant="contained"
           color="primary"
-          sx={{ mt: 4, display: "block", mx: "auto" }}
+          sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
           onClick={handleSubmit}
         >
           Submit

@@ -271,8 +271,7 @@ const Checkin = () => {
       case "fullName":
       case "personToVisit":
         if (!value) error = "Required";
-        else if (!/^[A-Za-z\s]+$/.test(value)) error = "Letters only";
-        break;
+        break; // Removed letters-only restriction
       case "email":
         if (!value) error = "Required";
         else if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value))
@@ -319,14 +318,12 @@ const Checkin = () => {
 
   const handleInputChange = async (field, value) => {
     const sanitizedValue =
-      field === "fullName" || field === "personToVisit"
-        ? value.replace(/[^A-Za-z\s]/g, "")
-        : field === "phoneNumber" ||
-          field === "expectedDurationHours" ||
-          field === "expectedDurationMinutes" ||
-          field === "otp"
-        ? value.replace(/[^0-9]/g, "")
-        : value;
+      field === "phoneNumber" ||
+      field === "expectedDurationHours" ||
+      field === "expectedDurationMinutes" ||
+      field === "otp"
+        ? value.replace(/[^0-9]/g, "") // Keep numeric-only restriction for these fields
+        : value; // Allow all characters for other fields, including fullName and personToVisit
 
     setFormData((prev) => ({ ...prev, [field]: sanitizedValue }));
     setErrors((prev) => ({
@@ -407,11 +404,9 @@ const Checkin = () => {
   const handleTeamMemberChange = (index, field, value) => {
     const updatedMembers = [...teamMembers];
     updatedMembers[index][field] =
-      field === "name"
-        ? value.replace(/[^A-Za-z\s]/g, "")
-        : field === "email"
-        ? value.replace(/[^A-Za-z0-9._%+-@]/g, "")
-        : value;
+      field === "email"
+        ? value.replace(/[^A-Za-z0-9._%+-@]/g, "") // Sanitize email only
+        : value; // Allow all characters for name and other fields
     setTeamMembers(updatedMembers);
   };
 
@@ -583,7 +578,6 @@ const Checkin = () => {
           }
         );
         if (!deleteSelfCheckinResponse.ok) {
-          // Removed unused deleteData variable
           throw new Error("Failed to delete self-checkin");
         }
 
@@ -604,7 +598,6 @@ const Checkin = () => {
           }
         );
         if (!deletePrescheduleResponse.ok) {
-          // Removed unused deleteData variable
           throw new Error("Failed to delete pre-scheduled visitor");
         }
 
@@ -1096,396 +1089,396 @@ const Checkin = () => {
                             sx={{ height: "48px" }}
                           >
                             Select
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={filteredPrescheduleVisitors.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenPrescheduleModal(false)}
-              sx={{ mt: 2, display: "block", mx: "auto", height: "48px" }}
-            >
-              Close
-            </Button>
-          </Box>
-        </Modal>
-
-        <Modal open={openSelfCheckinModal} onClose={() => setOpenSelfCheckinModal(false)}>
-          <Box sx={modalStyle}>
-            <Typography variant="h6" mb={2}>
-              Self Check-in
-            </Typography>
-            <TextField
-              fullWidth
-              label="Search Visitors"
-              value={searchQuery}
-              onChange={(e) => handleSearch(e, "selfcheckin")}
-              sx={{ mb: 2 }}
-              placeholder="Search by visitor name or host name"
-            />
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Email</TableCell>
-                    <TableCell>Check-in Time</TableCell>
-                    <TableCell>Reason</TableCell>
-                    <TableCell>Host</TableCell>
-                    <TableCell>Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {filteredSelfCheckinVisitors
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((visitor) => (
-                      <TableRow key={visitor._id}>
-                        <TableCell>{visitor.fullName}</TableCell>
-                        <TableCell>{visitor.email}</TableCell>
-                        <TableCell>
-                          {new Date(visitor.checkInTime).toLocaleString()}
-                        </TableCell>
-                        <TableCell>{visitor.reasonForVisit}</TableCell>
-                        <TableCell>{visitor.personToVisit}</TableCell>
-                        <TableCell>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleSelfCheckinSelect(visitor)}
-                            sx={{ height: "48px" }}
-                          >
-                            Select
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
-              component="div"
-              count={filteredSelfCheckinVisitors.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenSelfCheckinModal(false)}
-              sx={{ mt: 2, display: "block", mx: "auto", height: "48px" }}
-            >
-              Close
-            </Button>
-          </Box>
-        </Modal>
-
-        <Modal open={openTeamModal} onClose={handleCloseTeamModal}>
-          <Box sx={modalStyle}>
-            <Typography variant="h6" mb={2}>
-              Team Members
-            </Typography>
-            <Button
-              startIcon={<AddCircle />}
-              variant="contained"
-              onClick={handleAddTeamMember}
-              sx={{ height: "48px" }}
-            >
-              Add Member
-            </Button>
-            {teamMembers.map((member, index) => (
-              <Box key={index} mt={2} p={2} border={1} borderRadius={2}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Name"
-                      value={member.name}
-                      onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
-                      error={!!errors[`teamMember_${index}_name`]}
-                      helperText={errors[`teamMember_${index}_name`]}
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Email"
-                      value={member.email}
-                      onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
-                      error={!!errors[`teamMember_${index}_email`]}
-                      helperText={errors[`teamMember_${index}_email`]}
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={3}>
-                    <TextField
-                      fullWidth
-                      label="Document"
-                      value={member.documentDetail}
-                      onChange={(e) =>
-                        handleTeamMemberChange(index, "documentDetail", e.target.value)
-                      }
-                      error={!!errors[`teamMember_${index}_documentDetail`]}
-                      helperText={errors[`teamMember_${index}_documentDetail`]}
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={2}>
-                    <Button
-                      variant="contained"
-                      component="label"
-                      fullWidth
-                      startIcon={<UploadFile />}
-                      sx={{ height: "56px" }}
-                    >
-                      Upload
-                      <input
-                        type="file"
-                        hidden
-                        onChange={(e) =>
-                          handleTeamMemberChange(index, "document", e.target.files[0])
-                        }
-                        accept="image/*"
-                      />
-                    </Button>
-                  </Grid>
-                  <Grid item xs={12} sm={1}>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleRemoveTeamMember(index)}
-                    >
-                      <RemoveCircle />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-                {member.document && <Typography mt={2}>{member.document.name}</Typography>}
-                <TextField
-                  select
-                  fullWidth
-                  label="Assets?"
-                  value={member.hasAssets}
-                  onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
-                  error={!!errors[`teamMember_${index}_hasAssets`]}
-                  helperText={errors[`teamMember_${index}_hasAssets`]}
-                  required
-                  sx={{ mt: 2, maxWidth: 200 }}
-                >
-                  <MenuItem value="yes">Yes</MenuItem>
-                  <MenuItem value="no">No</MenuItem>
-                </TextField>
-                {member.hasAssets === "yes" && (
-                  <Box mt={2}>
-                    {member.assets.map((asset, assetIndex) => (
-                      <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
-                        <Grid item xs={12} sm={5}>
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={filteredPrescheduleVisitors.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setOpenPrescheduleModal(false)}
+                    sx={{ mt: 2, display: "block", mx: "auto", height: "48px" }}
+                  >
+                    Close
+                  </Button>
+                </Box>
+              </Modal>
+        
+              <Modal open={openSelfCheckinModal} onClose={() => setOpenSelfCheckinModal(false)}>
+                <Box sx={modalStyle}>
+                  <Typography variant="h6" mb={2}>
+                    Self Check-in
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    label="Search Visitors"
+                    value={searchQuery}
+                    onChange={(e) => handleSearch(e, "selfcheckin")}
+                    sx={{ mb: 2 }}
+                    placeholder="Search by visitor name or host name"
+                  />
+                  <TableContainer component={Paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Name</TableCell>
+                          <TableCell>Email</TableCell>
+                          <TableCell>Check-in Time</TableCell>
+                          <TableCell>Reason</TableCell>
+                          <TableCell>Host</TableCell>
+                          <TableCell>Action</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {filteredSelfCheckinVisitors
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((visitor) => (
+                            <TableRow key={visitor._id}>
+                              <TableCell>{visitor.fullName}</TableCell>
+                              <TableCell>{visitor.email}</TableCell>
+                              <TableCell>
+                                {new Date(visitor.checkInTime).toLocaleString()}
+                              </TableCell>
+                              <TableCell>{visitor.reasonForVisit}</TableCell>
+                              <TableCell>{visitor.personToVisit}</TableCell>
+                              <TableCell>
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() => handleSelfCheckinSelect(visitor)}
+                                  sx={{ height: "48px" }}
+                                >
+                                  Select
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                  <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={filteredSelfCheckinVisitors.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setOpenSelfCheckinModal(false)}
+                    sx={{ mt: 2, display: "block", mx: "auto", height: "48px" }}
+                  >
+                    Close
+                  </Button>
+                </Box>
+              </Modal>
+        
+              <Modal open={openTeamModal} onClose={handleCloseTeamModal}>
+                <Box sx={modalStyle}>
+                  <Typography variant="h6" mb={2}>
+                    Team Members
+                  </Typography>
+                  <Button
+                    startIcon={<AddCircle />}
+                    variant="contained"
+                    onClick={handleAddTeamMember}
+                    sx={{ height: "48px" }}
+                  >
+                    Add Member
+                  </Button>
+                  {teamMembers.map((member, index) => (
+                    <Box key={index} mt={2} p={2} border={1} borderRadius={2}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={3}>
                           <TextField
                             fullWidth
-                            label="Type*"
-                            value={asset.type}
-                            onChange={(e) =>
-                              handleTeamMemberAssetChange(index, assetIndex, "type", e.target.value)
-                            }
+                            label="Name"
+                            value={member.name}
+                            onChange={(e) => handleTeamMemberChange(index, "name", e.target.value)}
+                            error={!!errors[`teamMember_${index}_name`]}
+                            helperText={errors[`teamMember_${index}_name`]}
                             required
-                            error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
-                            helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
                           />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid item xs={12} sm={3}>
                           <TextField
                             fullWidth
-                            label="Serial"
-                            value={asset.serialNumber}
-                            onChange={(e) =>
-                              handleTeamMemberAssetChange(
-                                index,
-                                assetIndex,
-                                "serialNumber",
-                                e.target.value
-                              )
-                            }
+                            label="Email"
+                            value={member.email}
+                            onChange={(e) => handleTeamMemberChange(index, "email", e.target.value)}
+                            error={!!errors[`teamMember_${index}_email`]}
+                            helperText={errors[`teamMember_${index}_email`]}
                             required
-                            error={
-                              !!errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]
-                            }
-                            helperText={
-                              errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]
-                            }
                           />
+                        </Grid>
+                        <Grid item xs={12} sm={3}>
+                          <TextField
+                            fullWidth
+                            label="Document"
+                            value={member.documentDetail}
+                            onChange={(e) =>
+                              handleTeamMemberChange(index, "documentDetail", e.target.value)
+                            }
+                            error={!!errors[`teamMember_${index}_documentDetail`]}
+                            helperText={errors[`teamMember_${index}_documentDetail`]}
+                            required
+                          />
+                        </Grid>
+                        <Grid item xs={12} sm={2}>
+                          <Button
+                            variant="contained"
+                            component="label"
+                            fullWidth
+                            startIcon={<UploadFile />}
+                            sx={{ height: "56px" }}
+                          >
+                            Upload
+                            <input
+                              type="file"
+                              hidden
+                              onChange={(e) =>
+                                handleTeamMemberChange(index, "document", e.target.files[0])
+                              }
+                              accept="image/*"
+                            />
+                          </Button>
                         </Grid>
                         <Grid item xs={12} sm={1}>
                           <IconButton
                             color="error"
-                            onClick={() => handleRemoveTeamMemberAsset(index, assetIndex)}
+                            onClick={() => handleRemoveTeamMember(index)}
                           >
                             <RemoveCircle />
                           </IconButton>
                         </Grid>
                       </Grid>
-                    ))}
+                      {member.document && <Typography mt={2}>{member.document.name}</Typography>}
+                      <TextField
+                        select
+                        fullWidth
+                        label="Assets?"
+                        value={member.hasAssets}
+                        onChange={(e) => handleTeamMemberChange(index, "hasAssets", e.target.value)}
+                        error={!!errors[`teamMember_${index}_hasAssets`]}
+                        helperText={errors[`teamMember_${index}_hasAssets`]}
+                        required
+                        sx={{ mt: 2, maxWidth: 200 }}
+                      >
+                        <MenuItem value="yes">Yes</MenuItem>
+                        <MenuItem value="no">No</MenuItem>
+                      </TextField>
+                      {member.hasAssets === "yes" && (
+                        <Box mt={2}>
+                          {member.assets.map((asset, assetIndex) => (
+                            <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
+                              <Grid item xs={12} sm={5}>
+                                <TextField
+                                  fullWidth
+                                  label="Type*"
+                                  value={asset.type}
+                                  onChange={(e) =>
+                                    handleTeamMemberAssetChange(index, assetIndex, "type", e.target.value)
+                                  }
+                                  required
+                                  error={!!errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                                  helperText={errors[`teamMember_${index}_asset_${assetIndex}_type`]}
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Serial"
+                                  value={asset.serialNumber}
+                                  onChange={(e) =>
+                                    handleTeamMemberAssetChange(
+                                      index,
+                                      assetIndex,
+                                      "serialNumber",
+                                      e.target.value
+                                    )
+                                  }
+                                  required
+                                  error={
+                                    !!errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]
+                                  }
+                                  helperText={
+                                    errors[`teamMember_${index}_asset_${assetIndex}_serialNumber`]
+                                  }
+                                />
+                              </Grid>
+                              <Grid item xs={12} sm={1}>
+                                <IconButton
+                                  color="error"
+                                  onClick={() => handleRemoveTeamMemberAsset(index, assetIndex)}
+                                >
+                                  <RemoveCircle />
+                                </IconButton>
+                              </Grid>
+                            </Grid>
+                          ))}
+                          <Button
+                            startIcon={<AddCircle />}
+                            variant="outlined"
+                            onClick={() => handleAddTeamMemberAsset(index)}
+                            sx={{ mt: 2, height: "48px" }}
+                          >
+                            Add Asset
+                          </Button>
+                        </Box>
+                      )}
+                    </Box>
+                  ))}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCloseTeamModal}
+                    sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
+                  >
+                    Close
+                  </Button>
+                </Box>
+              </Modal>
+        
+              <Modal open={openAssetsModal} onClose={handleCloseAssetsModal}>
+                <Box sx={modalStyle}>
+                  <Typography variant="h6" mb={2}>
+                    Assets
+                  </Typography>
+                  {formData.hasAssets === "yes" && (
+                    <Box>
+                      {formData.assets.map((asset, index) => (
+                        <Grid container spacing={2} key={index} mt={1} alignItems="center">
+                          <Grid item xs={12} sm={5}>
+                            <TextField
+                              fullWidth
+                              label="Type"
+                              value={asset.type}
+                              onChange={(e) => handleAssetChange(index, "type", e.target.value)}
+                              required
+                              error={!!errors[`asset_${index}_type`]}
+                              helperText={errors[`asset_${index}_type`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <TextField
+                              fullWidth
+                              label="Serial"
+                              value={asset.serialNumber}
+                              onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)}
+                              required
+                              error={!!errors[`asset_${index}_serialNumber`]}
+                              helperText={errors[`asset_${index}_serialNumber`]}
+                            />
+                          </Grid>
+                          <Grid item xs={12} sm={1}>
+                            <IconButton color="error" onClick={() => handleRemoveAsset(index)}>
+                              <RemoveCircle />
+                            </IconButton>
+                          </Grid>
+                        </Grid>
+                      ))}
+                      <Button
+                        startIcon={<AddCircle />}
+                        variant="outlined"
+                        onClick={handleAddAsset}
+                        sx={{ mt: 2, height: "48px" }}
+                      >
+                        Add Asset
+                      </Button>
+                    </Box>
+                  )}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={handleCloseAssetsModal}
+                    sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
+                  >
+                    Close
+                  </Button>
+                </Box>
+              </Modal>
+        
+              <Modal open={openWebcamModal} onClose={stopWebcam}>
+                <Box sx={webcamModalStyle}>
+                  <Typography variant="h6" mb={2}>
+                    Capture Photo
+                  </Typography>
+                  <video ref={videoRef} autoPlay style={{ width: "100%", maxHeight: "50vh" }} />
+                  <Box mt={2}>
                     <Button
-                      startIcon={<AddCircle />}
-                      variant="outlined"
-                      onClick={() => handleAddTeamMemberAsset(index)}
-                      sx={{ mt: 2, height: "48px" }}
+                      variant="contained"
+                      color="primary"
+                      onClick={capturePhoto}
+                      sx={{ mr: 2, height: "48px" }}
                     >
-                      Add Asset
+                      Capture
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={stopWebcam}
+                      sx={{ height: "48px" }}
+                    >
+                      Cancel
                     </Button>
                   </Box>
-                )}
-              </Box>
-            ))}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCloseTeamModal}
-              sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
-            >
-              Close
-            </Button>
-          </Box>
-        </Modal>
-
-        <Modal open={openAssetsModal} onClose={handleCloseAssetsModal}>
-          <Box sx={modalStyle}>
-            <Typography variant="h6" mb={2}>
-              Assets
-            </Typography>
-            {formData.hasAssets === "yes" && (
-              <Box>
-                {formData.assets.map((asset, index) => (
-                  <Grid container spacing={2} key={index} mt={1} alignItems="center">
-                    <Grid item xs={12} sm={5}>
-                      <TextField
-                        fullWidth
-                        label="Type"
-                        value={asset.type}
-                        onChange={(e) => handleAssetChange(index, "type", e.target.value)}
-                        required
-                        error={!!errors[`asset_${index}_type`]}
-                        helperText={errors[`asset_${index}_type`]}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Serial"
-                        value={asset.serialNumber}
-                        onChange={(e) => handleAssetChange(index, "serialNumber", e.target.value)}
-                        required
-                        error={!!errors[`asset_${index}_serialNumber`]}
-                        helperText={errors[`asset_${index}_serialNumber`]}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={1}>
-                      <IconButton color="error" onClick={() => handleRemoveAsset(index)}>
-                        <RemoveCircle />
-                      </IconButton>
-                    </Grid>
-                  </Grid>
-                ))}
-                <Button
-                  startIcon={<AddCircle />}
-                  variant="outlined"
-                  onClick={handleAddAsset}
-                  sx={{ mt: 2, height: "48px" }}
-                >
-                  Add Asset
-                </Button>
-              </Box>
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleCloseAssetsModal}
-              sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
-            >
-              Close
-            </Button>
-          </Box>
-        </Modal>
-
-        <Modal open={openWebcamModal} onClose={stopWebcam}>
-          <Box sx={webcamModalStyle}>
-            <Typography variant="h6" mb={2}>
-              Capture Photo
-            </Typography>
-            <video ref={videoRef} autoPlay style={{ width: "100%", maxHeight: "50vh" }} />
-            <Box mt={2}>
+                </Box>
+              </Modal>
+        
+              <Modal
+                open={openPhotoPreviewModal}
+                onClose={() => setOpenPhotoPreviewModal(false)}
+              >
+                <Box sx={photoPreviewModalStyle}>
+                  <Typography variant="h6" mb={2}>
+                    Photo Preview
+                  </Typography>
+                  {photoPreview && (
+                    <img
+                      src={photoPreview}
+                      alt="Captured preview"
+                      style={{ maxWidth: "100%", maxHeight: "50vh" }}
+                    />
+                  )}
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setOpenPhotoPreviewModal(false)}
+                    sx={{ mt: 2, height: "48px" }}
+                  >
+                    Close
+                  </Button>
+                </Box>
+              </Modal>
+        
               <Button
                 variant="contained"
                 color="primary"
-                onClick={capturePhoto}
-                sx={{ mr: 2, height: "48px" }}
+                sx={{ mt: 3, display: "block", mx: "auto", height: "urerm48px", width: { xs: "100%", sm: "200px" } }}
+                onClick={handleSubmit}
+                // disabled={!isOtpVerified}
               >
-                Capture
-              </Button>
-              <Button
-                variant="outlined"
-                color="secondary"
-                onClick={stopWebcam}
-                sx={{ height: "48px" }}
-              >
-                Cancel
+                Submit
               </Button>
             </Box>
-          </Box>
-        </Modal>
-
-        <Modal
-          open={openPhotoPreviewModal}
-          onClose={() => setOpenPhotoPreviewModal(false)}
-        >
-          <Box sx={photoPreviewModalStyle}>
-            <Typography variant="h6" mb={2}>
-              Photo Preview
-            </Typography>
-            {photoPreview && (
-              <img
-                src={photoPreview}
-                alt="Captured preview"
-                style={{ maxWidth: "100%", maxHeight: "50vh" }}
-              />
-            )}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setOpenPhotoPreviewModal(false)}
-              sx={{ mt: 2, height: "48px" }}
-            >
-              Close
-            </Button>
-          </Box>
-        </Modal>
-
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mt: 3, display: "block", mx: "auto", height: "48px", width: { xs: "100%", sm: "200px" } }}
-          onClick={handleSubmit}
-          // disabled={!isOtpVerified}
-        >
-          Submit
-        </Button>
-      </Box>
-      <Footer />
-    </>
-  );
-};
-
-export default Checkin;
+            <Footer />
+          </>
+        );
+      };
+      
+      export default Checkin;

@@ -333,7 +333,7 @@ const PreScheduling = () => {
   const handleCloseTeamModal = () => setOpenTeamModal(false);
   const handleCloseAssetsModal = () => setOpenAssetsModal(false);
   const handleViewTeamMembers = () => setOpenTeamModal(true);
-  const handleViewAssets = () => setOpenAssetsModal(true);
+  
 
   const modalStyle = {
     position: "absolute",
@@ -504,28 +504,6 @@ const PreScheduling = () => {
                 <TextField
                   select
                   fullWidth
-                  label="Host"
-                  name="host"
-                  value={formData.host}
-                  onChange={handleChange}
-                  error={!!errors.host}
-                  helperText={errors.host}
-                  required
-                  disabled={loading || hosts.length === 0}
-                  sx={{ mb: 2 }}
-                >
-                  <MenuItem value="" disabled>
-                    Select Host
-                  </MenuItem>
-                  {hosts.map((host) => (
-                    <MenuItem key={host._id} value={host._id}>
-                      {host.username}
-                    </MenuItem>
-                  ))}
-                </TextField>
-                <TextField
-                  select
-                  fullWidth
                   label="Department"
                   name="department"
                   value={formData.department}
@@ -546,6 +524,29 @@ const PreScheduling = () => {
                   ))}
                 </TextField>
                 <TextField
+                  select
+                  fullWidth
+                  label="Host"
+                  name="host"
+                  value={formData.host}
+                  onChange={handleChange}
+                  error={!!errors.host}
+                  helperText={errors.host}
+                  required
+                  disabled={loading || hosts.length === 0}
+                  sx={{ mb: 2 }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Host
+                  </MenuItem>
+                  {hosts.map((host) => (
+                    <MenuItem key={host._id} value={host._id}>
+                      {host.username}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                
+                <TextField
                   fullWidth
                   label="Date"
                   type="date"
@@ -560,38 +561,7 @@ const PreScheduling = () => {
                   inputProps={{ min: new Date().toISOString().split("T")[0] }}
                   sx={{ mb: 2 }}
                 />
-                <Grid container spacing={1} alignItems="center">
-                  <Grid item xs={6}>
-                    <TextField
-                      select
-                      fullWidth
-                      label="Assets?"
-                      name="hasAssets"
-                      value={formData.hasAssets}
-                      onChange={handleChange}
-                      error={!!errors.hasAssets}
-                      helperText={errors.hasAssets}
-                      required
-                      disabled={loading}
-                    >
-                      <MenuItem value="yes">Yes</MenuItem>
-                      <MenuItem value="no">No</MenuItem>
-                    </TextField>
-                  </Grid>
-                  <Grid item>
-                    {formData.hasAssets === "yes" && (
-                      <Button
-                        variant="outlined"
-                        onClick={handleViewAssets}
-                        size="small"
-                        sx={{ ml: 1, height: "40px" }}
-                        disabled={loading}
-                      >
-                        View
-                      </Button>
-                    )}
-                  </Grid>
-                </Grid>
+                
                 <Button
                   variant="outlined"
                   onClick={handleViewTeamMembers}

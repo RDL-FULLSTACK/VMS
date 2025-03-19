@@ -19,6 +19,7 @@ import HomeVisitorFormCheckIn from "./pages/HostVisitorFromCheckIn";
 import Receptionist from "./pages/UserList";
 import Reports from "./pages/Reports";
 import SelfCheck from "./pages/SelfCheck"; // Import the SelfCheck component
+import Employee from "./pages/Employee";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -168,6 +169,7 @@ function App() {
           }
         />
         {/* Add SelfCheck route as a public route */}
+        <Route path="/employees" element={<Employee />} />
         <Route path="/self-check" element={<SelfCheck />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

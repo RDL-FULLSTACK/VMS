@@ -49,21 +49,21 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-// Role mapping for display purposes
 const roleDisplayMap = {
   host: "Employee",
   admin: "Admin",
   receptionist: "Receptionist",
   security: "Security",
-  employee: "Employee", // In case there are any actual "employee" roles
+  employee: "Employee",
+  Estimator: "Estimator", // Added your role
 };
 
-// Reverse mapping for filtering (from display value to backend value)
 const roleFilterMap = {
   Employee: "host",
   Admin: "admin",
   Receptionist: "receptionist",
   Security: "security",
+  Estimator: "Estimator", // Added your role
 };
 
 const UserList = () => {
@@ -92,6 +92,7 @@ const UserList = () => {
         throw new Error("Failed to fetch users");
       }
       const data = await response.json();
+      console.log("Fetched users:", data); // Log to verify data
       setUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -269,17 +270,17 @@ const UserList = () => {
     <>
       {!openCompanyLoginDialog && <Navbar />}
       <Container
-        maxWidth={false} // Disable maxWidth to use full screen width
+        maxWidth={false}
         sx={{
           padding: 2,
           backgroundColor: "#fff",
-          borderRadius: 0, // Remove border radius for full-width effect
+          borderRadius: 0,
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           minHeight: "80vh",
-          width: "100%", // Ensure full width
-          margin: 0, // Remove default margins
-          paddingLeft: "16px", // Custom padding for content
-          paddingRight: "16px", // Custom padding for content
+          width: "100%",
+          margin: 0,
+          paddingLeft: "16px",
+          paddingRight: "16px",
         }}
       >
         <div
@@ -290,7 +291,7 @@ const UserList = () => {
             marginBottom: 20,
             flexWrap: "wrap",
             gap: 2,
-            width: "100%", // Ensure full width
+            width: "100%",
           }}
         >
           <TextField
@@ -312,7 +313,8 @@ const UserList = () => {
             <MenuItem value="Admin">Admin</MenuItem>
             <MenuItem value="Receptionist">Receptionist</MenuItem>
             <MenuItem value="Security">Security</MenuItem>
-            <MenuItem value="Employee">Employee</MenuItem> {/* Changed from "host" to "Employee" */}
+            <MenuItem value="Employee">Employee</MenuItem>
+            <MenuItem value="Estimator">Estimator</MenuItem>
           </Select>
           <Button
             variant="contained"
@@ -339,13 +341,19 @@ const UserList = () => {
                 <StyledTableCell>ID</StyledTableCell>
                 <StyledTableCell>Username</StyledTableCell>
                 <StyledTableCell>Role</StyledTableCell>
+                <StyledTableCell>Department</StyledTableCell>
+                <StyledTableCell>Email</StyledTableCell>
+                <StyledTableCell>Phone Number</StyledTableCell>
+                {/* Uncomment below to add createdAt and updatedAt columns */}
+                {/* <StyledTableCell>Created At</StyledTableCell> */}
+                {/* <StyledTableCell>Updated At</StyledTableCell> */}
                 <StyledTableCell>Actions</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ textAlign: "center", py: 2 }}>
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 2 }}> {/* Change to 9 if createdAt/updatedAt are added */}
                     <Typography variant="h6" color="text.secondary">
                       Loading...
                     </Typography>
@@ -359,6 +367,12 @@ const UserList = () => {
                     <TableCell sx={{ padding: 1.5 }}>
                       {roleDisplayMap[user.role] || formatValue(user.role)}
                     </TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.deparment)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.email)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.phone_no)}</TableCell>
+                    {/* Uncomment below to add createdAt and updatedAt columns */}
+                    {/* <TableCell sx={{ padding: 1.5 }}>{formatValue(user.createdAt)}</TableCell> */}
+                    {/* <TableCell sx={{ padding: 1.5 }}>{formatValue(user.updatedat)}</TableCell> */}
                     <TableCell sx={{ padding: 1.5 }}>
                       <IconButton onClick={(event) => handleMenuOpen(event, user)} size="small">
                         <MoreVertIcon />
@@ -368,7 +382,7 @@ const UserList = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} sx={{ textAlign: "center", py: 4 }}>
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}> {/* Change to 9 if createdAt/updatedAt are added */}
                     <Typography variant="h6" color="text.secondary">
                       No User Found
                     </Typography>
@@ -428,6 +442,57 @@ const UserList = () => {
                   variant="outlined"
                   InputProps={{ sx: { borderRadius: 1 } }}
                 />
+                <TextField
+                  label="Department"
+                  name="deparment"
+                  fullWidth
+                  margin="normal"
+                  value={formatValue(selectedUser.deparment)}
+                  disabled
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: 1 } }}
+                />
+                <TextField
+                  label="Email"
+                  name="email"
+                  fullWidth
+                  margin="normal"
+                  value={formatValue(selectedUser.email)}
+                  disabled
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: 1 } }}
+                />
+                <TextField
+                  label="Phone Number"
+                  name="phone_no"
+                  fullWidth
+                  margin="normal"
+                  value={formatValue(selectedUser.phone_no)}
+                  disabled
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: 1 } }}
+                />
+                {/* Uncomment below to add createdAt and updatedAt in edit dialog */}
+                {/* <TextField
+                  label="Created At"
+                  name="createdAt"
+                  fullWidth
+                  margin="normal"
+                  value={formatValue(selectedUser.createdAt)}
+                  disabled
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: 1 } }}
+                />
+                <TextField
+                  label="Updated At"
+                  name="updatedat"
+                  fullWidth
+                  margin="normal"
+                  value={formatValue(selectedUser.updatedat)}
+                  disabled
+                  variant="outlined"
+                  InputProps={{ sx: { borderRadius: 1 } }}
+                /> */}
                 <TextField
                   label="New Password"
                   name="newPassword"

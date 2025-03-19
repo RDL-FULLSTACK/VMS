@@ -69,7 +69,7 @@ const Checkin = () => {
   const [openPrescheduleModal, setOpenPrescheduleModal] = useState(false);
   const [openSelfCheckinModal, setOpenSelfCheckinModal] = useState(false);
   const [openWebcamModal, setOpenWebcamModal] = useState(false);
-  const [openPhotoPreviewModal, setOpenPhotoPreviewModal] = useState(false); // New state for photo preview modal
+  const [openPhotoPreviewModal, setOpenPhotoPreviewModal] = useState(false);
   const [prescheduledVisitors, setPrescheduledVisitors] = useState([]);
   const [selfCheckinVisitors, setSelfCheckinVisitors] = useState([]);
   const [filteredPrescheduleVisitors, setFilteredPrescheduleVisitors] = useState([]);
@@ -122,7 +122,7 @@ const Checkin = () => {
         setFilteredSelfCheckinVisitors(sortedVisitors);
       } catch (error) {
         console.error("Error fetching self-checkin visitors:", error);
-        toast.error("Failed to load self-checkin history.");
+        toast.error("Failed to load self-checkin.");
       }
     };
 
@@ -209,7 +209,7 @@ const Checkin = () => {
     });
     setTeamMembers(visitor.teamMembers || []);
     setPhotoPreview(visitor.photoUrl || null);
-    setPhoto(null); // Reset photo since we're not capturing it here
+    setPhoto(null);
     setSelectedSelfCheckinId(visitor._id);
     setOpenSelfCheckinModal(false);
     toast.success(`Data for ${visitor.fullName} has been loaded.`);
@@ -583,8 +583,8 @@ const Checkin = () => {
           }
         );
         if (!deleteSelfCheckinResponse.ok) {
-          const deleteData = await deleteSelfCheckinResponse.json();
-          throw new Error(deleteData.message || "Failed to delete self-checkin");
+          // Removed unused deleteData variable
+          throw new Error("Failed to delete self-checkin");
         }
 
         setSelfCheckinVisitors((prev) =>
@@ -604,8 +604,8 @@ const Checkin = () => {
           }
         );
         if (!deletePrescheduleResponse.ok) {
-          const deleteData = await deletePrescheduleResponse.json();
-          throw new Error(data.message || "Failed to delete pre-scheduled visitor");
+          // Removed unused deleteData variable
+          throw new Error("Failed to delete pre-scheduled visitor");
         }
 
         setPrescheduledVisitors((prev) =>
@@ -633,6 +633,7 @@ const Checkin = () => {
       }));
     }
     setOpenTeamModal(false);
+    window.scrollTo(0, 0); // Scroll to top when closing modal
   };
 
   const handleCloseAssetsModal = () => {
@@ -644,6 +645,7 @@ const Checkin = () => {
       }));
     }
     setOpenAssetsModal(false);
+    window.scrollTo(0, 0); // Scroll to top when closing modal
   };
 
   const handleViewTeamMembers = () => {
@@ -663,11 +665,11 @@ const Checkin = () => {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: { xs: "90%", sm: "80%", md: "60%" },
+    width: { xs: "95%", sm: "90%", md: "80%" },
     maxHeight: "80vh",
     bgcolor: "background.paper",
     boxShadow: 24,
-    p: { xs: 2, sm: 4 },
+    p: { xs: 2, sm: 3 },
     borderRadius: 2,
     overflowY: "auto",
   };
@@ -677,10 +679,10 @@ const Checkin = () => {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: "50%",
+    width: "60%",
     bgcolor: "background.paper",
     boxShadow: 24,
-    p: 4,
+    p: 3,
     textAlign: "center",
   };
 
@@ -689,10 +691,10 @@ const Checkin = () => {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    width: { xs: "90%", sm: "70%", md: "50%" },
+    width: { xs: "95%", sm: "80%", md: "60%" },
     bgcolor: "background.paper",
     boxShadow: 24,
-    p: 4,
+    p: 3,
     textAlign: "center",
     borderRadius: 2,
   };
@@ -702,24 +704,28 @@ const Checkin = () => {
       <Navbar />
       <Box
         sx={{
-          width: "80%",
+          width: { xs: "98%", sm: "98%", md: "98%", lg: "95%" },
+          maxWidth: "1600px",
           margin: "auto",
-          mt: 6,
-          p: 4,
+          mt: 4,
+          mb: 8, // Added bottom margin to create space between form and footer
+          p: { xs: 1, sm: 2, md: 3 },
           borderRadius: 2,
           boxShadow: 3,
           bgcolor: "#fff",
+          border: "1px solid #e0e0e0",
         }}
       >
         <ToastContainer position="top-right" autoClose={3000} />
-        <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
+        <Typography variant="h5" align="center" fontWeight="bold" mb={3}>
           Visitor Check-In
         </Typography>
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 3 }}>
           <Button
             variant="contained"
             color="secondary"
             onClick={() => setOpenPrescheduleModal(true)}
+            sx={{ height: "48px", minWidth: "150px" }}
           >
             Preschedule
           </Button>
@@ -727,12 +733,13 @@ const Checkin = () => {
             variant="contained"
             color="primary"
             onClick={() => setOpenSelfCheckinModal(true)}
+            sx={{ height: "48px", minWidth: "150px" }}
           >
-            Self Check-in History
+            Self Check-in
           </Button>
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={1}>
           {/* Left Column */}
           <Grid item xs={12} sm={6}>
             <TextField
@@ -743,9 +750,9 @@ const Checkin = () => {
               error={!!errors.fullName}
               helperText={errors.fullName}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             />
-            <Grid container spacing={2} alignItems="center">
+            <Grid container spacing={1} alignItems="center">
               <Grid item xs={8}>
                 <TextField
                   fullWidth
@@ -755,6 +762,7 @@ const Checkin = () => {
                   error={!!errors.email}
                   helperText={errors.email}
                   required
+                  sx={{ mb: 0 }}
                 />
               </Grid>
               <Grid item xs={4}>
@@ -785,7 +793,7 @@ const Checkin = () => {
               }
               required
               inputProps={{ maxLength: 6 }}
-              sx={{ mt: 2, mb: 2 }}
+              sx={{ mt: 1.5, mb: 1.5 }}
               disabled={isOtpVerified}
             />
             <TextField
@@ -797,7 +805,7 @@ const Checkin = () => {
               helperText={errors.phoneNumber}
               required
               inputProps={{ maxLength: 10 }}
-              sx={{ mt: 2, mb: 2 }}
+              sx={{ mb: 1.5 }}
             />
             <TextField
               fullWidth
@@ -807,7 +815,7 @@ const Checkin = () => {
               error={!!errors.visitorCompany}
               helperText={errors.visitorCompany}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             />
             <TextField
               select
@@ -818,7 +826,7 @@ const Checkin = () => {
               error={!!errors.designation}
               helperText={errors.designation}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             >
               <MenuItem value="Manager">Manager</MenuItem>
               <MenuItem value="Employee">Employee</MenuItem>
@@ -833,12 +841,12 @@ const Checkin = () => {
               error={!!errors.visitType}
               helperText={errors.visitType}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             >
               <MenuItem value="Business">Business</MenuItem>
               <MenuItem value="Personal">Personal</MenuItem>
             </TextField>
-            <Grid container spacing={2}>
+            <Grid container spacing={1}>
               <Grid item xs={6}>
                 <TextField
                   fullWidth
@@ -866,14 +874,14 @@ const Checkin = () => {
 
           {/* Right Column */}
           <Grid item xs={12} sm={6}>
-            <Grid container spacing={2} alignItems="center">
+            <Grid container spacing={1} alignItems="center">
               <Grid item xs={photoPreview ? 8 : 12}>
                 <Button
                   variant="contained"
                   fullWidth
                   startIcon={<CameraAlt />}
                   onClick={startWebcam}
-                  sx={{ height: "56px", mt: 2, mb: 2 }}
+                  sx={{ height: "56px", mb: 1.5 }}
                 >
                   Click Now
                 </Button>
@@ -886,8 +894,7 @@ const Checkin = () => {
                     onClick={handleViewPhotoPreview}
                     sx={{
                       height: "56px",
-                      mt: 2,
-                      mb: 2,
+                      mb: 1.5,
                       borderColor: "#1976d2",
                       color: "#1976d2",
                       "&:hover": { borderColor: "#115293", color: "#115293" },
@@ -897,23 +904,21 @@ const Checkin = () => {
                   </Button>
                 </Grid>
               )}
-              <Grid item xs={12}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Submitted Document"
-                  value={formData.submittedDocument}
-                  onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
-                  error={!!errors.submittedDocument}
-                  helperText={errors.submittedDocument}
-                  required
-                  sx={{ mt: 2, mb: 2 }}
-                >
-                  <MenuItem value="ID Proof">ID Proof</MenuItem>
-                  <MenuItem value="Passport">Passport</MenuItem>
-                </TextField>
-              </Grid>
             </Grid>
+            <TextField
+              select
+              fullWidth
+              label="Submitted Document"
+              value={formData.submittedDocument}
+              onChange={(e) => handleInputChange("submittedDocument", e.target.value)}
+              error={!!errors.submittedDocument}
+              helperText={errors.submittedDocument}
+              required
+              sx={{ mb: 1.5 }}
+            >
+              <MenuItem value="ID Proof">ID Proof</MenuItem>
+              <MenuItem value="Passport">Passport</MenuItem>
+            </TextField>
             <TextField
               fullWidth
               label="Document Details"
@@ -922,7 +927,7 @@ const Checkin = () => {
               error={!!errors.documentDetails}
               helperText={errors.documentDetails}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             />
             <TextField
               fullWidth
@@ -932,7 +937,7 @@ const Checkin = () => {
               error={!!errors.reasonForVisit}
               helperText={errors.reasonForVisit}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             />
             <TextField
               select
@@ -943,7 +948,7 @@ const Checkin = () => {
               error={!!errors.department}
               helperText={errors.department}
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             >
               <MenuItem value="" disabled>
                 Select Department
@@ -965,7 +970,7 @@ const Checkin = () => {
                 errors.personToVisit || (hosts.length === 0 ? "No hosts available" : "")
               }
               required
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
               disabled={hosts.length === 0}
             >
               <MenuItem value="" disabled>
@@ -977,8 +982,8 @@ const Checkin = () => {
                 </MenuItem>
               ))}
             </TextField>
-            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={formData.hasAssets === "yes" ? 8 : 12}>
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+              <Grid item xs={formData.hasAssets === "yes" ? 8 : 12}>
                 <TextField
                   select
                   fullWidth
@@ -988,21 +993,18 @@ const Checkin = () => {
                   error={!!errors.hasAssets}
                   helperText={errors.hasAssets}
                   required
-                  variant="outlined"
-                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                 >
                   <MenuItem value="yes">Yes</MenuItem>
                   <MenuItem value="no">No</MenuItem>
                 </TextField>
               </Grid>
               {formData.hasAssets === "yes" && (
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={4}>
                   <Button
                     variant="outlined"
+                    fullWidth
                     onClick={handleViewAssets}
-                    size="small"
                     sx={{
-                      ml: 1,
                       height: "56px",
                       borderColor: "#1976d2",
                       color: "#1976d2",
@@ -1014,8 +1016,8 @@ const Checkin = () => {
                 </Grid>
               )}
             </Grid>
-            <Grid container spacing={1} alignItems="center" sx={{ mb: 2 }}>
-              <Grid item xs={12} sm={formData.hasTeamMembers === "yes" ? 8 : 12}>
+            <Grid container spacing={1} alignItems="center" sx={{ mb: 1.5 }}>
+              <Grid item xs={formData.hasTeamMembers === "yes" ? 8 : 12}>
                 <TextField
                   select
                   fullWidth
@@ -1025,21 +1027,18 @@ const Checkin = () => {
                   error={!!errors.hasTeamMembers}
                   helperText={errors.hasTeamMembers}
                   required
-                  variant="outlined"
-                  InputLabelProps={{ style: { fontSize: "0.9rem" } }}
                 >
                   <MenuItem value="yes">Yes</MenuItem>
                   <MenuItem value="no">No</MenuItem>
                 </TextField>
               </Grid>
               {formData.hasTeamMembers === "yes" && (
-                <Grid item xs={12} sm={4}>
+                <Grid item xs={4}>
                   <Button
                     variant="outlined"
+                    fullWidth
                     onClick={handleViewTeamMembers}
-                    size="small"
                     sx={{
-                      ml: 1,
                       height: "56px",
                       borderColor: "#1976d2",
                       color: "#1976d2",
@@ -1094,7 +1093,7 @@ const Checkin = () => {
                             variant="contained"
                             color="primary"
                             onClick={() => handlePrescheduleSelect(visitor)}
-                            sx={{ height: "56px" }}
+                            sx={{ height: "48px" }}
                           >
                             Select
                           </Button>
@@ -1117,7 +1116,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={() => setOpenPrescheduleModal(false)}
-              sx={{ mt: 2, display: "block", mx: "auto", height: "56px" }}
+              sx={{ mt: 2, display: "block", mx: "auto", height: "48px" }}
             >
               Close
             </Button>
@@ -1127,7 +1126,7 @@ const Checkin = () => {
         <Modal open={openSelfCheckinModal} onClose={() => setOpenSelfCheckinModal(false)}>
           <Box sx={modalStyle}>
             <Typography variant="h6" mb={2}>
-              Self Check-in History
+              Self Check-in
             </Typography>
             <TextField
               fullWidth
@@ -1166,7 +1165,7 @@ const Checkin = () => {
                             variant="contained"
                             color="primary"
                             onClick={() => handleSelfCheckinSelect(visitor)}
-                            sx={{ height: "56px" }}
+                            sx={{ height: "48px" }}
                           >
                             Select
                           </Button>
@@ -1189,7 +1188,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={() => setOpenSelfCheckinModal(false)}
-              sx={{ mt: 2, display: "block", mx: "auto", height: "56px" }}
+              sx={{ mt: 2, display: "block", mx: "auto", height: "48px" }}
             >
               Close
             </Button>
@@ -1205,13 +1204,13 @@ const Checkin = () => {
               startIcon={<AddCircle />}
               variant="contained"
               onClick={handleAddTeamMember}
-              sx={{ height: "56px" }}
+              sx={{ height: "48px" }}
             >
               Add Member
             </Button>
             {teamMembers.map((member, index) => (
-              <Box key={index} mt={3} p={3} border={1} borderRadius={2}>
-                <Grid container spacing={3}>
+              <Box key={index} mt={2} p={2} border={1} borderRadius={2}>
+                <Grid container spacing={2}>
                   <Grid item xs={12} sm={3}>
                     <TextField
                       fullWidth
@@ -1285,7 +1284,7 @@ const Checkin = () => {
                   error={!!errors[`teamMember_${index}_hasAssets`]}
                   helperText={errors[`teamMember_${index}_hasAssets`]}
                   required
-                  sx={{ mt: 3, maxWidth: 200 }}
+                  sx={{ mt: 2, maxWidth: 200 }}
                 >
                   <MenuItem value="yes">Yes</MenuItem>
                   <MenuItem value="no">No</MenuItem>
@@ -1293,7 +1292,7 @@ const Checkin = () => {
                 {member.hasAssets === "yes" && (
                   <Box mt={2}>
                     {member.assets.map((asset, assetIndex) => (
-                      <Grid container spacing={3} key={assetIndex} mt={1} alignItems="center">
+                      <Grid container spacing={2} key={assetIndex} mt={1} alignItems="center">
                         <Grid item xs={12} sm={5}>
                           <TextField
                             fullWidth
@@ -1343,7 +1342,7 @@ const Checkin = () => {
                       startIcon={<AddCircle />}
                       variant="outlined"
                       onClick={() => handleAddTeamMemberAsset(index)}
-                      sx={{ mt: 2, height: "56px" }}
+                      sx={{ mt: 2, height: "48px" }}
                     >
                       Add Asset
                     </Button>
@@ -1355,7 +1354,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={handleCloseTeamModal}
-              sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
+              sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
             >
               Close
             </Button>
@@ -1370,7 +1369,7 @@ const Checkin = () => {
             {formData.hasAssets === "yes" && (
               <Box>
                 {formData.assets.map((asset, index) => (
-                  <Grid container spacing={3} key={index} mt={1} alignItems="center">
+                  <Grid container spacing={2} key={index} mt={1} alignItems="center">
                     <Grid item xs={12} sm={5}>
                       <TextField
                         fullWidth
@@ -1404,7 +1403,7 @@ const Checkin = () => {
                   startIcon={<AddCircle />}
                   variant="outlined"
                   onClick={handleAddAsset}
-                  sx={{ mt: 2, height: "56px" }}
+                  sx={{ mt: 2, height: "48px" }}
                 >
                   Add Asset
                 </Button>
@@ -1414,7 +1413,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={handleCloseAssetsModal}
-              sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
+              sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
             >
               Close
             </Button>
@@ -1432,7 +1431,7 @@ const Checkin = () => {
                 variant="contained"
                 color="primary"
                 onClick={capturePhoto}
-                sx={{ mr: 2, height: "56px" }}
+                sx={{ mr: 2, height: "48px" }}
               >
                 Capture
               </Button>
@@ -1440,7 +1439,7 @@ const Checkin = () => {
                 variant="outlined"
                 color="secondary"
                 onClick={stopWebcam}
-                sx={{ height: "56px" }}
+                sx={{ height: "48px" }}
               >
                 Cancel
               </Button>
@@ -1467,7 +1466,7 @@ const Checkin = () => {
               variant="contained"
               color="primary"
               onClick={() => setOpenPhotoPreviewModal(false)}
-              sx={{ mt: 2, height: "56px" }}
+              sx={{ mt: 2, height: "48px" }}
             >
               Close
             </Button>
@@ -1477,9 +1476,9 @@ const Checkin = () => {
         <Button
           variant="contained"
           color="primary"
-          sx={{ mt: 4, display: "block", mx: "auto", height: "56px" }}
+          sx={{ mt: 3, display: "block", mx: "auto", height: "48px", width: { xs: "100%", sm: "200px" } }}
           onClick={handleSubmit}
-          disabled={!isOtpVerified}
+          // disabled={!isOtpVerified}
         >
           Submit
         </Button>

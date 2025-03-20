@@ -13,25 +13,10 @@ import {
   TextField,
   MenuItem,
   Box,
+  TablePagination,
 } from "@mui/material";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-
-// Predefined list of departments (you can fetch this dynamically if needed)
-const departments = [
-  "Human Resources (HR)",
-  "Finance & Accounting",
-  "Sales & Marketing",
-  "IT (Information Technology)",
-  "Operations",
-  "Customer Service",
-  "Research & Development (R&D)",
-  "Procurement & Supply Chain",
-  "Legal",
-];
-
-// Predefined list of roles (adjust based on your app’s roles)
-const roles = ["host", "admin", "receptionist", "employee"];
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   color: "#fff",
@@ -57,6 +42,10 @@ const Employee = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDepartment, setSelectedDepartment] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const [page, setPage] = useState(0); // Current page
+  const [rowsPerPage, setRowsPerPage] = useState(5); // Rows per page
+  const [departments, setDepartments] = useState([]); // Dynamic departments from database
+  const [roles, setRoles] = useState([]); // Dynamic roles from database
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -71,6 +60,18 @@ const Employee = () => {
         const data = await response.json();
         setEmployees(data);
         setFilteredEmployees(data); // Initially show all employees
+
+        // Extract unique departments from the data
+        const uniqueDepartments = [
+          ...new Set(data.map((employee) => employee.department?.toLowerCase())),
+        ].filter(Boolean); // Remove undefined/null departments
+        setDepartments(uniqueDepartments);
+
+        // Extract unique roles from the data
+        const uniqueRoles = [...new Set(data.map((employee) => employee.role?.toLowerCase()))].filter(
+          Boolean
+        ); // Remove undefined/null roles
+        setRoles(uniqueRoles);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -109,6 +110,7 @@ const Employee = () => {
     }
 
     setFilteredEmployees(result);
+    setPage(0); // Reset to first page when filters change
   }, [searchQuery, selectedDepartment, selectedRole, employees]);
 
   const getLastFourDigits = (id) => {
@@ -122,6 +124,16 @@ const Employee = () => {
 
   const formatTimestamp = (timestamp) => {
     return timestamp ? new Date(timestamp).toLocaleString() : "N/A";
+  };
+
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page when rows per page changes
   };
 
   return (
@@ -166,7 +178,7 @@ const Employee = () => {
             <MenuItem value="">All Departments</MenuItem>
             {departments.map((dept) => (
               <MenuItem key={dept} value={dept}>
-                {dept}
+                {dept.charAt(0).toUpperCase() + dept.slice(1)}
               </MenuItem>
             ))}
           </TextField>
@@ -222,18 +234,20 @@ const Employee = () => {
                   </TableCell>
                 </TableRow>
               ) : filteredEmployees.length > 0 ? (
-                filteredEmployees.map((employee) => (
-                  <StyledTableRow key={employee._id || "unknown"}>
-                    <TableCell sx={{ padding: 1.5 }}>{getLastFourDigits(employee._id)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.username)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.role)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.department)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.email)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.phone_no)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatTimestamp(employee.createdAt)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatTimestamp(employee.updatedAt)}</TableCell>
-                  </StyledTableRow>
-                ))
+                filteredEmployees
+                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  .map((employee) => (
+                    <StyledTableRow key={employee._id || "unknown"}>
+                      <TableCell sx={{ padding: 1.5 }}>{getLastFourDigits(employee._id)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.username)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.role)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.department)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.email)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatValue(employee.phone_no)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatTimestamp(employee.createdAt)}</TableCell>
+                      <TableCell sx={{ padding: 1.5 }}>{formatTimestamp(employee.updatedAt)}</TableCell>
+                    </StyledTableRow>
+                  ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={8} sx={{ textAlign: "center", py: 4 }}>
@@ -246,6 +260,20 @@ const Employee = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
+        {/* Pagination */}
+        {!loading && !error && filteredEmployees.length > 0 && (
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredEmployees.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{ mt: 2 }}
+          />
+        )}
       </Container>
       <Footer />
     </>

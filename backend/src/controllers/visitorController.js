@@ -196,7 +196,7 @@ exports.addVisitor = async (req, res) => {
       });
     }
 
-    if (!/^[A-Za-z\s]+$/.test(fullName) || !/^[A-Za-z\s]+$/.test(personToVisit)) {
+    if (!/^[A-Za-z0-9\s]+$/.test(fullName) || !/^[A-Za-z0-9\s]+$/.test(personToVisit)) {
       return res.status(400).json({
         success: false,
         message: "Names must contain only letters and spaces",

@@ -488,8 +488,10 @@ const HostDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const visitorsPerPage = 10;
 
-  // Get the logged-in user's username (adjust based on your auth system)
-  const loggedInHost = localStorage.getItem("username") || "Unknown"; // Replace "username" with your key
+  // Retrieve the logged-in host from localStorage 'user' key
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const loggedInHost = user.username || "Unknown";
+  console.log("Logged-in host:", loggedInHost);
 
   useEffect(() => {
     const fetchPreSchedules = async () => {
@@ -498,7 +500,7 @@ const HostDashboard = () => {
         console.log("Fetched pre-schedules from MongoDB:", response.data);
 
         const preSchedules = response.data
-          .filter((pre) => pre.host === loggedInHost) // Filter by logged-in host
+          .filter((pre) => pre.host === loggedInHost)
           .map((pre) => ({
             id: pre._id,
             name: pre.name || "Unknown",
@@ -510,6 +512,7 @@ const HostDashboard = () => {
             status: pre.status || "Pending",
           }));
 
+        console.log("Filtered pre-schedules:", preSchedules);
         const sortedPreSchedules = preSchedules.sort((a, b) => {
           return b.id.localeCompare(a.id);
         });
@@ -525,7 +528,7 @@ const HostDashboard = () => {
       }
     };
     fetchPreSchedules();
-  }, [loggedInHost]); // Dependency on loggedInHost
+  }, [loggedInHost]);
 
   const handleApproval = async (id) => {
     try {
@@ -544,7 +547,7 @@ const HostDashboard = () => {
 
       const refreshedResponse = await axios.get("http://localhost:5000/api/preschedules");
       const refreshedPreSchedules = refreshedResponse.data
-        .filter((pre) => pre.host === loggedInHost) // Filter refreshed data
+        .filter((pre) => pre.host === loggedInHost)
         .map((pre) => ({
           id: pre._id,
           name: pre.name || "Unknown",
@@ -587,7 +590,7 @@ const HostDashboard = () => {
 
       const refreshedResponse = await axios.get("http://localhost:5000/api/preschedules");
       const refreshedPreSchedules = refreshedResponse.data
-        .filter((pre) => pre.host === loggedInHost) // Filter refreshed data
+        .filter((pre) => pre.host === loggedInHost)
         .map((pre) => ({
           id: pre._id,
           name: pre.name || "Unknown",
@@ -634,6 +637,8 @@ const HostDashboard = () => {
   const indexOfLastVisitor = currentPage * visitorsPerPage;
   const indexOfFirstVisitor = indexOfLastVisitor - visitorsPerPage;
   const currentVisitors = visitors.slice(indexOfFirstVisitor, indexOfLastVisitor);
+
+  console.log("Rendering currentVisitors:", currentVisitors);
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", display: "flex", flexDirection: "column" }}>
@@ -792,7 +797,6 @@ const HostDashboard = () => {
             </Box>
           </Popover>
 
-          {/* Table Header */}
           <Card sx={{ mb: 2, bgcolor: "#5F3B91", color: "white" }}>
             <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
               <Grid container spacing={1} alignItems="center">
@@ -830,7 +834,6 @@ const HostDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Table Rows */}
           {currentVisitors.length > 0 ? (
             currentVisitors.map((visitor) => (
               <Card key={visitor.id} sx={{ mb: 2, bgcolor: "white", color: "#000" }}>

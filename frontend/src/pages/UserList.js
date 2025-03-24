@@ -23,6 +23,7 @@ import {
   InputAdornment,
   styled,
   Typography,
+  TablePagination, // Added for pagination
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
@@ -55,7 +56,7 @@ const roleDisplayMap = {
   receptionist: "Receptionist",
   security: "Security",
   employee: "Employee",
-  Estimator: "Estimator", // Added your role
+  Estimator: "Estimator",
 };
 
 const roleFilterMap = {
@@ -63,7 +64,7 @@ const roleFilterMap = {
   Admin: "admin",
   Receptionist: "receptionist",
   Security: "security",
-  Estimator: "Estimator", // Added your role
+  Estimator: "Estimator",
 };
 
 const UserList = () => {
@@ -78,8 +79,18 @@ const UserList = () => {
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" });
   const [openCompanyLoginDialog, setOpenCompanyLoginDialog] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [passwords, setPasswords] = useState({ newPassword: "", confirmPassword: "" });
+  const [editFormData, setEditFormData] = useState({
+    username: "",
+    department: "",
+    email: "",
+    phoneNumber: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
   const [isMatching, setIsMatching] = useState(null);
+  // Pagination states
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   const fetchUsers = async () => {
     try {
@@ -92,7 +103,7 @@ const UserList = () => {
         throw new Error("Failed to fetch users");
       }
       const data = await response.json();
-      console.log("Fetched users:", data); // Log to verify data
+      console.log("Fetched users:", data);
       setUsers(data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -121,10 +132,12 @@ const UserList = () => {
 
   const handleSearchChange = (event) => {
     setSearchQuery(event.target.value);
+    setPage(0); // Reset to first page on search
   };
 
   const handleFilterChange = (event) => {
     setFilterRole(event.target.value);
+    setPage(0); // Reset to first page on filter change
   };
 
   const filteredUsers = users.filter((user) => {
@@ -137,9 +150,33 @@ const UserList = () => {
     return matchesSearch && matchesRole;
   });
 
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0); // Reset to first page when rows per page changes
+  };
+
+  // Calculate the users to display on the current page
+  const paginatedUsers = filteredUsers.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   const handleMenuOpen = (event, user) => {
     setAnchorEl(event.currentTarget);
     setSelectedUser(user);
+    setEditFormData({
+      username: user.username || "",
+      department: user.department || "",
+      email: user.email || "",
+      phoneNumber: user.phoneNumber || "",
+      newPassword: "",
+      confirmPassword: "",
+    });
   };
 
   const handleMenuClose = () => {
@@ -153,17 +190,24 @@ const UserList = () => {
 
   const handleCloseEditDialog = () => {
     setOpenEditDialog(false);
-    setPasswords({ newPassword: "", confirmPassword: "" });
+    setEditFormData({
+      username: "",
+      department: "",
+      email: "",
+      phoneNumber: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
     setIsMatching(null);
   };
 
   const handleEditChange = (event) => {
     const { name, value } = event.target;
-    setPasswords((prev) => ({ ...prev, [name]: value }));
+    setEditFormData((prev) => ({ ...prev, [name]: value }));
 
     if (name === "confirmPassword" || name === "newPassword") {
-      const newPassword = name === "newPassword" ? value : passwords.newPassword;
-      const confirmPassword = name === "confirmPassword" ? value : passwords.confirmPassword;
+      const newPassword = name === "newPassword" ? value : editFormData.newPassword;
+      const confirmPassword = name === "confirmPassword" ? value : editFormData.confirmPassword;
 
       if (newPassword && confirmPassword) {
         setIsMatching(newPassword === confirmPassword);
@@ -176,13 +220,25 @@ const UserList = () => {
   const handleSaveChanges = async () => {
     try {
       const token = localStorage.getItem("token");
+      const { username, department, email, phoneNumber, newPassword } = editFormData;
+
+      const updateData = {
+        username,
+        department,
+        email,
+        phoneNumber,
+      };
+      if (newPassword) {
+        updateData.password = newPassword;
+      }
+
       const response = await fetch(`http://localhost:5000/api/users/${selectedUser._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ password: passwords.newPassword }),
+        body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
@@ -344,35 +400,29 @@ const UserList = () => {
                 <StyledTableCell>Department</StyledTableCell>
                 <StyledTableCell>Email</StyledTableCell>
                 <StyledTableCell>Phone Number</StyledTableCell>
-                {/* Uncomment below to add createdAt and updatedAt columns */}
-                {/* <StyledTableCell>Created At</StyledTableCell> */}
-                {/* <StyledTableCell>Updated At</StyledTableCell> */}
                 <StyledTableCell>Actions</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 2 }}> {/* Change to 9 if createdAt/updatedAt are added */}
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 2 }}>
                     <Typography variant="h6" color="text.secondary">
                       Loading...
                     </Typography>
                   </TableCell>
                 </TableRow>
-              ) : filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              ) : paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
                   <StyledTableRow key={user._id || "unknown"}>
                     <TableCell sx={{ padding: 1.5 }}>{getLastFourDigits(user._id)}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{formatValue(user.username)}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>
                       {roleDisplayMap[user.role] || formatValue(user.role)}
                     </TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.deparment)}</TableCell>
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.department)}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>{formatValue(user.email)}</TableCell>
-                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.phone_no)}</TableCell>
-                    {/* Uncomment below to add createdAt and updatedAt columns */}
-                    {/* <TableCell sx={{ padding: 1.5 }}>{formatValue(user.createdAt)}</TableCell> */}
-                    {/* <TableCell sx={{ padding: 1.5 }}>{formatValue(user.updatedat)}</TableCell> */}
+                    <TableCell sx={{ padding: 1.5 }}>{formatValue(user.phoneNumber)}</TableCell>
                     <TableCell sx={{ padding: 1.5 }}>
                       <IconButton onClick={(event) => handleMenuOpen(event, user)} size="small">
                         <MoreVertIcon />
@@ -382,7 +432,7 @@ const UserList = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}> {/* Change to 9 if createdAt/updatedAt are added */}
+                  <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
                     <Typography variant="h6" color="text.secondary">
                       No User Found
                     </Typography>
@@ -391,6 +441,24 @@ const UserList = () => {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredUsers.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            sx={{
+              ".MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows": {
+                color: "#5a3d91",
+                fontWeight: "bold",
+              },
+              ".MuiTablePagination-actions button": {
+                color: "#5a3d91",
+              },
+            }}
+          />
         </TableContainer>
 
         <Menu
@@ -437,18 +505,18 @@ const UserList = () => {
                   name="username"
                   fullWidth
                   margin="normal"
-                  value={formatValue(selectedUser.username)}
-                  disabled
+                  value={editFormData.username}
+                  onChange={handleEditChange}
                   variant="outlined"
                   InputProps={{ sx: { borderRadius: 1 } }}
                 />
                 <TextField
                   label="Department"
-                  name="deparment"
+                  name="department"
                   fullWidth
                   margin="normal"
-                  value={formatValue(selectedUser.deparment)}
-                  disabled
+                  value={editFormData.department}
+                  onChange={handleEditChange}
                   variant="outlined"
                   InputProps={{ sx: { borderRadius: 1 } }}
                 />
@@ -457,49 +525,28 @@ const UserList = () => {
                   name="email"
                   fullWidth
                   margin="normal"
-                  value={formatValue(selectedUser.email)}
-                  disabled
+                  value={editFormData.email}
+                  onChange={handleEditChange}
                   variant="outlined"
                   InputProps={{ sx: { borderRadius: 1 } }}
                 />
                 <TextField
                   label="Phone Number"
-                  name="phone_no"
+                  name="phoneNumber"
                   fullWidth
                   margin="normal"
-                  value={formatValue(selectedUser.phone_no)}
-                  disabled
+                  value={editFormData.phoneNumber}
+                  onChange={handleEditChange}
                   variant="outlined"
                   InputProps={{ sx: { borderRadius: 1 } }}
                 />
-                {/* Uncomment below to add createdAt and updatedAt in edit dialog */}
-                {/* <TextField
-                  label="Created At"
-                  name="createdAt"
-                  fullWidth
-                  margin="normal"
-                  value={formatValue(selectedUser.createdAt)}
-                  disabled
-                  variant="outlined"
-                  InputProps={{ sx: { borderRadius: 1 } }}
-                />
-                <TextField
-                  label="Updated At"
-                  name="updatedat"
-                  fullWidth
-                  margin="normal"
-                  value={formatValue(selectedUser.updatedat)}
-                  disabled
-                  variant="outlined"
-                  InputProps={{ sx: { borderRadius: 1 } }}
-                /> */}
                 <TextField
                   label="New Password"
                   name="newPassword"
                   fullWidth
                   margin="normal"
                   type={showPassword ? "text" : "password"}
-                  value={passwords.newPassword}
+                  value={editFormData.newPassword}
                   onChange={handleEditChange}
                   variant="outlined"
                   InputProps={{
@@ -528,7 +575,7 @@ const UserList = () => {
                   fullWidth
                   margin="normal"
                   type={showPassword ? "text" : "password"}
-                  value={passwords.confirmPassword}
+                  value={editFormData.confirmPassword}
                   onChange={handleEditChange}
                   variant="outlined"
                   InputProps={{
@@ -551,12 +598,12 @@ const UserList = () => {
                     },
                   }}
                 />
-                {isMatching === false && passwords.newPassword && passwords.confirmPassword && (
+                {isMatching === false && editFormData.newPassword && editFormData.confirmPassword && (
                   <Typography color="error" sx={{ mt: 1 }}>
                     Passwords do not match
                   </Typography>
                 )}
-                {isMatching === true && passwords.newPassword && passwords.confirmPassword && (
+                {isMatching === true && editFormData.newPassword && editFormData.confirmPassword && (
                   <Typography color="success.main" sx={{ mt: 1 }}>
                     Password match successfully
                   </Typography>
@@ -572,7 +619,7 @@ const UserList = () => {
               onClick={handleSaveChanges}
               color="primary"
               variant="contained"
-              disabled={isMatching === false || isMatching === null}
+              disabled={isMatching === false || (editFormData.newPassword && isMatching === null)}
             >
               Save Changes
             </Button>

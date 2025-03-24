@@ -15,5 +15,6 @@ router.get("/user", authMiddleware, authController.getUser);
 router.post("/forgot-password", authController.forgotPassword); // Line 10 (problematic)
 router.post("/verify-otp", authController.verifyOtp);
 router.post("/reset-password", authController.resetPassword);
+router.get("/users", authMiddleware, authController.getUsers);
 
 module.exports = router;

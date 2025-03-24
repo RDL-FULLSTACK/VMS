@@ -1,4 +1,4 @@
-// user.js
+// models/User.js
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -6,7 +6,10 @@ const bcrypt = require('bcryptjs');
 const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, enum: ['admin', 'security', 'receptionist', 'host'], required: true }, // Role is required but set programmatically
+  role: { type: String, enum: ['admin', 'security', 'receptionist', 'host'], required: true },
+  department: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  phoneNumber: { type: String, required: true },
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {
@@ -16,5 +19,4 @@ UserSchema.pre('save', async function (next) {
   next();
 });
 
-module.exports = mongoose.model("User", UserSchema, "users"); 
-// Fix: Use "UserSchema" instead of "userSchema"
+module.exports = mongoose.model("User", UserSchema, "users");

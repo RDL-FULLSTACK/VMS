@@ -1,3 +1,5 @@
+// components/CompanyRegister.js
+
 import React, { useState } from "react";
 import {
   Box,
@@ -18,6 +20,9 @@ const CompanyRegister = ({ onClose }) => {
     username: "",
     password: "",
     role: "",
+    department: "",
+    email: "",
+    phoneNumber: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -28,10 +33,20 @@ const CompanyRegister = ({ onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { username, password, role } = formData;
+    const { username, password, role, department, email, phoneNumber } = formData;
 
-    if (!username || !password || !role) {
+    if (!username || !password || !role || !department || !email || !phoneNumber) {
       toast.error("Please fill in all fields");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(phoneNumber)) {
+      toast.error("Phone number must be 10 digits");
       return;
     }
 
@@ -45,6 +60,9 @@ const CompanyRegister = ({ onClose }) => {
           username,
           password,
           role: role.toLowerCase(),
+          department,
+          email,
+          phoneNumber,
         },
         {
           headers: {
@@ -55,7 +73,14 @@ const CompanyRegister = ({ onClose }) => {
 
       toast.success("User added successfully!");
       setTimeout(() => {
-        setFormData({ username: "", password: "", role: "" });
+        setFormData({
+          username: "",
+          password: "",
+          role: "",
+          department: "",
+          email: "",
+          phoneNumber: "",
+        });
         if (onClose) onClose();
       }, 1000);
     } catch (error) {
@@ -136,6 +161,38 @@ const CompanyRegister = ({ onClose }) => {
               <MenuItem value="host">Employee</MenuItem>
             </Select>
           </FormControl>
+          <TextField
+            fullWidth
+            label="Department"
+            variant="outlined"
+            margin="dense"
+            name="department"
+            value={formData.department}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            variant="outlined"
+            margin="dense"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            disabled={loading}
+          />
+          <TextField
+            fullWidth
+            label="Phone Number"
+            variant="outlined"
+            margin="dense"
+            name="phoneNumber"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+            disabled={loading}
+            inputProps={{ maxLength: 10 }}
+          />
           <Button
             type="submit"
             variant="contained"

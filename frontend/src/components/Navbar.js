@@ -13,7 +13,6 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Fetch user role from backend on mount
   useEffect(() => {
     const fetchUserRole = async () => {
       const token = localStorage.getItem("token");
@@ -52,7 +51,6 @@ const Navbar = () => {
     return items.some((item) => location.pathname === item.path);
   };
 
-  // Define navigation items based on role
   const getNavItems = () => {
     const navItems = {
       admin: [
@@ -64,24 +62,19 @@ const Navbar = () => {
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
             { label: "Check-Out", path: "/checkout" },
-            // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
         {
           type: "button",
-          label: "Vehicle Management", path:"/vehicles"
-      
+          label: "Vehicle Management",
+          path: "/vehicles"
         },
-
-         {
-           type: "button",
-           label: "Admin",path:"/userlist"
-         },
-        
-        // **Reports Section Added**
-        { type: "button", label: "Reports", path: "/reports" },
-
-        { type: "button", label: "Logout", path: "/", onClick: handleLogout },
+        {
+          type: "button",
+          label: "Admin",
+          path: "/userlist"
+        },
+        { type: "button", label: "SETTINGS", path: "/Setting" },
       ],
       receptionist: [
         { type: "button", label: "Dashboard", path: "/dashboard" },
@@ -92,7 +85,6 @@ const Navbar = () => {
             { label: "Check-In", path: "/checkin" },
             { label: "Visitor List", path: "/visitorlist" },
             { label: "Check-Out", path: "/checkout" },
-            // { label: "Pre-Scheduling", path: "/presheduling" },
           ],
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
@@ -100,27 +92,18 @@ const Navbar = () => {
       security: [
         {
           type: "button",
-          label: "Vehicle Management", path:"/vehicles"
-          // items: [
-          //   { label: "Vehicle Details", path: "/vehicle-details" },
-          //   { label: "Vehicle Registration", path: "/vehicle-registration" },
-          //   { label: "Vehicle Checkout", path: "/vehicle-checkout" },
-          // ],
+          label: "Vehicle Management",
+          path: "/vehicles"
         },
         { type: "button", label: "Logout", path: "/", onClick: handleLogout },
       ],
-  
-
       host: [
-        {type: "button", label: "Pre-Scheduling", path : "/presheduling"},
+        { type: "button", label: "Pre-Scheduling", path: "/presheduling" },
         { type: "button", label: "Host", path: "/HostDashboard" },
         { type: "button", label: "Logout", path: "/" },
       ],
-
-
       guest: [
         { type: "button", label: "Login", path: "/" },
-        // { type: "button", label: "Register", path: "/companyregister" },
       ],
     };
 

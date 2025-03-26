@@ -20,7 +20,7 @@ import Receptionist from "./pages/UserList";
 import Reports from "./pages/Reports";
 import SelfCheck from "./pages/SelfCheck"; // Import the SelfCheck component
 import Employee from "./pages/Employee";
-
+import Settings from "./pages/Setting";
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" />;
@@ -168,6 +168,21 @@ function App() {
             </PrivateRoute>
           }
         />
+
+
+<Route
+          path="/Setting"
+          element={
+            <PrivateRoute>
+              <Settings/>
+            </PrivateRoute>
+          }
+        />
+
+
+
+
+
         {/* Add SelfCheck route as a public route */}
         <Route path="/employees" element={<Employee />} />
         <Route path="/self-check" element={<SelfCheck />} />

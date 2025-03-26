@@ -1,10 +1,7 @@
-
-
-//removed the forget passsword and enter button is working
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TextField, Button, Paper, Typography, Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api/authAPI"; // Adjust path
+import { login } from "../api/authAPI";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -13,10 +10,43 @@ const LoginForgotPassword = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [currentImage, setCurrentImage] = useState(0);
 
-  // Handle login
+  // Load images from localStorage
+  const [loginImages, setLoginImages] = useState(() => {
+    const storedImages = JSON.parse(localStorage.getItem("loginImages")) || [];
+    return storedImages.length > 0
+      ? storedImages
+      : ["https://via.placeholder.com/400x300?text=No+Image+Uploaded"]; // Default placeholder
+  });
+
+  // Effect for changing images
+  useEffect(() => {
+    if (loginImages.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImage((prev) => (prev + 1) % loginImages.length);
+      }, 3000); // Change image every 3 seconds
+      return () => clearInterval(interval);
+    }
+  }, [loginImages.length]);
+
+  // Listen for changes in localStorage (optional, for real-time updates)
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedImages = JSON.parse(localStorage.getItem("loginImages")) || [];
+      setLoginImages(
+        updatedImages.length > 0
+          ? updatedImages
+          : ["https://via.placeholder.com/400x300?text=No+Image+Uploaded"]
+      );
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
   const handleLoginSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
     if (!username || !password) {
       toast.error("Enter username and password");
       return;
@@ -24,14 +54,12 @@ const LoginForgotPassword = () => {
 
     setLoginLoading(true);
     try {
-      const response = await login(username, password); // API call to MongoDB backend
+      const response = await login(username, password);
       toast.success("Login Successful!");
 
-      // Store token and user data in localStorage
       localStorage.setItem("token", response.token);
       localStorage.setItem("user", JSON.stringify(response.user));
 
-      // Redirect based on role
       setTimeout(() => {
         switch (response.user.role) {
           case "admin":
@@ -70,8 +98,27 @@ const LoginForgotPassword = () => {
           gap: 3,
         }}
       >
-        <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <img src="/assets/login-image.jpg" alt="Visitor Management" style={{ width: "100%", maxWidth: "400px" }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <img
+            src={loginImages[currentImage]}
+            alt="Visitor Management"
+            style={{
+              width: "100%",
+              maxWidth: "400px",
+              borderRadius: "16px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
+              transition: "opacity 0.5s ease-in-out",
+            }}
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/400x300?text=Image+Load+Failed";
+            }}
+          />
         </Box>
 
         <Paper
@@ -108,8 +155,13 @@ const LoginForgotPassword = () => {
             <Button
               fullWidth
               variant="contained"
-              sx={{ backgroundColor: "#4caf50", color: "white", mt: 2, ":hover": { backgroundColor: "#388e3c" } }}
-              type="submit" // Make the button a submit type
+              sx={{
+                backgroundColor: "#4caf50",
+                color: "white",
+                mt: 2,
+                ":hover": { backgroundColor: "#388e3c" },
+              }}
+              type="submit"
               disabled={loginLoading}
             >
               {loginLoading ? "Processing..." : "SUBMIT"}

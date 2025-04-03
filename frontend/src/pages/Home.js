@@ -843,8 +843,6 @@
 // export default Home;
 
 
-
-
 import React, { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
@@ -1383,11 +1381,11 @@ function Home() {
             right: 0,
             bgcolor: "#1976d2",
             color: "white",
-            p: 1,
+            p: 0.5, // Reduced padding to fit thinner height
             textAlign: "center",
             zIndex: 1000,
             overflow: "hidden",
-            height: 40, // Fixed height for notification bar
+            height: 30, // Reduced from 40px to 30px for a thinner bar
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
           }}
         >
@@ -1402,7 +1400,7 @@ function Home() {
               },
             }}
           >
-            <Typography variant="body1" sx={{ px: 4 }}>
+            <Typography variant="body2" sx={{ px: 4 }}>
               {notificationText}
             </Typography>
           </Box>
@@ -1736,4 +1734,4 @@ function Home() {
   );
 }
 
-export default Home;  
+export default Home;

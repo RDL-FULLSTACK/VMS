@@ -1,4 +1,4 @@
-// components/CompanyRegister.js
+ // components/CompanyRegister.js
 
 import React, { useState } from "react";
 import {
@@ -10,10 +10,12 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Input,
 } from "@mui/material";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx";
 
 const CompanyRegister = ({ onClose }) => {
   const [formData, setFormData] = useState({
@@ -25,54 +27,87 @@ const CompanyRegister = ({ onClose }) => {
     phoneNumber: "",
   });
   const [loading, setLoading] = useState(false);
+  const [excelUsers, setExcelUsers] = useState(null); // Store parsed Excel/CSV data
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const { username, password, role, department, email, phoneNumber } = formData;
-
-    if (!username || !password || !role || !department || !email || !phoneNumber) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    if (!/^\d{10}$/.test(phoneNumber)) {
-      toast.error("Phone number must be 10 digits");
-      return;
-    }
-
-    setLoading(true);
+  const handleExcelUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        "http://localhost:5000/api/auth/register",
-        {
-          username,
-          password,
-          role: role.toLowerCase(),
-          department,
-          email,
-          phoneNumber,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-      toast.success("User added successfully!");
-      setTimeout(() => {
+        // Validate and format the data
+        const users = jsonData.map((row) => ({
+          username: row.Username?.toString() || "",
+          password: row.Password?.toString() || "",
+          role: row.Role?.toString().toLowerCase() || "",
+          department: row.Department?.toString() || "",
+          email: row.Email?.toString() || "",
+          phoneNumber: row.PhoneNumber?.toString() || "",
+        }));
+
+        // Basic validation for Excel data
+        for (const user of users) {
+          if (
+            !user.username ||
+            !user.password ||
+            !user.role ||
+            !user.department ||
+            !user.email ||
+            !user.phoneNumber
+          ) {
+            throw new Error("All fields are required in the Excel/CSV sheet");
+          }
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.email)) {
+            throw new Error(`Invalid email in Excel/CSV: ${user.email}`);
+          }
+          if (!/^\d{10}$/.test(user.phoneNumber)) {
+            throw new Error(`Invalid phone number in Excel/CSV: ${user.phoneNumber}`);
+          }
+        }
+
+        setExcelUsers(users); // Store the parsed users
+        toast.info("Excel/CSV file loaded. Click 'REGISTER' to add users.");
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      toast.error(error.message || "Failed to process Excel/CSV file");
+      setExcelUsers(null);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const token = localStorage.getItem("token");
+
+    try {
+      if (excelUsers) {
+        // Bulk registration from Excel/CSV
+        const response = await axios.post(
+          "http://localhost:5000/api/auth/register-bulk",
+          { users: excelUsers },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        toast.success(response.data.message || "Users added successfully!");
+        setExcelUsers(null); // Clear Excel/CSV data after successful registration
         setFormData({
           username: "",
           password: "",
@@ -81,10 +116,61 @@ const CompanyRegister = ({ onClose }) => {
           email: "",
           phoneNumber: "",
         });
+      } else {
+        // Single user registration with form validation
+        const { username, password, role, department, email, phoneNumber } = formData;
+
+        if (!username || !password || !role || !department || !email || !phoneNumber) {
+          toast.error("Please fill in all fields");
+          setLoading(false);
+          return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          toast.error("Please enter a valid email address");
+          setLoading(false);
+          return;
+        }
+
+        if (!/^\d{10}$/.test(phoneNumber)) {
+          toast.error("Phone number must be 10 digits");
+          setLoading(false);
+          return;
+        }
+
+        await axios.post(
+          "http://localhost:5000/api/auth/register",
+          {
+            username,
+            password,
+            role: role.toLowerCase(),
+            department,
+            email,
+            phoneNumber,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        toast.success("User added successfully!");
+        setFormData({
+          username: "",
+          password: "",
+          role: "",
+          department: "",
+          email: "",
+          phoneNumber: "",
+        });
+      }
+
+      setTimeout(() => {
         if (onClose) onClose();
       }, 1000);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add user");
+      toast.error(error.response?.data?.message || "Failed to add user(s)");
     } finally {
       setLoading(false);
     }
@@ -209,6 +295,18 @@ const CompanyRegister = ({ onClose }) => {
             {loading ? "Processing..." : "REGISTER"}
           </Button>
         </form>
+
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle1" mb={1}>
+            Or Add Users via Excel/CSV
+          </Typography>
+          <Input
+            type="file"
+            accept=".xlsx, .xls, .csv"
+            onChange={handleExcelUpload}
+            disabled={loading}
+          />
+        </Box>
       </Box>
     </Box>
   );

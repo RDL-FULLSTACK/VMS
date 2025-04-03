@@ -1,6 +1,5 @@
-
-
 // controllers/authController.js
+
 
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
@@ -35,7 +34,7 @@ const registerUser = async (req, res) => {
     const newUser = new User({ 
       username, 
       password, 
-      role: normalizedRole, 
+      role: normalizedRole, Ascynchoronous, 
       department, 
       email, 
       phoneNumber 
@@ -55,6 +54,67 @@ const registerUser = async (req, res) => {
         phoneNumber: newUser.phoneNumber,
       },
       token,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// 🔹 Bulk Register Users
+const registerBulkUsers = async (req, res) => {
+  const { users } = req.body;
+
+  try {
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      return res.status(400).json({ message: 'Users array is required and must not be empty' });
+    }
+
+    const validRoles = ['admin', 'receptionist', 'security', 'host'];
+    const failedUsers = [];
+    const successfulUsers = [];
+
+    for (const user of users) {
+      const { username, password, role, department, email, phoneNumber } = user;
+
+      if (!username || !password || !role || !department || !email || !phoneNumber) {
+        failedUsers.push({ username, reason: 'Missing required fields' });
+        continue;
+      }
+
+      const normalizedRole = role.toLowerCase();
+      if (!validRoles.includes(normalizedRole)) {
+        failedUsers.push({ username, reason: 'Invalid role' });
+        continue;
+      }
+
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        failedUsers.push({ username, reason: 'Username already exists' });
+        continue;
+      }
+
+      const existingEmail = await User.findOne({ email });
+      if (existingEmail) {
+        failedUsers.push({ username, reason: 'Email already exists' });
+        continue;
+      }
+
+      const newUser = new User({
+        username,
+        password,
+        role: normalizedRole,
+        department,
+        email,
+        phoneNumber,
+      });
+      await newUser.save();
+      successfulUsers.push(username);
+    }
+
+    res.status(201).json({
+      message: `Bulk registration completed. Successful: ${successfulUsers.length}, Failed: ${failedUsers.length}`,
+      successfulUsers,
+      failedUsers,
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -193,4 +253,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUser, getUsers, forgotPassword, verifyOtp, resetPassword };
+module.exports = { registerUser, registerBulkUsers, loginUser, getUser, getUsers, forgotPassword, verifyOtp, resetPassword };

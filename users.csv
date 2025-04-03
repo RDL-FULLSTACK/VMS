@@ -1,0 +1,5 @@
+Username,Password,Role,Department,Email,PhoneNumber
+john123,pass123,Admin,IT,john@example.com,1234567890
+jane456,pass456,Receptionist,HR,jane@example.com,9876543210
+bob789,pass789,Security,Security,bob@example.com,5555555555
+alice101,pass101,host,Marketing,alice@example.com,4444444444

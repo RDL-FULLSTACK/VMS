@@ -4,7 +4,6 @@ import {
   Button,
   Typography,
   Container,
-  Input,
   FormControl,
   FormLabel,
   Select,
@@ -13,8 +12,11 @@ import {
   IconButton,
   Alert,
   TextField,
+  Grid,
+  Paper,
+  Tooltip,
 } from "@mui/material";
-import { Delete as DeleteIcon } from "@mui/icons-material";
+import { Delete as DeleteIcon, CloudUpload as UploadIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,7 +28,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const [loginImages, setLoginImages] = useState([]);
   const [navbarLogos, setNavbarLogos] = useState([]);
-  const [notificationText, setNotificationText] = useState(""); // State for notification text
+  const [notificationText, setNotificationText] = useState("");
   const [selectedGate, setSelectedGate] = useState(
     localStorage.getItem("selectedGate") || ""
   );
@@ -57,7 +59,6 @@ const Settings = () => {
     fetchImages();
     fetchNavbarLogos();
 
-    // Load notification from localStorage
     const storedNotification = localStorage.getItem("customNotification") || "";
     setNotificationText(storedNotification);
   }, [BACKEND_URL]);
@@ -155,7 +156,7 @@ const Settings = () => {
   const handleNotificationChange = (e) => {
     const newText = e.target.value;
     setNotificationText(newText);
-    localStorage.setItem("customNotification", newText); // Save to localStorage immediately
+    localStorage.setItem("customNotification", newText);
   };
 
   const handleGateChange = async (event) => {
@@ -182,192 +183,385 @@ const Settings = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f8f9fa" }}>
       <Navbar />
-      <Container maxWidth="md" sx={{ mt: 8, mb: 4, flex: 1 }}>
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4, flex: 1 }}>
         <ToastContainer position="top-right" autoClose={3000} />
-        <Typography variant="h4" gutterBottom align="center">
-          Settings
-        </Typography>
-
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>Select Gate</FormLabel>
-          <Select
-            value={selectedGate}
-            onChange={handleGateChange}
-            displayEmpty
-            renderValue={(value) => (value ? value : "Select a gate")}
-          >
-            <MenuItem value="" disabled>
-              Select a gate
-            </MenuItem>
-            <MenuItem value="Gate 1">Gate 1</MenuItem>
-            <MenuItem value="Gate 2">Gate 2</MenuItem>
-            <MenuItem value="Gate 3">Gate 3</MenuItem>
-          </Select>
-        </FormControl>
-
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>Change Login Image</FormLabel>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              disabled={isUploading}
-            />
-            {isUploading && <CircularProgress size={24} />}
-          </Box>
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
-            </Alert>
-          )}
-        </FormControl>
-
-        {loginImages.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6">Uploaded Images</Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 2,
-                mt: 2,
-              }}
-            >
-              {loginImages.map((imageUrl, index) => (
-                <Box key={index} sx={{ position: "relative" }}>
-                  <img
-                    src={imageUrl}
-                    alt={`Uploaded ${index}`}
-                    style={{
-                      width: "100%",
-                      maxWidth: "150px",
-                      height: "auto",
-                      borderRadius: "10px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <IconButton
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      bgcolor: "rgba(255, 255, 255, 0.7)",
-                    }}
-                    onClick={() => handleRemoveImage(imageUrl)}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>Change Navbar Logo</FormLabel>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Input
-              type="file"
-              accept="image/*"
-              onChange={handleNavbarLogoChange}
-              disabled={isUploading}
-            />
-            {isUploading && <CircularProgress size={24} />}
-          </Box>
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {error}
-            </Alert>
-          )}
-        </FormControl>
-
-        {navbarLogos.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h6">Uploaded Navbar Logos</Typography>
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                gap: 2,
-                mt: 2,
-              }}
-            >
-              {navbarLogos.map((logoUrl, index) => (
-                <Box key={index} sx={{ position: "relative" }}>
-                  <img
-                    src={logoUrl}
-                    alt={`Navbar Logo ${index}`}
-                    style={{
-                      width: "100%",
-                      maxWidth: "150px",
-                      height: "auto",
-                      borderRadius: "10px",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <IconButton
-                    sx={{
-                      position: "absolute",
-                      top: 0,
-                      right: 0,
-                      bgcolor: "rgba(255, 255, 255, 0.7)",
-                    }}
-                    onClick={() => handleRemoveNavbarLogo(logoUrl)}
-                  >
-                    <DeleteIcon color="error" />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        <FormControl fullWidth sx={{ mb: 3 }}>
-          <FormLabel>Set Floating Notification</FormLabel>
-          <TextField
-            value={notificationText}
-            onChange={handleNotificationChange}
-            placeholder="Enter custom notification"
-            multiline
-            rows={2}
-            variant="outlined"
-          />
-        </FormControl>
-
-        <Box sx={{ mt: 4, display: "flex", justifyContent: "center", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => navigate("/reports")}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+          <Typography
+            variant="h4"
             sx={{
-              py: 1,
-              px: 3,
-              background: "linear-gradient(45deg, #1976d2, #42a5f5)",
-              borderRadius: "25px",
-              fontSize: "1rem",
               fontWeight: "bold",
-              textTransform: "none",
-              boxShadow: "0 4px 15px rgba(25, 118, 210, 0.4)",
-              transition: "all 0.3s ease",
-              "&:hover": {
-                background: "linear-gradient(45deg, #42a5f5, #1976d2)",
-                transform: "translateY(-2px)",
-                boxShadow: "0 6px 20px rgba(25, 118, 210, 0.6)",
-              },
+              color: "#2e1a47",
+              background: "linear-gradient(45deg, #2e1a47, #6d4c9e)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
-            Reports
-          </Button>
+            Settings
+          </Typography>
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={handleLogout}
+              sx={{
+                py: 1,
+                px: 4,
+                background: "linear-gradient(45deg, #2e1a47, #6d4c9e)",
+                borderRadius: "25px",
+                textTransform: "none",
+                fontWeight: "bold",
+                boxShadow: "0 4px 15px rgba(46, 26, 71, 0.4)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #3f2a5d, #7e5daf)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(46, 26, 71, 0.6)",
+                },
+              }}
+            >
+              Logout
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/reports")}
+              sx={{
+                py: 1,
+                px: 4,
+                background: "linear-gradient(45deg, #26a69a, #4db6ac)",
+                borderRadius: "25px",
+                fontSize: "1rem",
+                fontWeight: "bold",
+                textTransform: "none",
+                boxShadow: "0 4px 15px rgba(38, 166, 154, 0.4)",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  background: "linear-gradient(45deg, #2bbbad, #56c7b8)",
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 20px rgba(38, 166, 154, 0.6)",
+                },
+              }}
+            >
+              Reports
+            </Button>
+          </Box>
         </Box>
+
+        <Grid container spacing={4}>
+          {/* Left Half: Select Gate, Change Login Image, Uploaded Images */}
+          <Grid item xs={12} md={6}>
+            {/* Select Gate Section */}
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                Select Gate
+              </Typography>
+              <FormControl fullWidth>
+                <Select
+                  value={selectedGate}
+                  onChange={handleGateChange}
+                  displayEmpty
+                  renderValue={(value) => (value ? value : "Select a gate")}
+                  variant="filled"
+                  sx={{
+                    borderRadius: 2,
+                    bgcolor: "#f1f3f5",
+                    "&:before": { borderBottom: "none" },
+                    "&:after": { borderBottom: "none" },
+                    "&:hover": { bgcolor: "#e9ecef" },
+                    "& .MuiFilledInput-input": { py: 1.5 },
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Select a gate
+                  </MenuItem>
+                  <MenuItem value="Gate 1">Gate 1</MenuItem>
+                  <MenuItem value="Gate 2">Gate 2</MenuItem>
+                  <MenuItem value="Gate 3">Gate 3</MenuItem>
+                </Select>
+              </FormControl>
+            </Paper>
+
+            {/* Change Login Image Section */}
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                Change Login Image
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<UploadIcon />}
+                  component="label"
+                  sx={{
+                    background: "linear-gradient(45deg, #2e1a47, #6d4c9e)",
+                    borderRadius: 2,
+                    textTransform: "none",
+                    px: 3,
+                    py: 1,
+                    "&:hover": {
+                      background: "linear-gradient(45deg, #3f2a5d, #7e5daf)",
+                      transform: "scale(1.02)",
+                      transition: "all 0.3s ease",
+                    },
+                  }}
+                >
+                  Browse
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleImageChange}
+                    disabled={isUploading}
+                  />
+                </Button>
+                {isUploading && <CircularProgress size={24} />}
+              </Box>
+              {error && (
+                <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
+                  {error}
+                </Alert>
+              )}
+            </Paper>
+
+            {/* Uploaded Images Section */}
+            {loginImages.length > 0 && (
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  mb: 4,
+                  borderRadius: 3,
+                  transition: "transform 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                  },
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                  Uploaded Images
+                </Typography>
+                <Box sx={{ display: "flex", overflowX: "auto", gap: 2, py: 1 }}>
+                  {loginImages.map((imageUrl, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        position: "relative",
+                        flexShrink: 0,
+                        transition: "transform 0.3s ease",
+                        "&:hover": { transform: "scale(1.05)" },
+                      }}
+                    >
+                      <img
+                        src={imageUrl}
+                        alt={`Uploaded ${index}`}
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          objectFit: "cover",
+                          borderRadius: "10px",
+                          border: "2px solid #e9ecef",
+                        }}
+                      />
+                      <Tooltip title="Remove Image">
+                        <IconButton
+                          sx={{
+                            position: "absolute",
+                            top: -10,
+                            right: -10,
+                            bgcolor: "white",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                            "&:hover": { bgcolor: "#ffebee" },
+                          }}
+                          onClick={() => handleRemoveImage(imageUrl)}
+                        >
+                          <DeleteIcon color="error" fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ))}
+                </Box>
+              </Paper>
+            )}
+          </Grid>
+
+          {/* Right Half: Change Navbar Logo, Uploaded Navbar Logos, Set Floating Notification */}
+          <Grid item xs={12} md={6}>
+            {/* Change Navbar Logo Section */}
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                Change Navbar Logo
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<UploadIcon />}
+                  component="label"
+                  sx={{
+                    background: "linear-gradient(45deg, #2e1a47, #6d4c9e)",
+                    borderRadius: 2,
+                    textTransform: "none",
+                    px: 3,
+                    py: 1,
+                    "&:hover": {
+                      background: "linear-gradient(45deg, #3f2a5d, #7e5daf)",
+                      transform: "scale(1.02)",
+                      transition: "all 0.3s ease",
+                    },
+                  }}
+                >
+                  Browse
+                  <input
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    onChange={handleNavbarLogoChange}
+                    disabled={isUploading}
+                  />
+                </Button>
+                {isUploading && <CircularProgress size={24} />}
+              </Box>
+              {error && (
+                <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
+                  {error}
+                </Alert>
+              )}
+            </Paper>
+
+            {/* Uploaded Navbar Logos Section */}
+            {navbarLogos.length > 0 && (
+              <Paper
+                elevation={3}
+                sx={{
+                  p: 3,
+                  mb: 4,
+                  borderRadius: 3,
+                  transition: "transform 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-5px)",
+                    boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                  },
+                }}
+              >
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                  Uploaded Navbar Logos
+                </Typography>
+                <Box sx={{ display: "flex", overflowX: "auto", gap: 2, py: 1 }}>
+                  {navbarLogos.map((logoUrl, index) => (
+                    <Box
+                      key={index}
+                      sx={{
+                        position: "relative",
+                        flexShrink: 0,
+                        transition: "transform 0.3s ease",
+                        "&:hover": { transform: "scale(1.05)" },
+                      }}
+                    >
+                      <img
+                        src={logoUrl}
+                        alt={`Navbar Logo ${index}`}
+                        style={{
+                          width: "120px",
+                          height: "120px",
+                          objectFit: "cover",
+                          borderRadius: "10px",
+                          border: "2px solid #e9ecef",
+                        }}
+                      />
+                      <Tooltip title="Remove Logo">
+                        <IconButton
+                          sx={{
+                            position: "absolute",
+                            top: -10,
+                            right: -10,
+                            bgcolor: "white",
+                            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                            "&:hover": { bgcolor: "#ffebee" },
+                          }}
+                          onClick={() => handleRemoveNavbarLogo(logoUrl)}
+                        >
+                          <DeleteIcon color="error" fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  ))}
+                </Box>
+              </Paper>
+            )}
+
+            {/* Set Floating Notification Section */}
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                Set Floating Notification
+              </Typography>
+              <TextField
+                value={notificationText}
+                onChange={handleNotificationChange}
+                placeholder="Enter custom notification"
+                multiline
+                rows={3}
+                variant="filled"
+                fullWidth
+                sx={{
+                  "& .MuiFilledInput-root": {
+                    borderRadius: 2,
+                    bgcolor: "#f1f3f5",
+                    "&:before": { borderBottom: "none" },
+                    "&:after": { borderBottom: "none" },
+                    "&:hover": { bgcolor: "#e9ecef" },
+                  },
+                }}
+              />
+            </Paper>
+          </Grid>
+        </Grid>
       </Container>
       <Footer />
     </Box>

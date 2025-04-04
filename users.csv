@@ -1,5 +1,11 @@
-Username,Password,Role,Department,Email,PhoneNumber
-john123,pass123,Admin,IT,john@example.com,1234567890
-jane456,pass456,Receptionist,HR,jane@example.com,9876543210
-bob789,pass789,Security,Security,bob@example.com,5555555555
-alice101,pass101,host,Marketing,alice@example.com,4444444444
+Username,Password,Role,Department,Email,Phone Number
+"ravisharma","12345","Employee","IT","ravi.s@xai.com","9876543210"
+"priyamehta","12345","Employee","HR","priya.m@xai.com","8765432109"
+"arjunpatel","12345","Employee","Marketing","arjun.p@xai.com","7654321098"
+"nehaverma","12345","Employee","Finance","neha.v@xai.com","6543210987"
+"vikramsingh","12345","Employee","Operations","vikram.s@xai.com","5432109876"
+"anitadesai","12345","Employee","IT","anita.d@xai.com","4321098765"
+"rohankumar","12345","Employee","HR","rohan.k@xai.com","3210987654"
+"swatinair","12345","Employee","Marketing","swati.n@xai.com","2109876543"
+"karanrao","12345","Employee","Finance","karan.r@xai.com","1098765432"
+"divyajoshi","12345","Employee","Operations","divya.j@xai.com","0987654321"

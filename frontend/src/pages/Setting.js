@@ -15,7 +15,7 @@ import {
   Paper,
   Tooltip,
 } from "@mui/material";
-import { Delete as DeleteIcon, CloudUpload as UploadIcon } from "@mui/icons-material";
+import { Delete as DeleteIcon, CloudUpload as UploadIcon, VideoCall as VideoIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -181,6 +181,10 @@ const Settings = () => {
     }
   };
 
+  const handleVideoUploadNavigation = () => {
+    navigate("/video-upload");
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", bgcolor: "#f8f9fa" }}>
       <Navbar />
@@ -247,7 +251,7 @@ const Settings = () => {
         </Box>
 
         <Grid container spacing={4}>
-          {/* Left Half: Select Gate, Change Login Image, Uploaded Images */}
+          {/* Left Half: Select Gate, Change Login Image, Video Upload, Uploaded Images */}
           <Grid item xs={12} md={6}>
             {/* Select Gate Section */}
             <Paper
@@ -343,6 +347,44 @@ const Settings = () => {
                   {error}
                 </Alert>
               )}
+            </Paper>
+
+            {/* Video Upload Section */}
+            <Paper
+              elevation={3}
+              sx={{
+                p: 3,
+                mb: 4,
+                borderRadius: 3,
+                transition: "transform 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: "0 6px 25px rgba(0,0,0,0.15)",
+                },
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "medium", color: "#2e1a47" }}>
+                Video Upload
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<VideoIcon />}
+                onClick={handleVideoUploadNavigation}
+                sx={{
+                  background: "linear-gradient(45deg, #2e1a47, #6d4c9e)",
+                  borderRadius: 2,
+                  textTransform: "none",
+                  px: 3,
+                  py: 1,
+                  "&:hover": {
+                    background: "linear-gradient(45deg, #3f2a5d, #7e5daf)",
+                    transform: "scale(1.02)",
+                    transition: "all 0.3s ease",
+                  },
+                }}
+              >
+                Go to Video Upload
+              </Button>
             </Paper>
 
             {/* Uploaded Images Section */}

@@ -26,19 +26,28 @@ import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { styled } from '@mui/material/styles';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
-// Styled Components for Enhanced UI
-const StyledContainer = styled(Container)(({ theme }) => ({
-  padding: theme.spacing(6, 2),
-  background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-  minHeight: '100vh',
+// Styled Components for Enhanced UI matching Settings.js
+const StyledContainer = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(4, 2), // Reduced padding to match Settings spacing
+  background: '#f8f9fa', // Matches Settings background
+  minHeight: 'calc(100vh - 64px - 120px)', // Adjust for Navbar and Footer height
+  display: 'flex',
+  flexDirection: 'column',
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  borderRadius: '16px',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+  borderRadius: '16px', // Matches Settings border radius
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', // Matches Settings shadow
   background: '#fff',
+  transition: 'transform 0.3s ease', // Added hover effect like Settings
+  '&:hover': {
+    transform: 'translateY(-5px)',
+    boxShadow: '0 6px 25px rgba(0, 0, 0, 0.15)',
+  },
 }));
 
 const StyledQuestionBox = styled(Box)(({ theme }) => ({
@@ -63,9 +72,10 @@ const StyledQuizCard = styled(Paper)(({ theme }) => ({
   borderRadius: '16px',
   boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
   background: '#fff',
-  transition: 'transform 0.2s ease-in-out',
+  transition: 'transform 0.3s ease', // Updated to match Settings hover
   '&:hover': {
-    transform: 'scale(1.02)',
+    transform: 'translateY(-5px)', // Matches Settings hover
+    boxShadow: '0 6px 25px rgba(0, 0, 0, 0.15)',
   },
 }));
 
@@ -358,253 +368,318 @@ const VideoUpload = () => {
   };
 
   return (
-    <StyledContainer maxWidth="lg">
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
-      <Typography
-        variant="h4"
-        gutterBottom
-        sx={{ fontWeight: 'bold', color: '#1976d2', textAlign: 'center' }}
-      >
-        Visitor Video & Quiz Creator
-      </Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Navbar />
+      <StyledContainer component="main" sx={{ flexGrow: 1 }}>
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+        <Container maxWidth="lg">
+          <Typography
+            variant="h4"
+            gutterBottom
+            sx={{
+              fontWeight: 'bold',
+              color: '#2e1a47', // Matches Settings title color
+              background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings gradient
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textAlign: 'center',
+            }}
+          >
+            Visitor Video & Quiz Creator
+          </Typography>
 
-      <Box
-        sx={{
-          mb: 4,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          bgcolor: '#e3f2fd',
-          p: 2,
-          borderRadius: '12px',
-          boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
-        }}
-      >
-        <FormControlLabel
-          control={
-            <Switch
-              checked={previewMode}
-              onChange={(e) => setPreviewMode(e.target.checked)}
-              color="primary"
-            />
-          }
-          label={<Typography variant="body1">Preview Mode</Typography>}
-        />
-        {previewMode && (
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="subtitle1" sx={{ mr: 2, fontWeight: 'bold' }}>
-              Score: {calculateScore()} / {questions.length}
-            </Typography>
-            <Button
-              variant="outlined"
-              color="secondary"
-              onClick={resetQuiz}
-              sx={{ borderRadius: '20px' }}
-            >
-              Reset Quiz
-            </Button>
-          </Box>
-        )}
-      </Box>
-
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <StyledPaper>
-            <Typography variant="h6" gutterBottom sx={{ color: '#424242' }}>
-              Upload Video
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<CloudUploadIcon />}
-              onClick={handleUpload}
-              sx={{ mb: 3, borderRadius: '20px', px: 4 }}
-            >
-              Upload Video
-            </Button>
-            {videoUrl && (
-              <StyledVideoBox>
-                <video src={videoUrl} controls style={{ width: '100%' }} />
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<DeleteIcon />}
-                  onClick={handleDelete}
-                  sx={{ mt: 2, borderRadius: '20px', width: '100%' }}
-                >
-                  Delete Video
-                </Button>
-              </StyledVideoBox>
-            )}
-          </StyledPaper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <StyledPaper>
-            <Typography variant="h6" gutterBottom sx={{ color: '#424242' }}>
-              Create Questions
-            </Typography>
-            {questions.map((q, qIndex) => (
-              <StyledQuestionBox key={qIndex} sx={{ mb: 3 }}>
-                <TextField
-                  label={`Question ${qIndex + 1}`}
-                  value={q.question}
-                  onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
-                  fullWidth
-                  margin="normal"
-                  disabled={previewMode}
-                  variant="outlined"
-                  sx={{ bgcolor: '#fff', borderRadius: '8px' }}
-                />
-                <FormControl component="fieldset" sx={{ mt: 2 }}>
-                  <FormLabel
-                    component="legend"
-                    sx={{ fontWeight: 'medium', color: '#616161' }}
-                  >
-                    {previewMode ? 'Select an Answer' : 'Options (Mark Correct Answer)'}
-                  </FormLabel>
-                  <RadioGroup
-                    value={previewMode ? q.selectedIndex : q.correctIndex}
-                    onChange={(e) =>
-                      previewMode
-                        ? handleAnswerSelect(qIndex, parseInt(e.target.value))
-                        : handleCorrectChange(qIndex, e.target.value)
-                    }
-                  >
-                    {q.options.map((opt, oIndex) => (
-                      <FormControlLabel
-                        key={oIndex}
-                        value={oIndex}
-                        control={<Radio color="primary" />}
-                        label={
-                          <TextField
-                            value={opt}
-                            onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
-                            placeholder={`Option ${oIndex + 1}`}
-                            disabled={previewMode}
-                            variant="standard"
-                            sx={{ width: '300px' }}
-                          />
-                        }
-                      />
-                    ))}
-                  </RadioGroup>
-                </FormControl>
-                {previewMode && (
-                  <Box sx={{ mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="small"
-                      onClick={() => handleSubmitAnswer(qIndex)}
-                      disabled={q.selectedIndex === null || q.submitted}
-                      sx={{ borderRadius: '20px' }}
-                    >
-                      Check Answer
-                    </Button>
-                    {getAnswerFeedback(q)}
-                  </Box>
-                )}
-                {!previewMode && questions.length > 1 && (
-                  <IconButton
-                    color="error"
-                    onClick={() => handleRemoveQuestion(qIndex)}
-                    sx={{ mt: 1 }}
-                  >
-                    <RemoveCircleOutlineIcon />
-                  </IconButton>
-                )}
-              </StyledQuestionBox>
-            ))}
-            {!previewMode && (
-              <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                <Button
-                  variant="outlined"
+          <Box
+            sx={{
+              mb: 4,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              bgcolor: '#f1f3f5', // Lighter gray to match Settings inputs
+              p: 2,
+              borderRadius: '12px',
+              boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={previewMode}
+                  onChange={(e) => setPreviewMode(e.target.checked)}
                   color="primary"
-                  startIcon={<AddCircleIcon />}
-                  onClick={handleAddQuestion}
-                  sx={{ borderRadius: '20px' }}
-                >
-                  Add Question
-                </Button>
+                />
+              }
+              label={<Typography variant="body1" sx={{ color: '#2e1a47' }}>Preview Mode</Typography>}
+            />
+            {previewMode && (
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Typography variant="subtitle1" sx={{ mr: 2, fontWeight: 'bold', color: '#2e1a47' }}>
+                  Score: {calculateScore()} / {questions.length}
+                </Typography>
                 <Button
-                  variant="contained"
-                  color="success"
-                  onClick={handleSubmit}
-                  sx={{ borderRadius: '20px', px: 4 }}
+                  variant="outlined"
+                  color="secondary"
+                  onClick={resetQuiz}
+                  sx={{ borderRadius: '25px', color: '#2e1a47', borderColor: '#2e1a47' }}
                 >
-                  Save Quiz
+                  Reset Quiz
                 </Button>
               </Box>
             )}
-          </StyledPaper>
-        </Grid>
-      </Grid>
+          </Box>
 
-      <Box sx={{ mt: 6 }}>
-        <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-          Saved Quizzes
-        </Typography>
-        <Divider sx={{ mb: 3 }} />
-        {loadingQuizzes ? (
-          <Typography color="textSecondary">Loading quizzes...</Typography>
-        ) : savedQuizzes.length === 0 ? (
-          <Typography color="textSecondary">No quizzes found.</Typography>
-        ) : (
-          <Grid container spacing={3}>
-            {savedQuizzes.map((quiz) => (
-              <Grid item xs={12} sm={6} md={4} key={quiz._id}>
-                <StyledQuizCard>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    Video Preview
-                  </Typography>
+          <Grid container spacing={4}>
+            <Grid item xs={12} md={6}>
+              <StyledPaper>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e1a47', fontWeight: 'medium' }}>
+                  Upload Video
+                </Typography>
+                <Button
+                  variant="contained"
+                  startIcon={<CloudUploadIcon />}
+                  onClick={handleUpload}
+                  sx={{
+                    mb: 3,
+                    background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings button
+                    borderRadius: '25px', // Matches Settings button radius
+                    textTransform: 'none',
+                    px: 4,
+                    py: 1,
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #3f2a5d, #7e5daf)',
+                      transform: 'scale(1.02)',
+                      transition: 'all 0.3s ease',
+                    },
+                  }}
+                >
+                  Upload Video
+                </Button>
+                {videoUrl && (
                   <StyledVideoBox>
-                    <video
-                      src={quiz.videoUrl} // Fixed from videoUrl to quiz.videoUrl
-                      controls
-                      style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
-                    />
+                    <video src={videoUrl} controls style={{ width: '100%' }} />
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      startIcon={<DeleteIcon />}
+                      onClick={handleDelete}
+                      sx={{ mt: 2, borderRadius: '25px', width: '100%' }}
+                    >
+                      Delete Video
+                    </Button>
                   </StyledVideoBox>
-                  <Typography variant="subtitle2" sx={{ mt: 2, color: '#616161' }}>
-                    Questions:
-                  </Typography>
-                  <Box sx={{ maxHeight: '150px', overflowY: 'auto' }}>
-                    <ul style={{ paddingLeft: '20px' }}>
-                      {quiz.questions.map((q, idx) => (
-                        <li key={idx}>
-                          <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
-                            {q.question}
-                          </Typography>
-                          <ul style={{ paddingLeft: '20px' }}>
-                            {q.options.map((opt, i) => (
-                              <li
-                                key={i}
-                                style={{ color: i === q.correctIndex ? '#4caf50' : 'inherit' }}
-                              >
-                                <Typography variant="caption">{opt}</Typography>
-                              </li>
-                            ))}
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
+                )}
+              </StyledPaper>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <StyledPaper>
+                <Typography variant="h6" gutterBottom sx={{ color: '#2e1a47', fontWeight: 'medium' }}>
+                  Create Questions
+                </Typography>
+                {questions.map((q, qIndex) => (
+                  <StyledQuestionBox key={qIndex} sx={{ mb: 3 }}>
+                    <TextField
+                      label={`Question ${qIndex + 1}`}
+                      value={q.question}
+                      onChange={(e) => handleQuestionChange(qIndex, e.target.value)}
+                      fullWidth
+                      margin="normal"
+                      disabled={previewMode}
+                      variant="filled" // Matches Settings input style
+                      sx={{
+                        '& .MuiFilledInput-root': {
+                          borderRadius: 2,
+                          bgcolor: '#f1f3f5', // Matches Settings input background
+                          '&:before': { borderBottom: 'none' },
+                          '&:after': { borderBottom: 'none' },
+                          '&:hover': { bgcolor: '#e9ecef' },
+                        },
+                      }}
+                    />
+                    <FormControl component="fieldset" sx={{ mt: 2 }}>
+                      <FormLabel
+                        component="legend"
+                        sx={{ fontWeight: 'medium', color: '#2e1a47' }} // Matches Settings text
+                      >
+                        {previewMode ? 'Select an Answer' : 'Options (Mark Correct Answer)'}
+                      </FormLabel>
+                      <RadioGroup
+                        value={previewMode ? q.selectedIndex : q.correctIndex}
+                        onChange={(e) =>
+                          previewMode
+                            ? handleAnswerSelect(qIndex, parseInt(e.target.value))
+                            : handleCorrectChange(qIndex, e.target.value)
+                        }
+                      >
+                        {q.options.map((opt, oIndex) => (
+                          <FormControlLabel
+                            key={oIndex}
+                            value={oIndex}
+                            control={<Radio color="primary" />}
+                            label={
+                              <TextField
+                                value={opt}
+                                onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
+                                placeholder={`Option ${oIndex + 1}`}
+                                disabled={previewMode}
+                                variant="standard"
+                                sx={{ width: '300px', color: '#2e1a47' }}
+                              />
+                            }
+                          />
+                        ))}
+                      </RadioGroup>
+                    </FormControl>
+                    {previewMode && (
+                      <Box sx={{ mt: 2 }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => handleSubmitAnswer(qIndex)}
+                          disabled={q.selectedIndex === null || q.submitted}
+                          sx={{
+                            background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings
+                            borderRadius: '25px',
+                            '&:hover': {
+                              background: 'linear-gradient(45deg, #3f2a5d, #7e5daf)',
+                              transform: 'scale(1.02)',
+                              transition: 'all 0.3s ease',
+                            },
+                          }}
+                        >
+                          Check Answer
+                        </Button>
+                        {getAnswerFeedback(q)}
+                      </Box>
+                    )}
+                    {!previewMode && questions.length > 1 && (
+                      <IconButton
+                        color="error"
+                        onClick={() => handleRemoveQuestion(qIndex)}
+                        sx={{ mt: 1 }}
+                      >
+                        <RemoveCircleOutlineIcon />
+                      </IconButton>
+                    )}
+                  </StyledQuestionBox>
+                ))}
+                {!previewMode && (
+                  <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      startIcon={<AddCircleIcon />}
+                      onClick={handleAddQuestion}
+                      sx={{
+                        borderRadius: '25px',
+                        color: '#2e1a47', // Matches Settings text
+                        borderColor: '#2e1a47',
+                        '&:hover': { borderColor: '#6d4c9e', color: '#6d4c9e' },
+                      }}
+                    >
+                      Add Question
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      onClick={handleSubmit}
+                      sx={{
+                        background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings
+                        borderRadius: '25px',
+                        px: 4,
+                        py: 1,
+                        '&:hover': {
+                          background: 'linear-gradient(45deg, #3f2a5d, #7e5daf)',
+                          transform: 'scale(1.02)',
+                          transition: 'all 0.3s ease',
+                        },
+                      }}
+                    >
+                      Save Quiz
+                    </Button>
                   </Box>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={() => handleDeleteQuiz(quiz._id)}
-                    sx={{ mt: 2, borderRadius: '20px', width: '100%' }}
-                  >
-                    Delete Quiz
-                  </Button>
-                </StyledQuizCard>
-              </Grid>
-            ))}
+                )}
+              </StyledPaper>
+            </Grid>
           </Grid>
-        )}
-      </Box>
-    </StyledContainer>
+
+          <Box sx={{ mt: 6 }}>
+            <Typography
+              variant="h5"
+              gutterBottom
+              sx={{
+                fontWeight: 'bold',
+                color: '#2e1a47', // Matches Settings
+                background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings gradient
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Saved Quizzes
+            </Typography>
+            <Divider sx={{ mb: 3 }} />
+            {loadingQuizzes ? (
+              <Typography color="#2e1a47">Loading quizzes...</Typography>
+            ) : savedQuizzes.length === 0 ? (
+              <Typography color="#2e1a47">No quizzes found.</Typography>
+            ) : (
+              <Grid container spacing={3}>
+                {savedQuizzes.map((quiz) => (
+                  <Grid item xs={12} sm={6} md={4} key={quiz._id}>
+                    <StyledQuizCard>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#2e1a47' }}>
+                        Video Preview
+                      </Typography>
+                      <StyledVideoBox>
+                        <video
+                          src={quiz.videoUrl}
+                          controls
+                          style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
+                        />
+                      </StyledVideoBox>
+                      <Typography variant="subtitle2" sx={{ mt: 2, color: '#2e1a47' }}>
+                        Questions:
+                      </Typography>
+                      <Box sx={{ maxHeight: '150px', overflowY: 'auto' }}>
+                        <ul style={{ paddingLeft: '20px' }}>
+                          {quiz.questions.map((q, idx) => (
+                            <li key={idx}>
+                              <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#2e1a47' }}>
+                                {q.question}
+                              </Typography>
+                              <ul style={{ paddingLeft: '20px' }}>
+                                {q.options.map((opt, i) => (
+                                  <li
+                                    key={i}
+                                    style={{ color: i === q.correctIndex ? '#4caf50' : '#2e1a47' }}
+                                  >
+                                    <Typography variant="caption">{opt}</Typography>
+                                  </li>
+                                ))}
+                              </ul>
+                            </li>
+                          ))}
+                        </ul>
+                      </Box>
+                      <Button
+                        variant="outlined"
+                        color="error"
+                        startIcon={<DeleteIcon />}
+                        onClick={() => handleDeleteQuiz(quiz._id)}
+                        sx={{ mt: 2, borderRadius: '25px', width: '100%' }}
+                      >
+                        Delete Quiz
+                      </Button>
+                    </StyledQuizCard>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Box>
+        </Container>
+      </StyledContainer>
+      <Footer />
+    </Box>
   );
 };
 

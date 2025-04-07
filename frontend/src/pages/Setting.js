@@ -200,7 +200,7 @@ const Settings = () => {
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", sm: "row" }, // Stack on mobile, row on larger screens
+            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
             alignItems: { xs: "stretch", sm: "center" },
             mb: { xs: 2, sm: 4 },
@@ -215,7 +215,7 @@ const Settings = () => {
               background: "linear-gradient(45deg, #2e1a47, #6d4c9e)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              fontSize: { xs: "1.5rem", sm: "2.125rem" }, // Smaller on mobile
+              fontSize: { xs: "1.5rem", sm: "2.125rem" },
               textAlign: { xs: "center", sm: "left" },
             }}
           >
@@ -224,10 +224,10 @@ const Settings = () => {
           <Box
             sx={{
               display: "flex",
-              flexDirection: { xs: "column", sm: "row" }, // Stack buttons on mobile
-              gap: { xs: 1, sm: 2 }, // Smaller gap on mobile
+              flexDirection: { xs: "column", sm: "row" },
+              gap: { xs: 1, sm: 2 },
               alignItems: "center",
-              width: { xs: "100%", sm: "auto" }, // Full width on mobile
+              width: { xs: "100%", sm: "auto" },
             }}
           >
             <Button
@@ -242,8 +242,8 @@ const Settings = () => {
                 fontWeight: "bold",
                 boxShadow: "0 4px 15px rgba(46, 26, 71, 0.4)",
                 transition: "all 0.3s ease",
-                fontSize: { xs: "0.875rem", sm: "1rem" }, // Smaller text on mobile
-                width: { xs: "100%", sm: "auto" }, // Full width on mobile
+                fontSize: { xs: "0.875rem", sm: "1rem" },
+                width: { xs: "100%", sm: "auto" },
                 "&:hover": {
                   background: "linear-gradient(45deg, #3f2a5d, #7e5daf)",
                   transform: "translateY(-2px)",
@@ -456,8 +456,21 @@ const Settings = () => {
                   sx={{
                     display: "flex",
                     overflowX: "auto",
-                    gap: { xs: 1, sm: 2 },
-                    py: 1,
+                    gap: { xs: 2, sm: 3 }, // Increased gap for better spacing
+                    px: { xs: 1, sm: 2 }, // Added padding to prevent edge clipping
+                    py: 2,
+                    scrollBehavior: "smooth", // Smooth scrolling
+                    "&::-webkit-scrollbar": {
+                      height: "8px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "#6d4c9e",
+                      borderRadius: "4px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      backgroundColor: "#f1f3f5",
+                      borderRadius: "4px",
+                    },
                   }}
                 >
                   {loginImages.map((imageUrl, index) => (
@@ -466,6 +479,8 @@ const Settings = () => {
                       sx={{
                         position: "relative",
                         flexShrink: 0,
+                        width: { xs: "100px", sm: "120px" }, // Consistent width
+                        height: { xs: "100px", sm: "120px" }, // Consistent height
                         transition: "transform 0.3s ease",
                         "&:hover": { transform: "scale(1.05)" },
                       }}
@@ -474,8 +489,8 @@ const Settings = () => {
                         src={imageUrl}
                         alt={`Uploaded ${index}`}
                         style={{
-                          width: { xs: "100px", sm: "120px" },
-                          height: { xs: "100px", sm: "120px" },
+                          width: "100%", // Full width of container
+                          height: "100%", // Full height of container
                           objectFit: "cover",
                           borderRadius: "10px",
                           border: "2px solid #e9ecef",
@@ -604,8 +619,21 @@ const Settings = () => {
                   sx={{
                     display: "flex",
                     overflowX: "auto",
-                    gap: { xs: 1, sm: 2 },
-                    py: 1,
+                    gap: { xs: 2, sm: 3 }, // Increased gap for better spacing
+                    px: { xs: 1, sm: 2 }, // Added padding to prevent edge clipping
+                    py: 2,
+                    scrollBehavior: "smooth", // Smooth scrolling
+                    "&::-webkit-scrollbar": {
+                      height: "8px",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      backgroundColor: "#6d4c9e",
+                      borderRadius: "4px",
+                    },
+                    "&::-webkit-scrollbar-track": {
+                      backgroundColor: "#f1f3f5",
+                      borderRadius: "4px",
+                    },
                   }}
                 >
                   {navbarLogos.map((logoUrl, index) => (
@@ -614,6 +642,8 @@ const Settings = () => {
                       sx={{
                         position: "relative",
                         flexShrink: 0,
+                        width: { xs: "100px", sm: "120px" }, // Consistent width
+                        height: { xs: "100px", sm: "120px" }, // Consistent height
                         transition: "transform 0.3s ease",
                         "&:hover": { transform: "scale(1.05)" },
                       }}
@@ -622,8 +652,8 @@ const Settings = () => {
                         src={logoUrl}
                         alt={`Navbar Logo ${index}`}
                         style={{
-                          width: { xs: "100px", sm: "120px" },
-                          height: { xs: "100px", sm: "120px" },
+                          width: "100%", // Full width of container
+                          height: "100%", // Full height of container
                           objectFit: "cover",
                           borderRadius: "10px",
                           border: "2px solid #e9ecef",

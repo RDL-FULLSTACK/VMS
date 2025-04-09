@@ -11,6 +11,7 @@ import {
   FormControlLabel,
   Button,
   Alert,
+  CircularProgress,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -19,15 +20,25 @@ const QuizDisplay = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState({});
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [error, setError] = useState(null); // Add error state
 
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/quizzes`);
-        if (!response.ok) throw new Error('Failed to fetch quizzes');
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // Fallback to localhost
+        const response = await fetch(`${backendUrl}/api/quizzes`, {
+          method: 'GET',
+          credentials: 'include', // Include cookies if your backend uses sessions
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch quizzes: ${response.status} ${response.statusText}`);
+        }
         const data = await response.json();
+        console.log('Fetched quizzes:', data); // Debug log to verify data
         setQuizzes(data);
-        
+
+        // Initialize answers and submitted states
         const initialAnswers = {};
         const initialSubmitted = {};
         data.forEach(quiz => {
@@ -37,7 +48,10 @@ const QuizDisplay = () => {
         setAnswers(initialAnswers);
         setSubmitted(initialSubmitted);
       } catch (error) {
-        console.error('Error fetching quizzes:', error);
+        console.error('Error fetching quizzes:', error.message);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -47,9 +61,9 @@ const QuizDisplay = () => {
   const handleAnswerChange = (quizId, questionIndex, value) => {
     setAnswers(prev => ({
       ...prev,
-      [quizId]: prev[quizId].map((ans, idx) => 
+      [quizId]: prev[quizId].map((ans, idx) =>
         idx === questionIndex ? parseInt(value) : ans
-      )
+      ),
     }));
   };
 
@@ -66,15 +80,16 @@ const QuizDisplay = () => {
 
   const getFeedback = (quiz, questionIndex) => {
     if (!submitted[quiz._id] || answers[quiz._id][questionIndex] === null) return null;
-    
     const isCorrect = answers[quiz._id][questionIndex] === quiz.questions[questionIndex].correctIndex;
     return (
-      <Alert 
+      <Alert
         severity={isCorrect ? 'success' : 'error'}
         icon={isCorrect ? <CheckCircleIcon /> : <CancelIcon />}
         sx={{ mt: 1 }}
       >
-        {isCorrect ? 'Correct!' : `Wrong. Correct answer: ${quiz.questions[questionIndex].options[quiz.questions[questionIndex].correctIndex]}`}
+        {isCorrect
+          ? 'Correct!'
+          : `Wrong. Correct answer: ${quiz.questions[questionIndex].options[quiz.questions[questionIndex].correctIndex]}`}
       </Alert>
     );
   };
@@ -85,7 +100,16 @@ const QuizDisplay = () => {
         Available Video Quizzes
       </Typography>
 
-      {quizzes.length === 0 ? (
+      {loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <CircularProgress />
+          <Typography sx={{ ml: 2 }}>Loading quizzes...</Typography>
+        </Box>
+      ) : error ? (
+        <Alert severity="error" sx={{ mt: 2 }}>
+          {error}. Please check the backend server or try again later.
+        </Alert>
+      ) : quizzes.length === 0 ? (
         <Typography>No quizzes available</Typography>
       ) : (
         quizzes.map(quiz => (
@@ -99,6 +123,7 @@ const QuizDisplay = () => {
                   src={quiz.videoUrl}
                   controls
                   style={{ width: '100%', borderRadius: '12px' }}
+                  onError={(e) => console.error('Video load error:', e)}
                 />
               </Grid>
 
@@ -136,6 +161,7 @@ const QuizDisplay = () => {
                       variant="contained"
                       onClick={() => handleSubmitQuiz(quiz._id)}
                       disabled={answers[quiz._id]?.some(ans => ans === null)}
+                      sx={{ backgroundColor: '#2e1a47', '&:hover': { backgroundColor: '#3f2a5d' } }}
                     >
                       Submit Quiz
                     </Button>

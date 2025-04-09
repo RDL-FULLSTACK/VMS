@@ -15,30 +15,31 @@ import {
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 
 const QuizDisplay = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState({});
-  const [loading, setLoading] = useState(true); // Add loading state
-  const [error, setError] = useState(null); // Add error state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Hook for navigation
 
   useEffect(() => {
     const fetchQuizzes = async () => {
       try {
-        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // Fallback to localhost
+        const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
         const response = await fetch(`${backendUrl}/api/quizzes`, {
           method: 'GET',
-          credentials: 'include', // Include cookies if your backend uses sessions
+          credentials: 'include',
         });
         if (!response.ok) {
           throw new Error(`Failed to fetch quizzes: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
-        console.log('Fetched quizzes:', data); // Debug log to verify data
+        console.log('Fetched quizzes:', data);
         setQuizzes(data);
 
-        // Initialize answers and submitted states
         const initialAnswers = {};
         const initialSubmitted = {};
         data.forEach(quiz => {
@@ -69,6 +70,10 @@ const QuizDisplay = () => {
 
   const handleSubmitQuiz = (quizId) => {
     setSubmitted(prev => ({ ...prev, [quizId]: true }));
+    // Redirect to dashboard after a short delay to show the score
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1500); // 1.5-second delay to allow user to see the score
   };
 
   const calculateQuizScore = (quiz) => {

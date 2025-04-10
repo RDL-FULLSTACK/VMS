@@ -156,6 +156,7 @@ const Settings = () => {
     const newText = e.target.value;
     setNotificationText(newText);
     localStorage.setItem("customNotification", newText);
+    // No need to update Home.js directly as FloatingNavbar will pick it up
   };
 
   const handleGateChange = async (event) => {
@@ -456,10 +457,10 @@ const Settings = () => {
                   sx={{
                     display: "flex",
                     overflowX: "auto",
-                    gap: { xs: 2, sm: 3 }, // Increased gap for better spacing
-                    px: { xs: 1, sm: 2 }, // Added padding to prevent edge clipping
+                    gap: { xs: 2, sm: 3 },
+                    px: { xs: 1, sm: 2 },
                     py: 2,
-                    scrollBehavior: "smooth", // Smooth scrolling
+                    scrollBehavior: "smooth",
                     "&::-webkit-scrollbar": {
                       height: "8px",
                     },
@@ -479,8 +480,8 @@ const Settings = () => {
                       sx={{
                         position: "relative",
                         flexShrink: 0,
-                        width: { xs: "100px", sm: "120px" }, // Consistent width
-                        height: { xs: "100px", sm: "120px" }, // Consistent height
+                        width: { xs: "100px", sm: "120px" },
+                        height: { xs: "100px", sm: "120px" },
                         transition: "transform 0.3s ease",
                         "&:hover": { transform: "scale(1.05)" },
                       }}
@@ -489,8 +490,8 @@ const Settings = () => {
                         src={imageUrl}
                         alt={`Uploaded ${index}`}
                         style={{
-                          width: "100%", // Full width of container
-                          height: "100%", // Full height of container
+                          width: "100%",
+                          height: "100%",
                           objectFit: "cover",
                           borderRadius: "10px",
                           border: "2px solid #e9ecef",
@@ -619,10 +620,10 @@ const Settings = () => {
                   sx={{
                     display: "flex",
                     overflowX: "auto",
-                    gap: { xs: 2, sm: 3 }, // Increased gap for better spacing
-                    px: { xs: 1, sm: 2 }, // Added padding to prevent edge clipping
+                    gap: { xs: 2, sm: 3 },
+                    px: { xs: 1, sm: 2 },
                     py: 2,
-                    scrollBehavior: "smooth", // Smooth scrolling
+                    scrollBehavior: "smooth",
                     "&::-webkit-scrollbar": {
                       height: "8px",
                     },
@@ -642,8 +643,8 @@ const Settings = () => {
                       sx={{
                         position: "relative",
                         flexShrink: 0,
-                        width: { xs: "100px", sm: "120px" }, // Consistent width
-                        height: { xs: "100px", sm: "120px" }, // Consistent height
+                        width: { xs: "100px", sm: "120px" },
+                        height: { xs: "100px", sm: "120px" },
                         transition: "transform 0.3s ease",
                         "&:hover": { transform: "scale(1.05)" },
                       }}
@@ -652,8 +653,8 @@ const Settings = () => {
                         src={logoUrl}
                         alt={`Navbar Logo ${index}`}
                         style={{
-                          width: "100%", // Full width of container
-                          height: "100%", // Full height of container
+                          width: "100%",
+                          height: "100%",
                           objectFit: "cover",
                           borderRadius: "10px",
                           border: "2px solid #e9ecef",
@@ -708,7 +709,7 @@ const Settings = () => {
               <TextField
                 value={notificationText}
                 onChange={handleNotificationChange}
-                placeholder="Enter custom notification"
+                placeholder="Enter custom notification (one per line)"
                 multiline
                 rows={{ xs: 2, sm: 3 }}
                 variant="filled"

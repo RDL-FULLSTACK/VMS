@@ -24,6 +24,10 @@ import Employee from "./pages/Employee";
 import Settings from "./pages/Setting";
 import VideoUpload from "./pages/VideoUpload";
 import QuizDisplay from "./pages/QuizDisplay";
+import LoginKiosk from "./pages/LoginKiosk";
+import VideoPage from "./pages/VideoPage";
+import VisitorCardKiosk from "./pages/VisitorCardKiosk";
+import Kioskquiz from "./pages/Kioskquiz";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -59,6 +63,13 @@ function App() {
         <Route path="/employees" element={<Employee />} />
         <Route path="/self-check" element={<SelfCheck />} />
         <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/loginKiosk" element={<LoginKiosk />} />
+        <Route path="/VideoPage" element={<VideoPage />} />
+        <Route path="/Kioskquiz" element={<Kioskquiz/>}/>
+        <Route path="/VisitorCardkiosk" element={<PrivateRoute><VisitorCardKiosk /></PrivateRoute>} />
+        <Route path="/VisitorCardKiosk/:visitorId" element={<PrivateRoute><VisitorCardKiosk /></PrivateRoute>} />
+        
+
       </Routes>
     </>
   );

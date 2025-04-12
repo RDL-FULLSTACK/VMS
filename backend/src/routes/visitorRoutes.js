@@ -1,8 +1,3 @@
-//visitorRoutes.js
-
-
-
-
 const express = require("express");
 const router = express.Router();
 const {
@@ -16,7 +11,8 @@ const {
     updateVisitor,
     verifyOtp,
     getVisitors,
-    storeCheckoutData, // Added this
+    storeCheckoutData,
+    searchVisitorByLastFourDigits,
 } = require("../controllers/visitorController");
 const multer = require("multer");
 const path = require("path");
@@ -49,13 +45,14 @@ const upload = multer({
 router.get("/", getAllVisitors);
 router.get("/report", getVisitors);
 router.get("/latest", getLatestVisitor);
-router.get("/:id", getVisitorById);
+router.get("/search", searchVisitorByLastFourDigits); // Moved this route before /:id
+router.get("/:id", getVisitorById); // This route now comes after /search
 router.post("/checkin", upload.single("photo"), addVisitor); // Multer for photo upload
 router.put("/checkout/:id", checkOutVisitor); // Kept for legacy compatibility (if needed)
 router.post("/checkout/:id", storeCheckoutData); // New route for simplified checkout
 router.put("/:id", updateVisitor);
 router.delete("/:id", deleteVisitor);
 router.post("/send-email-otp", sendEmailOtp);
-router.post("/verify-otp",verifyOtp); // New route
+router.post("/verify-otp", verifyOtp); // New route
 
 module.exports = router;

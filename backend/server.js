@@ -1,5 +1,3 @@
-//server.js
-
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -17,7 +15,7 @@ const selfCheckinRoutes = require("./src/routes/selfCheckinRoutes");
 const multer = require("multer");
 const mongoose = require("mongoose");
 const fs = require("fs");
-const quizController = require("./src/controllers/quizController"); // New import
+const quizController = require("./src/controllers/quizController");
 
 // Initialize Express App
 const app = express();
@@ -56,6 +54,12 @@ if (!fs.existsSync(loginImageDir)) fs.mkdirSync(loginImageDir);
 const logoDir = path.join(__dirname, "logo");
 if (!fs.existsSync(logoDir)) fs.mkdirSync(logoDir);
 
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir);
+  console.log("Created uploads directory:", uploadsDir);
+}
+
 // Storage configuration for login images and logos
 const imageStorage = multer.diskStorage({
   destination: "./loginimage/",
@@ -72,6 +76,7 @@ const logoUpload = multer({ storage: logoStorage });
 // Serve static files
 app.use("/loginimage", express.static(loginImageDir));
 app.use("/logo", express.static(logoDir));
+app.use("/uploads", express.static(uploadsDir)); // Serve uploads directory
 
 // Connect to Database
 connectDB();
@@ -92,7 +97,7 @@ const Logo = mongoose.model("Logo", logoSchema);
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/visitors", visitorRoutes);
+app.use("/api/visitors", visitorRoutes); // Removed visitorPhotoUpload middleware
 app.use("/api", preScheduleRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reports", reportRoutes);
@@ -201,7 +206,10 @@ app.get("/health", (req, res) => {
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error("Global error:", err.stack);
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ success: false, message: `Multer error: ${err.message}` });
+  }
   res.status(500).json({ message: "Something went wrong!", error: err.message });
 });
 

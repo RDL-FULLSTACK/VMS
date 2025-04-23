@@ -1,2 +1,1 @@
 #VMS
-Visitor Mangement system

@@ -16,9 +16,17 @@ const multer = require("multer");
 const mongoose = require("mongoose");
 const fs = require("fs");
 const quizController = require("./src/controllers/quizController");
+const cloudinary = require("cloudinary").v2;
 
 // Initialize Express App
 const app = express();
+
+// Cloudinary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Session Configuration
 app.use(
@@ -73,6 +81,24 @@ const logoStorage = multer.diskStorage({
 });
 const logoUpload = multer({ storage: logoStorage });
 
+// Storage configuration for quiz images (Cloudinary)
+const quizImageStorage = multer.memoryStorage();
+const quizImageUpload = multer({
+  storage: quizImageStorage,
+  limits: { fileSize: 5000000 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/gif"];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error("Invalid file type. Only PNG, JPG, JPEG, GIF allowed."),
+        false
+      );
+    }
+  },
+});
+
 // Serve static files
 app.use("/loginimage", express.static(loginImageDir));
 app.use("/logo", express.static(logoDir));
@@ -97,13 +123,13 @@ const Logo = mongoose.model("Logo", logoSchema);
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/visitors", visitorRoutes); // Removed visitorPhotoUpload middleware
+app.use("/api/visitors", visitorRoutes);
 app.use("/api", preScheduleRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/self-checkins", selfCheckinRoutes);
 
-// Quiz Routes (Moved to controller)
+// Quiz Routes
 app.post("/api/quizzes", quizController.createQuiz);
 app.get("/api/quizzes", quizController.getQuizzes);
 app.delete("/api/quizzes/:id", quizController.deleteQuiz);
@@ -134,6 +160,39 @@ app.post("/api/upload-logo", logoUpload.single("logo"), async (req, res) => {
     res.status(500).json({ message: "Failed to save logo URL", error: error.message });
   }
 });
+
+// Quiz Image Upload Route (Cloudinary)
+app.post(
+  "/api/upload-quiz-image",
+  quizImageUpload.single("image"),
+  async (req, res) => {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    try {
+      const result = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: "quiz_images",
+            resource_type: "image",
+            public_id: `quiz_image_${Date.now()}`,
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      res.json({ imageUrl: result.secure_url });
+    } catch (error) {
+      console.error("Error uploading quiz image:", error);
+      res
+        .status(500)
+        .json({ message: "Failed to upload image", error: error.message });
+    }
+  }
+);
 
 // Fetch Images and Logos
 app.get("/api/login-images", async (req, res) => {
@@ -208,7 +267,9 @@ app.get("/health", (req, res) => {
 app.use((err, req, res, next) => {
   console.error("Global error:", err.stack);
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ success: false, message: `Multer error: ${err.message}` });
+    return res
+      .status(400)
+      .json({ success: false, message: `Multer error: ${err.message}` });
   }
   res.status(500).json({ message: "Something went wrong!", error: err.message });
 });

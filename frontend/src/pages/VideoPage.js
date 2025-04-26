@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button, Box, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const VideoPage = () => {
@@ -14,10 +14,8 @@ const VideoPage = () => {
   const [videoUrl, setVideoUrl] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Get the userId from the login page
   const { userId } = location.state || {};
 
-  // Fetch the latest quiz (with video URL) on mount
   useEffect(() => {
     const fetchLatestQuiz = async () => {
       try {
@@ -27,9 +25,8 @@ const VideoPage = () => {
           throw new Error("Failed to fetch quiz data");
         }
         const data = await response.json();
-        // Assume the latest quiz is the first in the array (or sort by createdAt if available)
         if (data.length > 0) {
-          setVideoUrl(data[0].videoUrl); // Use the latest quiz's video URL
+          setVideoUrl(data[0].videoUrl);
         } else {
           throw new Error("No quizzes available");
         }
@@ -45,27 +42,23 @@ const VideoPage = () => {
     fetchLatestQuiz();
   }, []);
 
-  // Handle video end event
   const handleVideoEnd = () => {
     console.log("Video ended");
     setVideoEnded(true);
     setVideoPlaying(false);
   };
 
-  // Handle video error
   const handleVideoError = (e) => {
     console.error("Video playback error:", e);
     setVideoError("Failed to play the video. Please ensure the video is accessible.");
     setVideoPlaying(false);
   };
 
-  // Handle video load
   const handleVideoLoaded = () => {
     console.log("Video loaded successfully");
     setVideoError(null);
   };
 
-  // Play the video manually
   const handlePlayVideo = () => {
     if (videoRef.current) {
       videoRef.current
@@ -83,13 +76,12 @@ const VideoPage = () => {
     }
   };
 
-  // Replay the video
   const handleReplay = () => {
     setVideoEnded(false);
     setVideoPlaying(true);
     setVideoError(null);
     if (videoRef.current) {
-      videoRef.current.currentTime = 0; // Reset video to start
+      videoRef.current.currentTime = 0;
       videoRef.current.play().catch((error) => {
         console.error("Error replaying video:", error);
         setVideoError("Error replaying the video. Please try again.");
@@ -98,12 +90,10 @@ const VideoPage = () => {
     }
   };
 
-  // Navigate to the Quizkiosk page
   const handleGoToQuiz = () => {
     navigate("/kioskquiz", { state: { userId } });
   };
 
-  // If userId is missing, redirect to login
   if (!userId) {
     toast.error("User ID not found. Please log in again.");
     setTimeout(() => {
@@ -136,7 +126,6 @@ const VideoPage = () => {
         <Typography>Loading video...</Typography>
       ) : videoUrl ? (
         <>
-          {/* Video Player */}
           <Box
             sx={{
               width: "100%",
@@ -149,8 +138,8 @@ const VideoPage = () => {
           >
             <video
               ref={videoRef}
-              muted // Allow playback in most browsers
-              controls // User interaction
+              muted
+              controls
               onEnded={handleVideoEnd}
               onError={handleVideoError}
               onLoadedData={handleVideoLoaded}
@@ -165,7 +154,6 @@ const VideoPage = () => {
             </video>
           </Box>
 
-          {/* Display error message if video fails */}
           {videoError && (
             <Typography
               variant="body1"
@@ -175,7 +163,6 @@ const VideoPage = () => {
             </Typography>
           )}
 
-          {/* Play Video Button */}
           {!videoPlaying && !videoEnded && (
             <Button
               variant="contained"
@@ -193,7 +180,6 @@ const VideoPage = () => {
             </Button>
           )}
 
-          {/* Buttons after video ends */}
           {videoEnded && (
             <Box
               sx={{
@@ -233,7 +219,9 @@ const VideoPage = () => {
           )}
         </>
       ) : (
-        <Typography color="error">No video available. Please contact the administrator.</Typography>
+        <Typography color="error">
+          No video available. Please contact the administrator.
+        </Typography>
       )}
     </Box>
   );

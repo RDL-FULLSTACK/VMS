@@ -23,6 +23,7 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import ImageIcon from '@mui/icons-material/Image';
 import { styled } from '@mui/material/styles';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -84,6 +85,7 @@ const VideoUpload = () => {
   const [publicId, setPublicId] = useState('');
   const [deleteToken, setDeleteToken] = useState('');
   const [widget, setWidget] = useState(null);
+  const [imageWidgets, setImageWidgets] = useState({});
   const [previewMode, setPreviewMode] = useState(false);
   const [questions, setQuestions] = useState([
     {
@@ -92,6 +94,9 @@ const VideoUpload = () => {
       correctIndex: 0,
       selectedIndex: null,
       submitted: false,
+      imageUrl: '',
+      imagePublicId: '',
+      imageDeleteToken: '',
     },
   ]);
   const [savedQuizzes, setSavedQuizzes] = useState([]);
@@ -111,10 +116,10 @@ const VideoUpload = () => {
         const script = document.createElement('script');
         script.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
         script.async = true;
-        script.onload = initializeWidget;
+        script.onload = initializeWidgets;
         document.body.appendChild(script);
       } else {
-        initializeWidget();
+        initializeWidgets();
       }
     };
 
@@ -122,16 +127,16 @@ const VideoUpload = () => {
     fetchQuizzes();
   }, []);
 
-  const initializeWidget = () => {
-    const cloudinaryWidget = window.cloudinary.createUploadWidget(
+  const initializeWidgets = () => {
+    const cloudinaryVideoWidget = window.cloudinary.createUploadWidget(
       {
-        cloudName: 'dd6wweekb',
+        cloudName: 'ddovidvsp',
         uploadPreset: 'video_widget_unsigned',
         folder: 'my_videos',
         sources: ['local', 'url', 'camera'],
         multiple: false,
         resourceType: 'video',
-        maxFileSize: 40000000,
+        maxFileSize: 10000000,
         clientAllowedFormats: ['mp4', 'webm', 'mov', 'avi'],
         returnDeleteToken: true,
       },
@@ -146,17 +151,66 @@ const VideoUpload = () => {
           localStorage.setItem('deleteToken', delete_token);
           toast.success('Video uploaded successfully!');
         } else if (error) {
-          console.error('Upload error:', error);
+          console.error('Video upload error:', error);
           toast.error('Error uploading video');
         }
       }
     );
-    setWidget(cloudinaryWidget);
+    setWidget(cloudinaryVideoWidget);
+
+    setQuestions((prevQuestions) =>
+      prevQuestions.map((q, index) => {
+        const imageWidget = window.cloudinary.createUploadWidget(
+          {
+            cloudName: 'ddovidvsp',
+            uploadPreset: 'image_widget_unsigned',
+            folder: 'quiz_images',
+            sources: ['local', 'url', 'camera'],
+            multiple: false,
+            resourceType: 'image',
+            maxFileSize: 5000000,
+            clientAllowedFormats: ['png', 'jpg', 'jpeg', 'gif'],
+            returnDeleteToken: true,
+          },
+          (error, result) => {
+            if (!error && result && result.event === 'success') {
+              const { secure_url, public_id, delete_token } = result.info;
+              setQuestions((prev) =>
+                prev.map((question, qIndex) =>
+                  qIndex === index
+                    ? {
+                        ...question,
+                        imageUrl: secure_url,
+                        imagePublicId: public_id,
+                        imageDeleteToken: delete_token,
+                      }
+                    : question
+                )
+              );
+              toast.success(`Image uploaded for Question ${index + 1}`);
+            } else if (error) {
+              console.error('Image upload error:', error);
+              toast.error(`Error uploading image for Question ${index + 1}`);
+            }
+          }
+        );
+        setImageWidgets((prev) => ({ ...prev, [index]: imageWidget }));
+        return q;
+      })
+    );
   };
 
   const handleUpload = () => {
     if (widget) widget.open();
-    else toast.error('Upload widget not ready');
+    else toast.error('Video upload widget not ready');
+  };
+
+  const handleImageUpload = (qIndex) => {
+    if (imageWidgets[qIndex]) {
+      imageWidgets[qIndex].open();
+    } else {
+      toast.error(`Image upload widget for Question ${qIndex + 1} not ready`);
+    }
   };
 
   const handleDelete = async () => {
@@ -164,7 +218,7 @@ const VideoUpload = () => {
 
     try {
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/dd6wweekb/delete_by_token`,
+        `https://api.cloudinary.com/v1_1/ddovidvsp/delete_by_token`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -187,6 +241,42 @@ const VideoUpload = () => {
     } catch (error) {
       console.error('Delete error:', error);
       toast.error(`Error deleting video: ${error.message}`);
+    }
+  };
+
+  const handleDeleteImage = async (qIndex) => {
+    const question = questions[qIndex];
+    if (!question.imageDeleteToken || !question.imagePublicId) {
+      toast.warn(`No image to delete for Question ${qIndex + 1}`);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/ddovidvsp/delete_by_token`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: question.imageDeleteToken }),
+        }
+      );
+
+      const result = await response.json();
+      if (result.result === 'ok') {
+        setQuestions((prev) =>
+          prev.map((q, index) =>
+            index === qIndex
+              ? { ...q, imageUrl: '', imagePublicId: '', imageDeleteToken: '' }
+              : q
+          )
+        );
+        toast.success(`Image deleted for Question ${qIndex + 1}`);
+      } else {
+        throw new Error(result.error?.message || 'Image delete failed');
+      }
+    } catch (error) {
+      console.error('Image delete error:', error);
+      toast.error(`Error deleting image for Question ${qIndex + 1}`);
     }
   };
 
@@ -251,6 +341,42 @@ const VideoUpload = () => {
   };
 
   const handleAddQuestion = () => {
+    const newIndex = questions.length;
+    const imageWidget = window.cloudinary?.createUploadWidget(
+      {
+        cloudName: 'ddovidvsp',
+        uploadPreset: 'image_widget_unsigned',
+        folder: 'quiz_images',
+        sources: ['local', 'url', 'camera'],
+        multiple: false,
+        resourceType: 'image',
+        maxFileSize: 5000000,
+        clientAllowedFormats: ['png', 'jpg', 'jpeg', 'gif'],
+        returnDeleteToken: true,
+      },
+      (error, result) => {
+        if (!error && result && result.event === 'success') {
+          const { secure_url, public_id, delete_token } = result.info;
+          setQuestions((prev) =>
+            prev.map((question, qIndex) =>
+              qIndex === newIndex
+                ? {
+                    ...question,
+                    imageUrl: secure_url,
+                    imagePublicId: public_id,
+                    imageDeleteToken: delete_token,
+                  }
+                : question
+            )
+          );
+          toast.success(`Image uploaded for Question ${newIndex + 1}`);
+        } else if (error) {
+          console.error('Image upload error:', error);
+          toast.error(`Error uploading image for Question ${newIndex + 1}`);
+        }
+      }
+    );
+
     setQuestions([
       ...questions,
       {
@@ -259,18 +385,33 @@ const VideoUpload = () => {
         correctIndex: 0,
         selectedIndex: null,
         submitted: false,
+        imageUrl: '',
+        imagePublicId: '',
+        imageDeleteToken: '',
       },
     ]);
+
+    if (imageWidget) {
+      setImageWidgets((prev) => ({ ...prev, [newIndex]: imageWidget }));
+    }
   };
 
   const handleRemoveQuestion = (index) => {
     const updated = questions.filter((_, i) => i !== index);
     setQuestions(updated);
+    setImageWidgets((prev) => {
+      const newWidgets = { ...prev };
+      delete newWidgets[index];
+      return Object.keys(newWidgets).reduce((acc, key) => {
+        const newKey = key > index ? key - 1 : key;
+        acc[newKey] = newWidgets[key];
+        return acc;
+      }, {});
+    });
     toast.info('Question removed');
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!videoUrl) {
       toast.error('Please upload a video before submitting.');
       return;
@@ -288,7 +429,6 @@ const VideoUpload = () => {
         toast.error(`All options for Question ${qIndex + 1} must be filled.`);
         return;
       }
-      // Check for duplicate options (case-sensitive)
       const uniqueOptions = new Set(q.options.map(opt => opt.trim()));
       if (uniqueOptions.size !== q.options.length) {
         toast.error(`Options must be unique for Question ${qIndex + 1}.`);
@@ -302,6 +442,7 @@ const VideoUpload = () => {
         question: q.question.trim(),
         options: q.options.map(opt => opt.trim()),
         correctIndex: q.correctIndex,
+        imageUrl: q.imageUrl || '', // Include imageUrl
       })),
     };
 
@@ -333,8 +474,12 @@ const VideoUpload = () => {
           correctIndex: 0,
           selectedIndex: null,
           submitted: false,
+          imageUrl: '',
+          imagePublicId: '',
+          imageDeleteToken: '',
         },
       ]);
+      setImageWidgets({});
     } catch (error) {
       console.error('Error saving quiz:', error);
       toast.error(`Error saving quiz: ${error.message}`);
@@ -515,6 +660,52 @@ const VideoUpload = () => {
                         },
                       }}
                     />
+                    {!previewMode && (
+                      <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<ImageIcon />}
+                          onClick={() => handleImageUpload(qIndex)}
+                          sx={{
+                            borderRadius: '25px',
+                            color: '#2e1a47',
+                            borderColor: '#2e1a47',
+                            '&:hover': { borderColor: '#6d4c9e', color: '#6d4c9e' },
+                          }}
+                        >
+                          {q.imageUrl ? 'Replace Image' : 'Upload Image'}
+                        </Button>
+                        {q.imageUrl && (
+                          <Button
+                            variant="outlined"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleDeleteImage(qIndex)}
+                            sx={{ borderRadius: '25px' }}
+                          >
+                            Delete Image
+                          </Button>
+                        )}
+                      </Box>
+                    )}
+                    {q.imageUrl && (
+                      <Box sx={{ mt: 2, textAlign: 'center' }}>
+                        <img
+                          src={q.imageUrl}
+                          alt={`Question ${qIndex + 1} preview`}
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: '150px',
+                            borderRadius: '8px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            toast.error(`Failed to load image for Question ${qIndex + 1}`);
+                          }}
+                        />
+                      </Box>
+                    )}
                     <FormControl component="fieldset" sx={{ mt: 2 }}>
                       <FormLabel
                         component="legend"
@@ -667,6 +858,19 @@ const VideoUpload = () => {
                               <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#2e1a47' }}>
                                 {q.question}
                               </Typography>
+                              {q.imageUrl && (
+                                <img
+                                  src={q.imageUrl}
+                                  alt={`Question ${idx + 1}`}
+                                  style={{
+                                    maxWidth: '100px',
+                                    maxHeight: '100px',
+                                    marginTop: '5px',
+                                    borderRadius: '4px',
+                                  }}
+                                  onError={(e) => (e.target.style.display = 'none')}
+                                />
+                              )}
                               <ul style={{ paddingLeft: '20px' }}>
                                 {q.options.map((opt, i) => (
                                   <li

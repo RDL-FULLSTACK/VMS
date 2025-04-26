@@ -48,12 +48,13 @@ const Kioskquiz = () => {
         }
         const data = await response.json();
         if (data.length > 0) {
-          const latestQuiz = data[0]; // Use the latest quiz
+          const latestQuiz = data[0];
           setQuizQuestions(
             latestQuiz.questions.map((q) => ({
               question: q.question,
               options: q.options,
-              correctAnswer: q.options[q.correctIndex], // Map correctIndex to correctAnswer for compatibility
+              correctAnswer: q.options[q.correctIndex],
+              imageUrl: q.imageUrl || null,
             }))
           );
           setAnswers(Array(latestQuiz.questions.length).fill(""));
@@ -78,12 +79,12 @@ const Kioskquiz = () => {
       const fetchVisitorData = async () => {
         try {
           setLoadingVisitor(true);
-          let url = "http://localhost:5000/api/visitors/latest";
-          if (visitorId) {
-            url = `http://localhost:5000/api/visitors/${visitorId}`;
-          }
-          const response = await fetch(url);
+          console.log("Fetching visitor with ID:", visitorId);
+          const response = await fetch(`http://localhost:5000/api/visitors/${visitorId}`);
           if (!response.ok) {
+            if (response.status === 404) {
+              throw new Error("Visitor ID not found in database");
+            }
             throw new Error("Failed to fetch visitor data");
           }
           const data = await response.json();
@@ -92,7 +93,11 @@ const Kioskquiz = () => {
         } catch (err) {
           setVisitorError(err.message);
           console.error("Error fetching visitor details:", err);
-          toast.error("Failed to fetch visitor data for printing.");
+          toast.error(
+            err.message === "Visitor ID not found in database"
+              ? "Visitor ID not found. You can still print a temporary ID."
+              : "Failed to fetch visitor data for printing."
+          );
         } finally {
           setLoadingVisitor(false);
         }
@@ -134,9 +139,13 @@ const Kioskquiz = () => {
     if (scorePercentage > 75) {
       const newId = generateRandomId();
       setGeneratedId(newId);
-      toast.success(`Congratulations! You passed the quiz with a score of ${scorePercentage.toFixed(2)}%. Your ID: ${newId}`);
+      toast.success(
+        `Congratulations! You passed the quiz with a score of ${scorePercentage.toFixed(2)}%. Your ID: ${newId}`
+      );
     } else {
-      toast.error(`You scored ${scorePercentage.toFixed(2)}%. You need at least 75% to pass. Please retake the quiz or review the video.`);
+      toast.error(
+        `You scored ${scorePercentage.toFixed(2)}%. You need at least 75% to pass. Please retake the quiz or review the video.`
+      );
     }
   };
 
@@ -162,10 +171,17 @@ const Kioskquiz = () => {
 
   // Print the visitor card
   const printVisitorCard = () => {
-    if (!visitor) {
-      toast.error("Visitor data not available for printing.");
-      return;
-    }
+    const tempVisitor = visitor || {
+      _id: generatedId,
+      fullName: "Temporary Visitor",
+      checkInTime: new Date().toISOString(),
+      reasonForVisit: "Visitor Quiz",
+      designation: "Guest",
+      visitorCompany: "N/A",
+      department: "N/A",
+      personToVisit: "N/A",
+      photoUrl: "/default-avatar.png",
+    };
 
     const qrCanvas = qrCodeRef.current?.querySelector("canvas");
     if (!qrCanvas) {
@@ -183,7 +199,7 @@ const Kioskquiz = () => {
       });
     };
 
-    preloadImage(visitor.photoUrl).then((photoUrl) => {
+    preloadImage(tempVisitor.photoUrl).then((photoUrl) => {
       const printWindow = window.open("", "_blank");
       printWindow.document.write(`
 <!DOCTYPE html>
@@ -302,14 +318,14 @@ const Kioskquiz = () => {
     </div>
     <div class="content">
       <div class="left-section">
-        <h3>${visitor.fullName}</h3>
-        <p><strong>ID:</strong> ${visitor._id}</p>
-        <p><strong>Check-In Time:</strong> ${new Date(visitor.checkInTime).toLocaleString()}</p>
-        <p><strong>Purpose:</strong> ${visitor.reasonForVisit}</p>
-        <p><strong>Designation:</strong> ${visitor.designation}</p>
-        <p><strong>Company:</strong> ${visitor.visitorCompany}</p>
-        <p><strong>Department:</strong> ${visitor.department}</p>
-        <p><strong>Host:</strong> ${visitor.personToVisit}</p>
+        <h3>${tempVisitor.fullName}</h3>
+        <p><strong>ID:</strong> ${tempVisitor._id}</p>
+        <p><strong>Check-In Time:</strong> ${new Date(tempVisitor.checkInTime).toLocaleString()}</p>
+        <p><strong>Purpose:</strong> ${tempVisitor.reasonForVisit}</p>
+        <p><strong>Designation:</strong> ${tempVisitor.designation}</p>
+        <p><strong>Company:</strong> ${tempVisitor.visitorCompany}</p>
+        <p><strong>Department:</strong> ${tempVisitor.department}</p>
+        <p><strong>Host:</strong> ${tempVisitor.personToVisit}</p>
       </div>
       <div class="right-section">
         <img src="${photoUrl}" alt="Visitor Photo" class="photo" />
@@ -349,7 +365,6 @@ const Kioskquiz = () => {
     });
   };
 
-  // If visitorId is not available, redirect to login
   if (!visitorId) {
     toast.error("Visitor ID not found. Please log in again.");
     setTimeout(() => {
@@ -369,7 +384,6 @@ const Kioskquiz = () => {
           Visitor Safety Quiz
         </Typography>
 
-        {/* Hidden QRCodeCanvas */}
         {visitor && (
           <Box sx={{ display: "none" }} ref={qrCodeRef}>
             <QRCodeCanvas value={visitor._id} size={80} />
@@ -381,11 +395,31 @@ const Kioskquiz = () => {
         ) : quizError ? (
           <Typography color="error">{quizError}</Typography>
         ) : quizQuestions.length === 0 ? (
-          <Typography color="error">No quiz questions available. Please contact the administrator.</Typography>
+          <Typography color="error">
+            No quiz questions available. Please contact the administrator.
+          </Typography>
         ) : !submitted ? (
           <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
             {quizQuestions.map((question, index) => (
               <Box key={index} sx={{ mb: 4 }}>
+                {question.imageUrl && (
+                  <Box sx={{ mb: 2, textAlign: "center" }}>
+                    <img
+                      src={question.imageUrl}
+                      alt={`Question ${index + 1}`}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "200px",
+                        borderRadius: "8px",
+                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        console.error("Failed to load image:", question.imageUrl);
+                      }}
+                    />
+                  </Box>
+                )}
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   {index + 1}. {question.question}
                 </Typography>
@@ -435,25 +469,24 @@ const Kioskquiz = () => {
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   Your Generated ID: <strong>{generatedId}</strong>
                 </Typography>
-                {visitorError ? (
+                {visitorError && (
                   <Typography variant="body1" sx={{ mb: 2, color: "red" }}>
-                    {visitorError}
+                    {visitorError}. Printing a temporary ID.
                   </Typography>
-                ) : (
-                  <Button
-                    variant="contained"
-                    sx={{
-                      backgroundColor: "#4b0082",
-                      color: "white",
-                      ":hover": { backgroundColor: "#6a0dad" },
-                      mr: 2,
-                    }}
-                    onClick={printVisitorCard}
-                    disabled={loadingVisitor || !visitor}
-                  >
-                    {loadingVisitor ? "Loading..." : "Print ID"}
-                  </Button>
                 )}
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4b0082",
+                    color: "white",
+                    ":hover": { backgroundColor: "#6a0dad" },
+                    mr: 2,
+                  }}
+                  onClick={printVisitorCard}
+                  disabled={loadingVisitor}
+                >
+                  {loadingVisitor ? "Loading..." : "Print ID"}
+                </Button>
               </>
             ) : (
               <>

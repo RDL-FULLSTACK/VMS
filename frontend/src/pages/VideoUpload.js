@@ -29,21 +29,21 @@ import 'react-toastify/dist/ReactToastify.css';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 
-// Styled Components for Enhanced UI matching Settings.js
+// Styled Components
 const StyledContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(4, 2), // Reduced padding to match Settings spacing
-  background: '#f8f9fa', // Matches Settings background
-  minHeight: 'calc(100vh - 64px - 120px)', // Adjust for Navbar and Footer height
+  padding: theme.spacing(4, 2),
+  background: '#f8f9fa',
+  minHeight: 'calc(100vh - 64px - 120px)',
   display: 'flex',
   flexDirection: 'column',
 }));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
-  borderRadius: '16px', // Matches Settings border radius
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)', // Matches Settings shadow
+  borderRadius: '16px',
+  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
   background: '#fff',
-  transition: 'transform 0.3s ease', // Added hover effect like Settings
+  transition: 'transform 0.3s ease',
   '&:hover': {
     transform: 'translateY(-5px)',
     boxShadow: '0 6px 25px rgba(0, 0, 0, 0.15)',
@@ -72,9 +72,9 @@ const StyledQuizCard = styled(Paper)(({ theme }) => ({
   borderRadius: '16px',
   boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
   background: '#fff',
-  transition: 'transform 0.3s ease', // Updated to match Settings hover
+  transition: 'transform 0.3s ease',
   '&:hover': {
-    transform: 'translateY(-5px)', // Matches Settings hover
+    transform: 'translateY(-5px)',
     boxShadow: '0 6px 25px rgba(0, 0, 0, 0.15)',
   },
 }));
@@ -131,7 +131,7 @@ const VideoUpload = () => {
         sources: ['local', 'url', 'camera'],
         multiple: false,
         resourceType: 'video',
-        maxFileSize: 10000000,
+        maxFileSize: 40000000,
         clientAllowedFormats: ['mp4', 'webm', 'mov', 'avi'],
         returnDeleteToken: true,
       },
@@ -270,20 +270,37 @@ const VideoUpload = () => {
   };
 
   const handleSubmit = async () => {
+    // Validation
     if (!videoUrl) {
       toast.error('Please upload a video before submitting.');
       return;
     }
-    if (questions.some(q => !q.question || q.options.some(opt => !opt))) {
-      toast.error('Please fill in all questions and options before submitting.');
+    if (questions.length === 0) {
+      toast.error('Please add at least one question.');
       return;
+    }
+    for (const [qIndex, q] of questions.entries()) {
+      if (!q.question.trim()) {
+        toast.error(`Question ${qIndex + 1} must have a description.`);
+        return;
+      }
+      if (q.options.some(opt => !opt.trim())) {
+        toast.error(`All options for Question ${qIndex + 1} must be filled.`);
+        return;
+      }
+      // Check for duplicate options (case-sensitive)
+      const uniqueOptions = new Set(q.options.map(opt => opt.trim()));
+      if (uniqueOptions.size !== q.options.length) {
+        toast.error(`Options must be unique for Question ${qIndex + 1}.`);
+        return;
+      }
     }
 
     const payload = {
       videoUrl,
       questions: questions.map(q => ({
-        question: q.question,
-        options: q.options,
+        question: q.question.trim(),
+        options: q.options.map(opt => opt.trim()),
         correctIndex: q.correctIndex,
       })),
     };
@@ -327,6 +344,9 @@ const VideoUpload = () => {
   const fetchQuizzes = async () => {
     try {
       const res = await fetch('http://localhost:5000/api/quizzes');
+      if (!res.ok) {
+        throw new Error('Failed to fetch quizzes');
+      }
       const data = await res.json();
       setSavedQuizzes(data);
     } catch (err) {
@@ -378,8 +398,8 @@ const VideoUpload = () => {
             gutterBottom
             sx={{
               fontWeight: 'bold',
-              color: '#2e1a47', // Matches Settings title color
-              background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings gradient
+              color: '#2e1a47',
+              background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               textAlign: 'center',
@@ -394,7 +414,7 @@ const VideoUpload = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              bgcolor: '#f1f3f5', // Lighter gray to match Settings inputs
+              bgcolor: '#f1f3f5',
               p: 2,
               borderRadius: '12px',
               boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
@@ -439,8 +459,8 @@ const VideoUpload = () => {
                   onClick={handleUpload}
                   sx={{
                     mb: 3,
-                    background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings button
-                    borderRadius: '25px', // Matches Settings button radius
+                    background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)',
+                    borderRadius: '25px',
                     textTransform: 'none',
                     px: 4,
                     py: 1,
@@ -484,11 +504,11 @@ const VideoUpload = () => {
                       fullWidth
                       margin="normal"
                       disabled={previewMode}
-                      variant="filled" // Matches Settings input style
+                      variant="filled"
                       sx={{
                         '& .MuiFilledInput-root': {
                           borderRadius: 2,
-                          bgcolor: '#f1f3f5', // Matches Settings input background
+                          bgcolor: '#f1f3f5',
                           '&:before': { borderBottom: 'none' },
                           '&:after': { borderBottom: 'none' },
                           '&:hover': { bgcolor: '#e9ecef' },
@@ -498,7 +518,7 @@ const VideoUpload = () => {
                     <FormControl component="fieldset" sx={{ mt: 2 }}>
                       <FormLabel
                         component="legend"
-                        sx={{ fontWeight: 'medium', color: '#2e1a47' }} // Matches Settings text
+                        sx={{ fontWeight: 'medium', color: '#2e1a47' }}
                       >
                         {previewMode ? 'Select an Answer' : 'Options (Mark Correct Answer)'}
                       </FormLabel>
@@ -538,7 +558,7 @@ const VideoUpload = () => {
                           onClick={() => handleSubmitAnswer(qIndex)}
                           disabled={q.selectedIndex === null || q.submitted}
                           sx={{
-                            background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings
+                            background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)',
                             borderRadius: '25px',
                             '&:hover': {
                               background: 'linear-gradient(45deg, #3f2a5d, #7e5daf)',
@@ -572,7 +592,7 @@ const VideoUpload = () => {
                       onClick={handleAddQuestion}
                       sx={{
                         borderRadius: '25px',
-                        color: '#2e1a47', // Matches Settings text
+                        color: '#2e1a47',
                         borderColor: '#2e1a47',
                         '&:hover': { borderColor: '#6d4c9e', color: '#6d4c9e' },
                       }}
@@ -584,7 +604,7 @@ const VideoUpload = () => {
                       color="success"
                       onClick={handleSubmit}
                       sx={{
-                        background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings
+                        background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)',
                         borderRadius: '25px',
                         px: 4,
                         py: 1,
@@ -609,8 +629,8 @@ const VideoUpload = () => {
               gutterBottom
               sx={{
                 fontWeight: 'bold',
-                color: '#2e1a47', // Matches Settings
-                background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)', // Matches Settings gradient
+                color: '#2e1a47',
+                background: 'linear-gradient(45deg, #2e1a47, #6d4c9e)',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}

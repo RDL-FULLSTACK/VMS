@@ -1,6 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button, Box, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const VideoPage = () => {
   const location = useLocation();
@@ -9,9 +11,39 @@ const VideoPage = () => {
   const [videoEnded, setVideoEnded] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [videoError, setVideoError] = useState(null);
+  const [videoUrl, setVideoUrl] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Get the userId from the login page
   const { userId } = location.state || {};
+
+  // Fetch the latest quiz (with video URL) on mount
+  useEffect(() => {
+    const fetchLatestQuiz = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("http://localhost:5000/api/quizzes");
+        if (!response.ok) {
+          throw new Error("Failed to fetch quiz data");
+        }
+        const data = await response.json();
+        // Assume the latest quiz is the first in the array (or sort by createdAt if available)
+        if (data.length > 0) {
+          setVideoUrl(data[0].videoUrl); // Use the latest quiz's video URL
+        } else {
+          throw new Error("No quizzes available");
+        }
+      } catch (error) {
+        console.error("Error fetching quiz:", error);
+        setVideoError("Failed to load the video. Please try again later.");
+        toast.error("Failed to load video content.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLatestQuiz();
+  }, []);
 
   // Handle video end event
   const handleVideoEnd = () => {
@@ -23,7 +55,7 @@ const VideoPage = () => {
   // Handle video error
   const handleVideoError = (e) => {
     console.error("Video playback error:", e);
-    setVideoError("Failed to load the video. Please ensure the video file is correctly placed in the public/assets folder.");
+    setVideoError("Failed to play the video. Please ensure the video is accessible.");
     setVideoPlaying(false);
   };
 
@@ -71,6 +103,15 @@ const VideoPage = () => {
     navigate("/kioskquiz", { state: { userId } });
   };
 
+  // If userId is missing, redirect to login
+  if (!userId) {
+    toast.error("User ID not found. Please log in again.");
+    setTimeout(() => {
+      navigate("/");
+    }, 2000);
+    return null;
+  }
+
   return (
     <Box
       sx={{
@@ -83,108 +124,116 @@ const VideoPage = () => {
         backgroundColor: "#f5f5f5",
       }}
     >
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
       <Typography
         variant="h5"
-        sx={{ fontWeight: "bold", mb: 3, color: "#4b0082" }} // Purple color from the theme
+        sx={{ fontWeight: "bold", mb: 3, color: "#4b0082" }}
       >
         Welcome to the Kiosk Training Video
       </Typography>
 
-      {/* Video Player */}
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: "800px",
-          borderRadius: "10px",
-          overflow: "hidden",
-          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
-          mb: 3,
-        }}
-      >
-        <video
-          ref={videoRef}
-          muted // Add muted to allow playback in most browsers
-          controls // Add controls for user interaction
-          onEnded={handleVideoEnd}
-          onError={handleVideoError}
-          onLoadedData={handleVideoLoaded}
-          onPlay={() => {
-            console.log("Video is playing");
-            setVideoPlaying(true);
-          }}
-          style={{ width: "100%", display: "block" }}
-        >
-          {/* Reference the local video file in the public/assets folder */}
-          <source src="/assets/vid.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </Box>
-
-      {/* Display error message if video fails to load */}
-      {videoError && (
-        <Typography
-          variant="body1"
-          sx={{ color: "red", mb: 2, textAlign: "center" }}
-        >
-          {videoError}
-        </Typography>
-      )}
-
-      {/* Play Video Button (shown initially and if video isn't playing) */}
-      {!videoPlaying && !videoEnded && (
-        <Button
-          variant="contained"
-          onClick={handlePlayVideo}
-          sx={{
-            backgroundColor: "#4b0082", // Purple color
-            color: "white",
-            ":hover": { backgroundColor: "#6a0dad" }, // Lighter purple on hover
-            px: 4,
-            py: 1,
-            mb: 2,
-          }}
-        >
-          Play Video
-        </Button>
-      )}
-
-      {/* Buttons (shown only after the video ends) */}
-      {videoEnded && (
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            justifyContent: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Button
-            variant="contained"
-            onClick={handleReplay}
+      {loading ? (
+        <Typography>Loading video...</Typography>
+      ) : videoUrl ? (
+        <>
+          {/* Video Player */}
+          <Box
             sx={{
-              backgroundColor: "#4b0082", // Purple color
-              color: "white",
-              ":hover": { backgroundColor: "#6a0dad" }, // Lighter purple on hover
-              px: 4,
-              py: 1,
+              width: "100%",
+              maxWidth: "800px",
+              borderRadius: "10px",
+              overflow: "hidden",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              mb: 3,
             }}
           >
-            Replay Video
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleGoToQuiz}
-            sx={{
-              backgroundColor: "#4b0082", // Purple color
-              color: "white",
-              ":hover": { backgroundColor: "#6a0dad" }, // Lighter purple on hover
-              px: 4,
-              py: 1,
-            }}
-          >
-            Go to Quiz
-          </Button>
-        </Box>
+            <video
+              ref={videoRef}
+              muted // Allow playback in most browsers
+              controls // User interaction
+              onEnded={handleVideoEnd}
+              onError={handleVideoError}
+              onLoadedData={handleVideoLoaded}
+              onPlay={() => {
+                console.log("Video is playing");
+                setVideoPlaying(true);
+              }}
+              style={{ width: "100%", display: "block" }}
+            >
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </Box>
+
+          {/* Display error message if video fails */}
+          {videoError && (
+            <Typography
+              variant="body1"
+              sx={{ color: "red", mb: 2, textAlign: "center" }}
+            >
+              {videoError}
+            </Typography>
+          )}
+
+          {/* Play Video Button */}
+          {!videoPlaying && !videoEnded && (
+            <Button
+              variant="contained"
+              onClick={handlePlayVideo}
+              sx={{
+                backgroundColor: "#4b0082",
+                color: "white",
+                ":hover": { backgroundColor: "#6a0dad" },
+                px: 4,
+                py: 1,
+                mb: 2,
+              }}
+            >
+              Play Video
+            </Button>
+          )}
+
+          {/* Buttons after video ends */}
+          {videoEnded && (
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                variant="contained"
+                onClick={handleReplay}
+                sx={{
+                  backgroundColor: "#4b0082",
+                  color: "white",
+                  ":hover": { backgroundColor: "#6a0dad" },
+                  px: 4,
+                  py: 1,
+                }}
+              >
+                Replay Video
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleGoToQuiz}
+                sx={{
+                  backgroundColor: "#4b0082",
+                  color: "white",
+                  ":hover": { backgroundColor: "#6a0dad" },
+                  px: 4,
+                  py: 1,
+                }}
+              >
+                Go to Quiz
+              </Button>
+            </Box>
+          )}
+        </>
+      ) : (
+        <Typography color="error">No video available. Please contact the administrator.</Typography>
       )}
     </Box>
   );

@@ -1,276 +1,3 @@
-// import React, { useState } from "react";
-// import {
-//   Box,
-//   Typography,
-//   Paper,
-//   Radio,
-//   RadioGroup,
-//   FormControlLabel,
-//   FormControl,
-//   Button,
-//   Container,
-// } from "@mui/material";
-// import { useLocation, useNavigate } from "react-router-dom";
-// import { ToastContainer, toast } from "react-toastify";
-// import "react-toastify/dist/ReactToastify.css";
-
-// // Sample quiz questions related to visitor safety protocols
-// const quizQuestions = [
-//   {
-//     question: "What should you do if you notice a fire hazard during your visit?",
-//     options: [
-//       "Ignore it and continue your visit",
-//       "Report it to the nearest staff member immediately",
-//       "Take a photo and post it on social media",
-//       "Try to fix it yourself",
-//     ],
-//     correctAnswer: "Report it to the nearest staff member immediately",
-//   },
-//   {
-//     question: "Where should you wear your visitor badge at all times?",
-//     options: [
-//       "In your pocket",
-//       "On your vehicle dashboard",
-//       "Visible on your person",
-//       "At home",
-//     ],
-//     correctAnswer: "Visible on your person",
-//   },
-//   {
-//     question: "What is the first thing you should do upon arriving at the facility?",
-//     options: [
-//       "Start your meeting immediately",
-//       "Check in at the reception or kiosk",
-//       "Wander around to explore the facility",
-//       "Take a coffee break",
-//     ],
-//     correctAnswer: "Check in at the reception or kiosk",
-//   },
-//   {
-//     question: "What should you do if you get lost in the facility?",
-//     options: [
-//       "Keep walking until you find your way",
-//       "Ask a staff member for directions",
-//       "Leave the facility immediately",
-//       "Call a friend for help",
-//     ],
-//     correctAnswer: "Ask a staff member for directions",
-//   },
-// ];
-
-// const Kioskquiz = () => {
-//   const navigate = useNavigate();
-//   const location = useLocation();
-//   const visitorId = location.state?.userId; // Get the visitor ID from the previous page
-
-//   // State to store user answers and quiz results
-//   const [answers, setAnswers] = useState(Array(quizQuestions.length).fill(""));
-//   const [submitted, setSubmitted] = useState(false);
-//   const [score, setScore] = useState(0);
-//   const [generatedId, setGeneratedId] = useState("");
-
-//   // Handle answer selection
-//   const handleAnswerChange = (questionIndex, value) => {
-//     const newAnswers = [...answers];
-//     newAnswers[questionIndex] = value;
-//     setAnswers(newAnswers);
-//   };
-
-//   // Generate a simple random ID (e.g., 6-character alphanumeric string)
-//   const generateRandomId = () => {
-//     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-//     let result = "";
-//     for (let i = 0; i < 6; i++) {
-//       result += characters.charAt(Math.floor(Math.random() * characters.length));
-//     }
-//     return result;
-//   };
-
-//   // Handle quiz submission
-//   const handleSubmit = () => {
-//     // Calculate the score
-//     let correctAnswers = 0;
-//     answers.forEach((answer, index) => {
-//       if (answer === quizQuestions[index].correctAnswer) {
-//         correctAnswers += 1;
-//       }
-//     });
-
-//     const scorePercentage = (correctAnswers / quizQuestions.length) * 100;
-//     setScore(scorePercentage);
-//     setSubmitted(true);
-
-//     // Check if the user passed (75% or higher)
-//     if (scorePercentage > 75) {
-//       const newId = generateRandomId();
-//       setGeneratedId(newId);
-//       toast.success(`Congratulations! You passed the quiz with a score of ${scorePercentage.toFixed(2)}%. Your ID: ${newId}`);
-//     } else {
-//       toast.error(`You scored ${scorePercentage.toFixed(2)}%. You need at least 75% to pass. Please retake the quiz or review the video.`);
-//     }
-//   };
-
-//   // Handle retake quiz
-//   const handleRetakeQuiz = () => {
-//     setAnswers(Array(quizQuestions.length).fill(""));
-//     setSubmitted(false);
-//     setScore(0);
-//     setGeneratedId("");
-//   };
-
-//   // Handle proceeding after passing
-//   const handleProceed = () => {
-//     // Redirect to the VisitorCard page with the full visitor ID
-//     navigate(`/VisitorCardKiosk/${visitorId}`);
-//   };
-
-//   // Handle going back to login if failed
-//   const handleGoBackToLogin = () => {
-//     navigate("/LoginKiosk");
-//   };
-
-//   // Handle going back to the video page if failed
-//   const handleGoBackToVideo = () => {
-//     navigate("/VideoPage", { state: { userId: visitorId } });
-//   };
-
-//   // If visitorId is not available, redirect to login
-//   if (!visitorId) {
-//     toast.error("Visitor ID not found. Please log in again.");
-//     setTimeout(() => {
-//       navigate("/");
-//     }, 2000);
-//     return null;
-//   }
-
-//   return (
-//     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-//       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-//       <Container maxWidth="md" sx={{ flexGrow: 1, py: 4 }}>
-//         <Typography
-//           variant="h4"
-//           sx={{ textAlign: "center", mb: 4, color: "#4b0082", fontWeight: "bold" }}
-//         >
-//           Visitor Safety Quiz
-//         </Typography>
-
-//         {!submitted ? (
-//           <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-//             {quizQuestions.map((question, index) => (
-//               <Box key={index} sx={{ mb: 4 }}>
-//                 <Typography variant="h6" sx={{ mb: 2 }}>
-//                   {index + 1}. {question.question}
-//                 </Typography>
-//                 <FormControl component="fieldset">
-//                   <RadioGroup
-//                     value={answers[index]}
-//                     onChange={(e) => handleAnswerChange(index, e.target.value)}
-//                   >
-//                     {question.options.map((option, optionIndex) => (
-//                       <FormControlLabel
-//                         key={optionIndex}
-//                         value={option}
-//                         control={<Radio />}
-//                         label={option}
-//                         sx={{ mb: 1 }}
-//                       />
-//                     ))}
-//                   </RadioGroup>
-//                 </FormControl>
-//               </Box>
-//             ))}
-//             <Button
-//               variant="contained"
-//               sx={{
-//                 backgroundColor: "#4b0082",
-//                 color: "white",
-//                 ":hover": { backgroundColor: "#6a0dad" },
-//                 display: "block",
-//                 mx: "auto",
-//               }}
-//               onClick={handleSubmit}
-//               disabled={answers.some((answer) => answer === "")}
-//             >
-//               Submit Quiz
-//             </Button>
-//           </Paper>
-//         ) : (
-//           <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
-//             <Typography variant="h5" sx={{ mb: 2, color: score > 75 ? "green" : "red" }}>
-//               {score > 75 ? "Congratulations! You Passed!" : "Sorry, You Did Not Pass"}
-//             </Typography>
-//             <Typography variant="h6" sx={{ mb: 2 }}>
-//               Your Score: {score.toFixed(2)}%
-//             </Typography>
-//             {score > 75 ? (
-//               <>
-//                 <Typography variant="body1" sx={{ mb: 2 }}>
-//                   Your Generated ID: <strong>{generatedId}</strong>
-//                 </Typography>
-//                 <Button
-//                   variant="contained"
-//                   sx={{
-//                     backgroundColor: "#4b0082",
-//                     color: "white",
-//                     ":hover": { backgroundColor: "#6a0dad" },
-//                     mr: 2,
-//                   }}
-//                   onClick={handleProceed}
-//                 >
-//                   Proceed
-//                 </Button>
-//               </>
-//             ) : (
-//               <>
-//                 <Typography variant="body1" sx={{ mb: 2 }}>
-//                   You need at least 75% to pass. Please retake the quiz, review the video, or go back to login.
-//                 </Typography>
-//                 <Button
-//                   variant="contained"
-//                   sx={{
-//                     backgroundColor: "#4b0082",
-//                     color: "white",
-//                     ":hover": { backgroundColor: "#6a0dad" },
-//                     mr: 2,
-//                   }}
-//                   onClick={handleRetakeQuiz}
-//                 >
-//                   Retake Quiz
-//                 </Button>
-//                 <Button
-//                   variant="outlined"
-//                   sx={{
-//                     borderColor: "#4b0082",
-//                     color: "#4b0082",
-//                     ":hover": { borderColor: "#6a0dad", color: "#6a0dad" },
-//                     mr: 2,
-//                   }}
-//                   onClick={handleGoBackToVideo}
-//                 >
-//                   Back to Video
-//                 </Button>
-//                 <Button
-//                   variant="outlined"
-//                   sx={{
-//                     borderColor: "#4b0082",
-//                     color: "#4b0082",
-//                     ":hover": { borderColor: "#6a0dad", color: "#6a0dad" },
-//                   }}
-//                   onClick={handleGoBackToLogin}
-//                 >
-//                   Back to Login
-//                 </Button>
-//               </>
-//             )}
-//           </Paper>
-//         )}
-//       </Container>
-//     </Box>
-//   );
-// };
-
-// export default Kioskquiz;
-
 import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
@@ -286,66 +13,64 @@ import {
 import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { QRCodeCanvas } from "qrcode.react"; // Import QRCodeCanvas for QR code generation
-
-// Sample quiz questions related to visitor safety protocols
-const quizQuestions = [
-  {
-    question: "What should you do if you notice a fire hazard during your visit?",
-    options: [
-      "Ignore it and continue your visit",
-      "Report it to the nearest staff member immediately",
-      "Take a photo and post it on social media",
-      "Try to fix it yourself",
-    ],
-    correctAnswer: "Report it to the nearest staff member immediately",
-  },
-  {
-    question: "Where should you wear your visitor badge at all times?",
-    options: [
-      "In your pocket",
-      "On your vehicle dashboard",
-      "Visible on your person",
-      "At home",
-    ],
-    correctAnswer: "Visible on your person",
-  },
-  {
-    question: "What is the first thing you should do upon arriving at the facility?",
-    options: [
-      "Start your meeting immediately",
-      "Check in at the reception or kiosk",
-      "Wander around to explore the facility",
-      "Take a coffee break",
-    ],
-    correctAnswer: "Check in at the reception or kiosk",
-  },
-  {
-    question: "What should you do if you get lost in the facility?",
-    options: [
-      "Keep walking until you find your way",
-      "Ask a staff member for directions",
-      "Leave the facility immediately",
-      "Call a friend for help",
-    ],
-    correctAnswer: "Ask a staff member for directions",
-  },
-];
+import { QRCodeCanvas } from "qrcode.react";
 
 const Kioskquiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const visitorId = location.state?.userId; // Get the visitor ID from the previous page
-  const qrCodeRef = useRef(null); // Ref to access the QR code canvas
+  const visitorId = location.state?.userId;
+  const qrCodeRef = useRef(null);
 
-  // State to store user answers and quiz results
-  const [answers, setAnswers] = useState(Array(quizQuestions.length).fill(""));
+  // State for quiz data
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [loadingQuiz, setLoadingQuiz] = useState(true);
+  const [quizError, setQuizError] = useState(null);
+
+  // State for quiz answers and results
+  const [answers, setAnswers] = useState([]);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [generatedId, setGeneratedId] = useState("");
-  const [visitor, setVisitor] = useState(null); // State to store visitor data
-  const [loadingVisitor, setLoadingVisitor] = useState(false); // State for loading visitor data
-  const [visitorError, setVisitorError] = useState(null); // State for visitor fetch errors
+
+  // State for visitor data
+  const [visitor, setVisitor] = useState(null);
+  const [loadingVisitor, setLoadingVisitor] = useState(false);
+  const [visitorError, setVisitorError] = useState(null);
+
+  // Fetch quiz questions on mount
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      try {
+        setLoadingQuiz(true);
+        const response = await fetch("http://localhost:5000/api/quizzes");
+        if (!response.ok) {
+          throw new Error("Failed to fetch quiz data");
+        }
+        const data = await response.json();
+        if (data.length > 0) {
+          const latestQuiz = data[0]; // Use the latest quiz
+          setQuizQuestions(
+            latestQuiz.questions.map((q) => ({
+              question: q.question,
+              options: q.options,
+              correctAnswer: q.options[q.correctIndex], // Map correctIndex to correctAnswer for compatibility
+            }))
+          );
+          setAnswers(Array(latestQuiz.questions.length).fill(""));
+        } else {
+          throw new Error("No quizzes available");
+        }
+      } catch (err) {
+        console.error("Error fetching quiz:", err);
+        setQuizError("Failed to load quiz questions. Please try again later.");
+        toast.error("Failed to load quiz questions.");
+      } finally {
+        setLoadingQuiz(false);
+      }
+    };
+
+    fetchQuiz();
+  }, []);
 
   // Fetch visitor data when the user passes the quiz
   useEffect(() => {
@@ -383,7 +108,7 @@ const Kioskquiz = () => {
     setAnswers(newAnswers);
   };
 
-  // Generate a simple random ID (e.g., 6-character alphanumeric string)
+  // Generate a random ID
   const generateRandomId = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
@@ -395,7 +120,6 @@ const Kioskquiz = () => {
 
   // Handle quiz submission
   const handleSubmit = () => {
-    // Calculate the score
     let correctAnswers = 0;
     answers.forEach((answer, index) => {
       if (answer === quizQuestions[index].correctAnswer) {
@@ -407,7 +131,6 @@ const Kioskquiz = () => {
     setScore(scorePercentage);
     setSubmitted(true);
 
-    // Check if the user passed (75% or higher)
     if (scorePercentage > 75) {
       const newId = generateRandomId();
       setGeneratedId(newId);
@@ -423,16 +146,16 @@ const Kioskquiz = () => {
     setSubmitted(false);
     setScore(0);
     setGeneratedId("");
-    setVisitor(null); // Reset visitor data
-    setVisitorError(null); // Reset error
+    setVisitor(null);
+    setVisitorError(null);
   };
 
-  // Handle going back to login if failed
+  // Handle going back to login
   const handleGoBackToLogin = () => {
     navigate("/LoginKiosk");
   };
 
-  // Handle going back to the video page if failed
+  // Handle going back to the video page
   const handleGoBackToVideo = () => {
     navigate("/VideoPage", { state: { userId: visitorId } });
   };
@@ -444,7 +167,6 @@ const Kioskquiz = () => {
       return;
     }
 
-    // Get the QR code data URL from the hidden QRCodeCanvas
     const qrCanvas = qrCodeRef.current?.querySelector("canvas");
     if (!qrCanvas) {
       toast.error("Failed to generate QR code for printing.");
@@ -452,7 +174,6 @@ const Kioskquiz = () => {
     }
     const qrDataUrl = qrCanvas.toDataURL("image/png");
 
-    // Preload the visitor's photo (or use a default if not available)
     const preloadImage = (url) => {
       return new Promise((resolve) => {
         const img = new Image();
@@ -467,7 +188,6 @@ const Kioskquiz = () => {
       printWindow.document.write(`
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -482,7 +202,6 @@ const Kioskquiz = () => {
       min-height: 100vh;
       margin: 0;
     }
-
     .hall-ticket {
       width: 450px;
       min-height: 350px;
@@ -496,7 +215,6 @@ const Kioskquiz = () => {
       flex-direction: column;
       gap: 15px;
     }
-
     .header {
       background-color: #5F3B91;
       color: #fff;
@@ -506,7 +224,6 @@ const Kioskquiz = () => {
       margin: -15px -15px 0 -15px;
       font-size: 18px;
     }
-
     .content {
       display: flex;
       justify-content: space-between;
@@ -514,24 +231,20 @@ const Kioskquiz = () => {
       flex-wrap: wrap;
       gap: 10px;
     }
-
     .left-section {
       text-align: left;
       font-size: 14px;
       max-width: 55%;
     }
-
     .right-section {
       text-align: center;
     }
-
     img.photo {
       border-radius: 50%;
       border: 2px solid #D1C4E9;
       width: 70px;
       height: 70px;
     }
-
     .qr-code-container img {
       width: 80px;
       height: 80px;
@@ -540,20 +253,17 @@ const Kioskquiz = () => {
       border: 1px solid #ccc;
       border-radius: 6px;
     }
-
     .qr-label {
       font-size: 12px;
       color: #333;
       font-weight: bold;
     }
-
     .signature-section {
       text-align: center;
       font-size: 12px;
       font-weight: bold;
       margin-top: 5px;
     }
-
     .signature-box {
       width: 150px;
       height: 30px;
@@ -564,7 +274,6 @@ const Kioskquiz = () => {
       font-style: italic;
       color: #999;
     }
-
     .footer {
       text-align: center;
       font-size: 12px;
@@ -573,23 +282,19 @@ const Kioskquiz = () => {
       border-top: 1.5px dashed #5F3B91;
       padding-top: 5px;
     }
-
     p {
       margin: 5px 0;
     }
-
     h3 {
       margin: 0;
       font-size: 16px;
     }
-
     h2 {
       margin: 0;
       font-size: 18px;
     }
   </style>
 </head>
-
 <body>
   <div class="hall-ticket">
     <div class="header">
@@ -622,29 +327,21 @@ const Kioskquiz = () => {
       <p>This hall ticket is valid for one-time entry only</p>
     </div>
   </div>
-
   <script>
-    // Trigger print dialog after the window loads
     window.onload = () => {
-      window.focus(); // Ensure the window is focused
-      window.print(); // Open the print dialog
+      window.focus();
+      window.print();
     };
-
-    // Close the window after printing or canceling the print dialog
     window.addEventListener('afterprint', () => {
       window.close();
     });
-
-    // Fallback: If the user closes the tab without printing, close after a timeout
     setTimeout(() => {
       window.close();
-    }, 10000); // Close after 10 seconds if no action is taken
+    }, 10000);
   </script>
 </body>
-
 </html>
       `);
-
       printWindow.document.close();
     }).catch((err) => {
       console.error("Error preloading image:", err);
@@ -672,14 +369,20 @@ const Kioskquiz = () => {
           Visitor Safety Quiz
         </Typography>
 
-        {/* Hidden QRCodeCanvas to generate the QR code for printing */}
+        {/* Hidden QRCodeCanvas */}
         {visitor && (
           <Box sx={{ display: "none" }} ref={qrCodeRef}>
             <QRCodeCanvas value={visitor._id} size={80} />
           </Box>
         )}
 
-        {!submitted ? (
+        {loadingQuiz ? (
+          <Typography>Loading quiz...</Typography>
+        ) : quizError ? (
+          <Typography color="error">{quizError}</Typography>
+        ) : quizQuestions.length === 0 ? (
+          <Typography color="error">No quiz questions available. Please contact the administrator.</Typography>
+        ) : !submitted ? (
           <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
             {quizQuestions.map((question, index) => (
               <Box key={index} sx={{ mb: 4 }}>

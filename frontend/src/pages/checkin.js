@@ -1,7 +1,5 @@
-
 // src/pages/Checkin.js
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   TextField,
   Button,
@@ -19,15 +17,17 @@ import {
   TableRow,
   Paper,
   TablePagination,
+  Card,
 } from "@mui/material";
-import { AddCircle, RemoveCircle, UploadFile, CameraAlt } from "@mui/icons-material";
+import { AddCircle, RemoveCircle, UploadFile, CameraAlt, CloudDownload as CloudDownloadIcon, PrintOutlined as PrintOutlinedIcon } from "@mui/icons-material";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { QRCodeCanvas } from "qrcode.react";
+import html2canvas from "html2canvas";
 
 const Checkin = () => {
-  const navigate = useNavigate();
   const [teamMembers, setTeamMembers] = useState([]);
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
@@ -61,6 +61,8 @@ const Checkin = () => {
   const [openSelfCheckinModal, setOpenSelfCheckinModal] = useState(false);
   const [openWebcamModal, setOpenWebcamModal] = useState(false);
   const [openPhotoPreviewModal, setOpenPhotoPreviewModal] = useState(false);
+  const [openVisitorModal, setOpenVisitorModal] = useState(false);
+  const [visitorData, setVisitorData] = useState(null);
   const [prescheduledVisitors, setPrescheduledVisitors] = useState([]);
   const [selfCheckinVisitors, setSelfCheckinVisitors] = useState([]);
   const [filteredPrescheduleVisitors, setFilteredPrescheduleVisitors] = useState([]);
@@ -70,8 +72,9 @@ const Checkin = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedSelfCheckinId, setSelectedSelfCheckinId] = useState(null);
   const [selectedPrescheduleId, setSelectedPrescheduleId] = useState(null);
-  const [selectedGate, setSelectedGate] = useState(localStorage.getItem("selectedGate") || ""); // Added state for selected gate
+  const [selectedGate, setSelectedGate] = useState(localStorage.getItem("selectedGate") || "");
   const videoRef = useRef(null);
+  const visitorRef = useRef(null);
   const [stream, setStream] = useState(null);
 
   useEffect(() => {
@@ -126,7 +129,6 @@ const Checkin = () => {
     fetchPrescheduledVisitors();
     fetchSelfCheckinVisitors();
 
-    // Sync selectedGate with localStorage changes
     const handleStorageChange = () => {
       setSelectedGate(localStorage.getItem("selectedGate") || "");
     };
@@ -473,6 +475,13 @@ const Checkin = () => {
     }
   };
 
+  const getLastFourDigits = (id) => {
+    const idStr = (id || "").toString();
+    return idStr.slice(-4);
+  };
+
+
+
   const handleSubmit = async () => {
     const newErrors = {};
     Object.keys(formData).forEach((field) => {
@@ -574,7 +583,7 @@ const Checkin = () => {
         formData.hasTeamMembers === "yes" ? JSON.stringify(teamMembers) : JSON.stringify([])
       );
       visitorData.append("department", formData.department);
-      visitorData.append("gate", selectedGate); // Add selected gate to visitor data
+      visitorData.append("gate", selectedGate);
       if (photo) {
         visitorData.append("photo", photo);
       }
@@ -627,8 +636,9 @@ const Checkin = () => {
         setSelectedPrescheduleId(null);
       }
 
+      setVisitorData(data.data || data);
+      setOpenVisitorModal(true);
       toast.success("Check-in successful!");
-      setTimeout(() => navigate("/visitorcard"), 2000);
     } catch (error) {
       toast.error(error.message || "Submission error");
     }
@@ -709,6 +719,20 @@ const Checkin = () => {
     borderRadius: 2,
   };
 
+  const visitorModalStyle = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: { xs: "95%", sm: "90%", md: "80%", lg: "400px" },
+    bgcolor: "background.paper",
+    boxShadow: 24,
+    p: 4,
+    borderRadius: 2,
+    overflowY: "auto",
+    maxHeight: "90vh",
+  };
+
   return (
     <>
       <Navbar />
@@ -730,7 +754,6 @@ const Checkin = () => {
         <Typography variant="h5" align="center" fontWeight="bold" mb={2}>
           Visitor Check-In
         </Typography>
-        {/* Display the selected gate */}
         <Typography variant="h6" align="center" color="textSecondary" mb={3}>
           Selected Gate: {selectedGate || "None"}
         </Typography>
@@ -1482,6 +1505,70 @@ const Checkin = () => {
               color="primary"
               onClick={() => setOpenPhotoPreviewModal(false)}
               sx={{ mt: 2, height: "48px" }}
+            >
+              Close
+            </Button>
+          </Box>
+        </Modal>
+
+        <Modal open={openVisitorModal} onClose={() => setOpenVisitorModal(false)}>
+          <Box sx={visitorModalStyle}>
+            {visitorData && (
+              <Card
+                ref={visitorRef}
+                sx={{
+                  p: 3,
+                  textAlign: "center",
+                  backgroundColor: "#EDE7F6",
+                  color: "#000",
+                  borderRadius: 2,
+                  boxShadow: 3,
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mb: 2,
+                    fontWeight: "bold",
+                    backgroundColor: "#D1C4E9",
+                    padding: "10px",
+                    borderRadius: 1,
+                  }}
+                >
+                  VISITOR ID
+                </Typography>
+                <Grid
+                  container
+                  spacing={2}
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
+                  <Grid item textAlign="left">
+                    <Typography variant="body1" sx={{ fontWeight: "bold" }}>
+                      ID: {getLastFourDigits(visitorData._id)}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                  </Grid>
+                </Grid>
+                <Grid
+                  container
+                  spacing={2}
+                  justifyContent="flex-end"
+                  sx={{ mt: 2, pr: 2 }}
+                >
+                  <Grid item>
+                  </Grid>
+                  <Grid item>
+                  </Grid>
+                </Grid>
+              </Card>
+            )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpenVisitorModal(false)}
+              sx={{ mt: 3, display: "block", mx: "auto", height: "48px" }}
             >
               Close
             </Button>

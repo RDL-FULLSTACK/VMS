@@ -14,7 +14,7 @@ const LoginForgotPassword = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [loginImages, setLoginImages] = useState([]);
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://vms-tdpe.onrender.com";
 
   useEffect(() => {
     const fetchImages = async () => {

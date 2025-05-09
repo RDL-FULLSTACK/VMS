@@ -153,7 +153,7 @@ function Home() {
       );
       setCurrentDate(formattedCurrentDate);
 
-      const visitorResponse = await fetch("http://localhost:5000/api/visitors");
+      const visitorResponse = await fetch("https://vms-tdpe.onrender.com/api/visitors");
       if (!visitorResponse.ok) throw new Error("Failed to fetch visitor data");
       const rawVisitorData = await visitorResponse.json();
       const visitorData = Array.isArray(rawVisitorData)
@@ -193,7 +193,7 @@ function Home() {
       ).length;
 
       const prescheduleResponse = await fetch(
-        "http://localhost:5000/api/preschedules"
+        "https://vms-tdpe.onrender.com/api/preschedules"
       );
       if (!prescheduleResponse.ok)
         throw new Error("Failed to fetch preschedule data");
@@ -211,7 +211,7 @@ function Home() {
 
       const totalVisitors = checkedIn + checkedOut;
 
-      const vehicleResponse = await fetch("http://localhost:5000/api/vehicles");
+      const vehicleResponse = await fetch("https://vms-tdpe.onrender.com/api/vehicles");
       if (!vehicleResponse.ok) throw new Error("Failed to fetch vehicle data");
       const vehicleData = await vehicleResponse.json();
 
@@ -328,7 +328,7 @@ function Home() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/visitors/${selectedVisitorId}`,
+        `https://vms-tdpe.onrender.com/api/visitors/${selectedVisitorId}`,
         {
           method: "DELETE",
         }
@@ -350,7 +350,7 @@ function Home() {
       const totalVisitors = checkedIn + checkedOut;
 
       const prescheduleResponse = await fetch(
-        "http://localhost:5000/api/preschedules"
+        "https://vms-tdpe.onrender.com/api/preschedules"
       );
       if (!prescheduleResponse.ok)
         throw new Error("Failed to fetch preschedule data");

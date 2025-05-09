@@ -16,7 +16,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "https://vms-tdpe.onrender.com";
 
   useEffect(() => {
     const fetchUserRole = async () => {

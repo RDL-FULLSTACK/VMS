@@ -80,7 +80,7 @@ const Checkin = () => {
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/users");
+        const response = await fetch("https://vms-tdpe.onrender.com/api/users");
         if (!response.ok) throw new Error("Failed to fetch employees");
         const data = await response.json();
         setEmployees(data);
@@ -97,7 +97,7 @@ const Checkin = () => {
 
     const fetchPrescheduledVisitors = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/preschedules");
+        const response = await fetch("https://vms-tdpe.onrender.com/api/preschedules");
         if (!response.ok) throw new Error("Failed to fetch prescheduled visitors");
         const data = await response.json();
         const approvedVisitors = data
@@ -113,7 +113,7 @@ const Checkin = () => {
 
     const fetchSelfCheckinVisitors = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/self-checkins/status");
+        const response = await fetch("https://vms-tdpe.onrender.com/api/self-checkins/status");
         if (!response.ok) throw new Error("Failed to fetch self-checkin visitors");
         const data = await response.json();
         const sortedVisitors = data.sort((a, b) => new Date(b.checkInTime) - new Date(a.checkInTime));
@@ -351,7 +351,7 @@ const Checkin = () => {
 
     if (field === "otp" && sanitizedValue.length === 6 && isOtpSent) {
       try {
-        const response = await fetch("http://localhost:5000/api/visitors/verify-otp", {
+        const response = await fetch("https://vms-tdpe.onrender.com/api/visitors/verify-otp", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ otp: sanitizedValue, email: formData.email }),
@@ -459,7 +459,7 @@ const Checkin = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/visitors/send-email-otp", {
+      const response = await fetch("https://vms-tdpe.onrender.com/api/visitors/send-email-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email }),
@@ -588,7 +588,7 @@ const Checkin = () => {
         visitorData.append("photo", photo);
       }
 
-      const response = await fetch("http://localhost:5000/api/visitors/checkin", {
+      const response = await fetch("https://vms-tdpe.onrender.com/api/visitors/checkin", {
         method: "POST",
         body: visitorData,
       });
@@ -598,7 +598,7 @@ const Checkin = () => {
 
       if (selectedSelfCheckinId) {
         const deleteSelfCheckinResponse = await fetch(
-          `http://localhost:5000/api/self-checkins/checkin/${selectedSelfCheckinId}`,
+          `https://vms-tdpe.onrender.com/api/self-checkins/checkin/${selectedSelfCheckinId}`,
           {
             method: "DELETE",
           }
@@ -618,7 +618,7 @@ const Checkin = () => {
 
       if (selectedPrescheduleId) {
         const deletePrescheduleResponse = await fetch(
-          `http://localhost:5000/api/preschedules/${selectedPrescheduleId}`,
+          `https://vms-tdpe.onrender.com/api/preschedules/${selectedPrescheduleId}`,
           {
             method: "DELETE",
           }

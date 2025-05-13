@@ -37,6 +37,9 @@ const Kioskquiz = () => {
   const [loadingVisitor, setLoadingVisitor] = useState(false);
   const [visitorError, setVisitorError] = useState(null);
 
+  // State for current question index
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+
   // Fetch quiz questions on mount
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -157,6 +160,7 @@ const Kioskquiz = () => {
     setGeneratedId("");
     setVisitor(null);
     setVisitorError(null);
+    setCurrentQuestionIndex(0);
   };
 
   // Handle going back to login
@@ -167,6 +171,19 @@ const Kioskquiz = () => {
   // Handle going back to the video page
   const handleGoBackToVideo = () => {
     navigate("/VideoPage", { state: { userId: visitorId } });
+  };
+
+  // Handle navigation between questions
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < quizQuestions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    }
+  };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    }
   };
 
   // Print the visitor card
@@ -374,12 +391,23 @@ const Kioskquiz = () => {
   }
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", bgcolor: "#f0f0f0" }}>
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
-      <Container maxWidth="md" sx={{ flexGrow: 1, py: 4 }}>
+      <Container
+        maxWidth="md"
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100%",
+          py: 2,
+          px: { xs: 2, sm: 3 },
+        }}
+      >
         <Typography
           variant="h4"
-          sx={{ textAlign: "center", mb: 4, color: "#4b0082", fontWeight: "bold" }}
+          sx={{ textAlign: "center", mb: 3, color: "#4b0082", fontWeight: "bold" }}
         >
           Visitor Safety Quiz
         </Typography>
@@ -399,65 +427,119 @@ const Kioskquiz = () => {
             No quiz questions available. Please contact the administrator.
           </Typography>
         ) : !submitted ? (
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-            {quizQuestions.map((question, index) => (
-              <Box key={index} sx={{ mb: 4 }}>
-                {question.imageUrl && (
-                  <Box sx={{ mb: 2, textAlign: "center" }}>
-                    <img
-                      src={question.imageUrl}
-                      alt={`Question ${index + 1}`}
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "200px",
-                        borderRadius: "8px",
-                        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = "none";
-                        console.error("Failed to load image:", question.imageUrl);
-                      }}
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 2, sm: 3 },
+              borderRadius: 2,
+              width: "100%",
+              maxWidth: 600,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              minHeight: 400,
+              maxHeight: "80vh",
+              bgcolor: "white",
+            }}
+          >
+            <Box sx={{ flexGrow: 1, mb: 2 }}>
+              {quizQuestions[currentQuestionIndex].imageUrl && (
+                <Box sx={{ mb: 2, textAlign: "center" }}>
+                  <img
+                    src={quizQuestions[currentQuestionIndex].imageUrl}
+                    alt={`Question ${currentQuestionIndex + 1}`}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "200px",
+                      borderRadius: "8px",
+                      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = "none";
+                      console.error("Failed to load image:", quizQuestions[currentQuestionIndex].imageUrl);
+                    }}
+                  />
+                </Box>
+              )}
+              <Typography variant="h6" sx={{ mb: 2 }}>
+                {currentQuestionIndex + 1}. {quizQuestions[currentQuestionIndex].question}
+              </Typography>
+              <FormControl component="fieldset">
+                <RadioGroup
+                  value={answers[currentQuestionIndex]}
+                  onChange={(e) => handleAnswerChange(currentQuestionIndex, e.target.value)}
+                >
+                  {quizQuestions[currentQuestionIndex].options.map((option, optionIndex) => (
+                    <FormControlLabel
+                      key={optionIndex}
+                      value={option}
+                      control={<Radio />}
+                      label={option}
+                      sx={{ mb: 1 }}
                     />
-                  </Box>
-                )}
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  {index + 1}. {question.question}
-                </Typography>
-                <FormControl component="fieldset">
-                  <RadioGroup
-                    value={answers[index]}
-                    onChange={(e) => handleAnswerChange(index, e.target.value)}
-                  >
-                    {question.options.map((option, optionIndex) => (
-                      <FormControlLabel
-                        key={optionIndex}
-                        value={option}
-                        control={<Radio />}
-                        label={option}
-                        sx={{ mb: 1 }}
-                      />
-                    ))}
-                  </RadioGroup>
-                </FormControl>
-              </Box>
-            ))}
-            <Button
-              variant="contained"
-              sx={{
-                backgroundColor: "#4b0082",
-                color: "white",
-                ":hover": { backgroundColor: "#6a0dad" },
-                display: "block",
-                mx: "auto",
-              }}
-              onClick={handleSubmit}
-              disabled={answers.some((answer) => answer === "")}
-            >
-              Submit Quiz
-            </Button>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </Box>
+            <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+              <Button
+                variant="outlined"
+                sx={{
+                  borderColor: "#4b0082",
+                  color: "#4b0082",
+                  ":hover": { borderColor: "#6a0dad", color: "#6a0dad" },
+                }}
+                onClick={handlePreviousQuestion}
+                disabled={currentQuestionIndex === 0}
+              >
+                Previous
+              </Button>
+              {currentQuestionIndex < quizQuestions.length - 1 ? (
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4b0082",
+                    color: "white",
+                    ":hover": { backgroundColor: "#6a0dad" },
+                  }}
+                  onClick={handleNextQuestion}
+                  disabled={!answers[currentQuestionIndex]}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  sx={{
+                    backgroundColor: "#4b0082",
+                    color: "white",
+                    ":hover": { backgroundColor: "#6a0dad" },
+                  }}
+                  onClick={handleSubmit}
+                  disabled={answers.some((answer) => answer === "")}
+                >
+                  Submit Quiz
+                </Button>
+              )}
+            </Box>
           </Paper>
         ) : (
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 2, textAlign: "center" }}>
+          <Paper
+            elevation={3}
+            sx={{
+              p: { xs: 2, sm: 3 },
+              borderRadius: 2,
+              width: "100%",
+              maxWidth: 600,
+              textAlign: "center",
+              minHeight: 300,
+              maxHeight: "80vh",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              bgcolor: "white",
+            }}
+          >
             <Typography variant="h5" sx={{ mb: 2, color: score > 75 ? "green" : "red" }}>
               {score > 75 ? "Congratulations! You Passed!" : "Sorry, You Did Not Pass"}
             </Typography>

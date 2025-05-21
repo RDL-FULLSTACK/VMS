@@ -117,6 +117,10 @@ const VideoUpload = () => {
         script.src = 'https://widget.cloudinary.com/v2.0/global/all.js';
         script.async = true;
         script.onload = initializeWidgets;
+        script.onerror = () => {
+          console.error('Failed to load Cloudinary script');
+          toast.error('Failed to load Cloudinary widget');
+        };
         document.body.appendChild(script);
       } else {
         initializeWidgets();
@@ -128,6 +132,12 @@ const VideoUpload = () => {
   }, []);
 
   const initializeWidgets = () => {
+    if (!window.cloudinary) {
+      console.error('Cloudinary widget not loaded');
+      toast.error('Cloudinary widget failed to load');
+      return;
+    }
+
     const cloudinaryVideoWidget = window.cloudinary.createUploadWidget(
       {
         cloudName: 'ddovidvsp',
@@ -158,46 +168,45 @@ const VideoUpload = () => {
     );
     setWidget(cloudinaryVideoWidget);
 
-    setQuestions((prevQuestions) =>
-      prevQuestions.map((q, index) => {
-        const imageWidget = window.cloudinary.createUploadWidget(
-          {
-            cloudName: 'ddovidvsp',
-            uploadPreset: 'image_widget_unsigned',
-            folder: 'quiz_images',
-            sources: ['local', 'url', 'camera'],
-            multiple: false,
-            resourceType: 'image',
-            maxFileSize: 5000000,
-            clientAllowedFormats: ['png', 'jpg', 'jpeg', 'gif'],
-            returnDeleteToken: true,
-          },
-          (error, result) => {
-            if (!error && result && result.event === 'success') {
-              const { secure_url, public_id, delete_token } = result.info;
-              setQuestions((prev) =>
-                prev.map((question, qIndex) =>
-                  qIndex === index
-                    ? {
-                        ...question,
-                        imageUrl: secure_url,
-                        imagePublicId: public_id,
-                        imageDeleteToken: delete_token,
-                      }
-                    : question
-                )
-              );
-              toast.success(`Image uploaded for Question ${index + 1}`);
-            } else if (error) {
-              console.error('Image upload error:', error);
-              toast.error(`Error uploading image for Question ${index + 1}`);
-            }
+    const newImageWidgets = {};
+    questions.forEach((_, index) => {
+      const imageWidget = window.cloudinary.createUploadWidget(
+        {
+          cloudName: 'ddovidvsp',
+          uploadPreset: 'image_widget_unsigned',
+          folder: 'quiz_images',
+          sources: ['local', 'url', 'camera'],
+          multiple: false,
+          resourceType: 'image',
+          maxFileSize: 5000000,
+          clientAllowedFormats: ['png', 'jpg', 'jpeg', 'gif'],
+          returnDeleteToken: true,
+        },
+        (error, result) => {
+          if (!error && result && result.event === 'success') {
+            const { secure_url, public_id, delete_token } = result.info;
+            setQuestions((prev) =>
+              prev.map((question, qIndex) =>
+                qIndex === index
+                  ? {
+                      ...question,
+                      imageUrl: secure_url,
+                      imagePublicId: public_id,
+                      imageDeleteToken: delete_token,
+                    }
+                  : question
+              )
+            );
+            toast.success(`Image uploaded for Question ${index + 1}`);
+          } else if (error) {
+            console.error('Image upload error:', error);
+            toast.error(`Error uploading image for Question ${index + 1}`);
           }
-        );
-        setImageWidgets((prev) => ({ ...prev, [index]: imageWidget }));
-        return q;
-      })
-    );
+        }
+      );
+      newImageWidgets[index] = imageWidget;
+    });
+    setImageWidgets(newImageWidgets);
   };
 
   const handleUpload = () => {
@@ -341,8 +350,13 @@ const VideoUpload = () => {
   };
 
   const handleAddQuestion = () => {
+    if (!window.cloudinary) {
+      toast.error('Cloudinary widget not loaded');
+      return;
+    }
+
     const newIndex = questions.length;
-    const imageWidget = window.cloudinary?.createUploadWidget(
+    const imageWidget = window.cloudinary.createUploadWidget(
       {
         cloudName: 'ddovidvsp',
         uploadPreset: 'image_widget_unsigned',
@@ -442,7 +456,7 @@ const VideoUpload = () => {
         question: q.question.trim(),
         options: q.options.map(opt => opt.trim()),
         correctIndex: q.correctIndex,
-        imageUrl: q.imageUrl || '', // Include imageUrl
+        imageUrl: q.imageUrl || '',
       })),
     };
 
@@ -493,10 +507,15 @@ const VideoUpload = () => {
         throw new Error('Failed to fetch quizzes');
       }
       const data = await res.json();
-      setSavedQuizzes(data);
+      // Ensure data is an array and each quiz has a questions array
+      setSavedQuizzes(Array.isArray(data) ? data.map(quiz => ({
+        ...quiz,
+        questions: Array.isArray(quiz.questions) ? quiz.questions : []
+      })) : []);
     } catch (err) {
       console.error('Failed to fetch quizzes:', err);
       toast.error('Failed to fetch quizzes');
+      setSavedQuizzes([]);
     } finally {
       setLoadingQuizzes(false);
     }
@@ -640,7 +659,7 @@ const VideoUpload = () => {
                 <Typography variant="h6" gutterBottom sx={{ color: '#2e1a47', fontWeight: 'medium' }}>
                   Create Questions
                 </Typography>
-                {questions.map((q, qIndex) => (
+                {Array.isArray(questions) && questions.map((q, qIndex) => (
                   <StyledQuestionBox key={qIndex} sx={{ mb: 3 }}>
                     <TextField
                       label={`Question ${qIndex + 1}`}
@@ -721,7 +740,7 @@ const VideoUpload = () => {
                             : handleCorrectChange(qIndex, e.target.value)
                         }
                       >
-                        {q.options.map((opt, oIndex) => (
+                        {Array.isArray(q.options) && q.options.map((opt, oIndex) => (
                           <FormControlLabel
                             key={oIndex}
                             value={oIndex}
@@ -831,7 +850,7 @@ const VideoUpload = () => {
             <Divider sx={{ mb: 3 }} />
             {loadingQuizzes ? (
               <Typography color="#2e1a47">Loading quizzes...</Typography>
-            ) : savedQuizzes.length === 0 ? (
+            ) : !Array.isArray(savedQuizzes) || savedQuizzes.length === 0 ? (
               <Typography color="#2e1a47">No quizzes found.</Typography>
             ) : (
               <Grid container spacing={3}>
@@ -853,7 +872,7 @@ const VideoUpload = () => {
                       </Typography>
                       <Box sx={{ maxHeight: '150px', overflowY: 'auto' }}>
                         <ul style={{ paddingLeft: '20px' }}>
-                          {quiz.questions.map((q, idx) => (
+                          {Array.isArray(quiz.questions) && quiz.questions.map((q, idx) => (
                             <li key={idx}>
                               <Typography variant="body2" sx={{ fontWeight: 'medium', color: '#2e1a47' }}>
                                 {q.question}
@@ -872,7 +891,7 @@ const VideoUpload = () => {
                                 />
                               )}
                               <ul style={{ paddingLeft: '20px' }}>
-                                {q.options.map((opt, i) => (
+                                {Array.isArray(q.options) && q.options.map((opt, i) => (
                                   <li
                                     key={i}
                                     style={{ color: i === q.correctIndex ? '#4caf50' : '#2e1a47' }}
